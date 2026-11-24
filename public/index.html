@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cellipse cx=%228%22 cy=%228%22 rx=%227%22 ry=%224.5%22 fill=%22none%22 stroke=%22%23111%22 stroke-width=%221.6%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%222%22 fill=%22%23111%22/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EYE – Stortinget, penger og makt</title>
+<meta name="description" content="Hva stortingsrepresentantene eier, hvilke verv de har, hvilke aksjer de handler og hva de spør regjeringen om. Rett fra offentlige registre.">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="#stortinget" aria-label="EYE, til forsiden"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="14" ry="9" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="16" cy="16" r="4.5" fill="currentColor"/></svg>EYE</a>
+    <div class="search" role="search">
+      <input id="gq" type="search" autocomplete="off" placeholder="Søk etter politiker, selskap eller orgnr" aria-label="Søk" aria-controls="gres" aria-expanded="false">
+      <div id="gres" class="gres" hidden></div>
+    </div>
+  </div>
+  <nav aria-label="Hovedmeny" id="mainnav">
+    <a href="#stortinget" data-s="st">Stortinget</a>
+    <a href="#partier" data-s="pa">Partier</a>
+    <a href="#handler" data-s="pe">Penger</a>
+    <a href="#faktasjekk" data-s="fa">Faktasjekk</a>
+    <a href="#om" data-s="om">Kilder</a>
+  </nav>
+  <nav aria-label="Undermeny" id="subnav" class="sub"></nav>
+</header>
+
+<main>
+  <section id="v-reps" class="view">
+    <h1>Stortinget</h1>
+    <p class="lede" id="repsLede">Laster …</p>
+    <div class="chamber"><svg id="sal" viewBox="0 0 400 210" role="group" aria-label="Stortingssalen. Klikk et sete for å åpne representanten."></svg></div>
+    <div class="legend" id="leg"></div>
+    <div class="row">
+      <select id="fy" aria-label="Fylke"><option value="">Alle fylker</option></select>
+      <select id="ko" aria-label="Komité"><option value="">Alle komiteer</option></select>
+      <select id="so" aria-label="Sorter">
+        <option value="q">Flest spørsmål</option><option value="cos">Flest selskaper</option><option value="tr">Flest aksjehandler</option><option value="navn">Navn</option>
+      </select>
+    </div>
+    <div class="tw"><table class="list" id="repTable">
+      <thead><tr><th>Representant</th><th>Parti</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section id="v-rep" class="view" hidden></section>
+
+  <section id="v-parties" class="view" hidden>
+    <h1>Partiene</h1>
+    <p class="lede" id="partiesLede"></p>
+    <div class="now" id="now"></div>
+    <h2>Mandater og målinger</h2>
+    <div class="tw"><table id="pollTable"><thead><tr><th>Parti</th><th class="n">Mandater nå</th><th class="n">Snitt målinger</th><th class="hide-s">Mandater nå / målinger</th></tr></thead><tbody></tbody></table></div>
+    <p class="meta" id="pollSrc"></p>
+    <h2>Hva partiene står for</h2>
+    <div class="pgrid" id="pgrid"></div>
+  </section>
+
+  <section id="v-party" class="view" hidden></section>
+
+
+  <section id="v-votes" class="view" hidden>
+    <h1>Voteringer</h1>
+    <p class="lede" id="votesLede"></p>
+    <div class="row">
+      <select id="vp" aria-label="Parti"><option value="">Alle partier</option></select>
+      <select id="vf" aria-label="Filter"><option value="">Alle voteringer</option><option value="vedtatt">Bare vedtatte</option><option value="tapt">Bare forkastede</option><option value="tett">Tette (under 10 stemmers margin)</option></select>
+    </div>
+    <div class="tw"><table class="list" id="voteTable"><thead><tr><th>Dato</th><th>Sak og forslag</th><th>Resultat</th><th class="hide-s">Partiene</th></tr></thead><tbody></tbody></table></div>
+    <p class="meta">F = for, M = mot, D = delt. Kilde: Stortingets åpne data.</p>
+  </section>
+
+  <section id="v-agree" class="view" hidden>
+    <h1>Hvem stemmer med hvem?</h1>
+    <p class="lede" id="agreeLede"></p>
+    <div class="tw"><table id="agreeTable" class="matrix"></table></div>
+    <p class="meta">Andel av voteringene der begge partiene stemte samlet og likt. Mørkere farge betyr mer enighet.</p>
+  </section>
+
+  <section id="v-promises" class="view" hidden>
+    <h1>Løfter og resultater</h1>
+    <p class="lede" id="promLede"></p>
+    <div class="row" id="promFilter"></div>
+    <div id="promList"></div>
+    <h2 id="gjTitle"></h2>
+    <p class="lede" id="gjText"></p>
+    <div class="pgrid" id="gjGrid"></div>
+  </section>
+
+  <section id="v-news" class="view" hidden>
+    <h1>Nyheter om partiene</h1>
+    <p class="lede" id="newsLede"></p>
+    <div class="row"><select id="np" aria-label="Parti"><option value="">Alle partier</option></select><select id="ns" aria-label="Kilde"><option value="">Alle kilder</option></select></div>
+    <ul class="news" id="newsList"></ul>
+  </section>
+
+  <section id="v-facts" class="view" hidden>
+    <h1>Faktasjekk</h1>
+    <p class="lede" id="factsLede"></p>
+    <div class="row"><select id="fp" aria-label="Parti"><option value="">Alle</option></select></div>
+    <ul class="news" id="factList"></ul>
+    <h2>Kritikk av faktasjekkerne</h2>
+    <ul class="news" id="factCrit"></ul>
+    <h2>Sjekk selv</h2>
+    <ul class="news" id="factSelf"></ul>
+  </section>
+
+  <section id="v-trades" class="view" hidden>
+    <h1>Aksjehandler</h1>
+    <p class="lede">Alle enkelthandler stortingsrepresentantene har meldt til Stortingets interesseregister denne perioden. Nyeste først.</p>
+    <div class="kpis" id="tk"></div>
+    <div class="row">
+      <select id="tt" aria-label="Type handel"><option value="">Kjøp og salg</option><option value="K">Bare kjøp</option><option value="S">Bare salg</option></select>
+    </div>
+    <div class="tw"><table class="list" id="tradeTable">
+      <thead><tr><th>Dato</th><th>Representant</th><th class="hide-s">Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section id="v-cos" class="view" hidden>
+    <h1>Selskaper</h1>
+    <p class="lede">Søk i hele Enhetsregisteret og se hvem som sitter i styret, og om noen er stortingsrepresentanter.</p>
+    <form class="row" id="liveForm">
+      <input id="lq" type="search" placeholder="Selskapsnavn eller organisasjonsnummer" aria-label="Søk i Enhetsregisteret">
+      <button class="btn" type="submit">Søk</button>
+    </form>
+    <div id="live" aria-live="polite"></div>
+    <h2>Koblet til politikere</h2>
+    <p class="lede">Selskaper representantene har oppgitt i interesseregisteret eller har en rolle i ifølge Brønnøysund.</p>
+    <div class="kpis" id="ck"></div>
+    <div class="row">
+      <select id="cf" aria-label="Filter"><option value="">Alle</option><option value="rolle">Rolle bekreftet i Brønnøysund</option><option value="flagg">Konkurs eller avvikling</option></select>
+      <select id="cs" aria-label="Sorter"><option value="navn">Navn</option><option value="ans">Flest ansatte</option><option value="rep">Flest politikere</option></select>
+    </div>
+    <div class="tw"><table class="list" id="coTable">
+      <thead><tr><th>Selskap</th><th>Kommune</th><th class="n">Ansatte</th><th>Politikere</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section id="v-org" class="view" hidden></section>
+
+  <section id="v-om" class="view" hidden>
+    <h1>Kilder og metode</h1>
+    <p>EYE viser det som står i offentlige registre om folkevalgte og selskaper. Ingenting er skjønnsmessig tatt bort.</p>
+    <h2>Kilder</h2>
+    <ul>
+      <li><b>Stortingets åpne data</b> (data.stortinget.no): representanter, komiteer, biografier og alle spørsmål til regjeringen i perioden.</li>
+      <li><b>Stortingets interesseregister</b>: verv, selskaper, gaver, reiser og aksjehandler, gjengitt ordrett slik Stortinget publiserer det.</li>
+      <li><b>Enhetsregisteret</b> (data.brreg.no): selskapsopplysninger og alle registrerte roller.</li>
+      <li><b>Voteringer</b> (data.stortinget.no): hvordan hver representant stemte i personlige voteringer. «Hvem stemmer med hvem» regnes ut fra dette.</li>
+      <li><b>Løfter og gjennomslag</b>: partiprogrammer og valgløfter 2025, sammenholdt med budsjetter, vedtak, SSB og nyhetsdekning. Hver status har lenke til kilden.</li>
+      <li><b>Faktasjekk</b>: Faktisk.no (hentes hver natt), pluss kritikk av faktasjekkerne og primærkilder du kan sjekke selv.</li>
+      <li><b>Meningsmålinger</b>: Poll of polls (gjennomsnitt).</li>
+    </ul>
+    <h2>Nyhetskilder</h2>
+    <p>Overskrifter hentes hver natt fra et bredt spekter, fra venstre til høyre, og knyttes automatisk til partiene de nevner. Bare tittel og lenke vises.</p>
+    <ul>
+      <li>Riksmedier: NRK, VG, Aftenposten, Dagbladet, TV 2, E24</li>
+      <li>Meningsbærende: Dagsavisen (venstre), Document (høyre), iNyheter (høyre), Steigan (venstre/systemkritisk)</li>
+    </ul>
+    <h2>Slik kobles politikere til selskaper</h2>
+    <p>En representant regnes som bekreftet i en rolle når både navn og fødselsdato i Brønnøysund stemmer. Selskaper som bare er nevnt i interesseregisteret er merket «Oppgitt».</p>
+    <h2>Det vi ikke viser</h2>
+    <p>Fødselsdatoer, adresser og telefonnummer til privatpersoner, og søk etter privatpersoner. Det er ikke offentlig informasjon om makt, og å samle det er ulovlig etter personvernregelverket.</p>
+    <p class="meta" id="omMeta"></p>
+  </section>
+</main>
+
+<footer><span id="foot"></span></footer>
+<script src="app.js"></script>
+</body>
+</html>

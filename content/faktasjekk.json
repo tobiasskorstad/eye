@@ -1,0 +1,27 @@
+{
+  "oppdatert": "2026-11-24",
+  "om": "Faktasjekker av påstander fra norske politikere og om norsk politikk, hentet fra Faktisk.no. Faktisk.no er etablert av flere store norske mediehus. Noen medier, blant andre Document og Steigan.no, kritiserer Faktisk.no for å stole for mye på andre faktasjekkere som BBC Verify. Les sjekken og kildene selv.",
+  "kritikk": [
+    { "t": "Document: Britisk medieskandale stiller Faktisk.no i nytt lys", "u": "https://www.document.no/2026/10/27/britisk-medieskandale-stiller-faktisk-no-i-nytt-lys", "d": "2026-10-27" },
+    { "t": "Steigan.no: Avslørt: Faktisk.no sin faktasjekker var statlig propaganda", "u": "https://steigan.no/2026/11/avslort-faktisk-no-sin-faktasjekker-var-statlig-propaganda-stor-mediaskandale-i-england/", "d": "2026-11-17" }
+  ],
+  "sjekker": [
+    { "t": "Har Støre rett om antall politifolk på gata i Oslo?", "u": "https://www.faktisk.no/faktasjekk/har-store-rett-om-antall-politifolk-pa-gata-i-oslo/126329", "d": "2025-09-05", "p": ["A"] },
+    { "t": "Skapes det flere bedrifter med Støre ved roret?", "u": "https://www.faktisk.no/faktasjekk/skapes-det-flere-bedrifter-med-store-ved-roret/126154", "d": "2025-09-03", "p": ["A"] },
+    { "t": "Har Noreg meir ungdomskriminalitet enn før?", "u": "https://www.faktisk.no/faktasjekk/har-noreg-meir-ungdomskriminalitet-enn-for/126174", "d": "2025-09-04", "p": [] },
+    { "t": "Misvisende om regeleksplosjon", "u": "https://www.faktisk.no/faktasjekk/misvisende-om-regeleksplosjon/125998", "d": "2025-08-20", "p": [] },
+    { "t": "Ordkrig om sykehjemsplasser – dette viser tallene", "u": "https://www.faktisk.no/faktasjekk/ordkrig-om-sykehjemsplasser-dette-viser-tallene/125894", "d": "2025-07-09", "p": [] },
+    { "t": "Nei, 96 prosent av førsteklassingene er ikke på skolen til 16:30", "u": "https://www.faktisk.no/faktasjekk/nei-96-prosent-av-forsteklassingene-er-ikke-pa-skolen-til-1630/125878", "d": "2025-07-04", "p": [] },
+    { "t": "Skjøt barne- og ungdomskriminaliteten i været da Frp hadde justisminister?", "u": "https://www.faktisk.no/faktasjekk/skjot-barne-og-ungdomskriminaliteten-i-vaeret-da-frp-hadde-justisminister/122113", "d": "2024-10-29", "p": ["FrP"] },
+    { "t": "Utdaterte utslippsmål fra Simen Velle", "u": "https://www.faktisk.no/faktasjekk/utdaterte-utslippsmal-fra-simen-velle/109614", "d": "2024-08-16", "p": ["FrP"] },
+    { "t": "Riktig, men også litt misvisende om utslippskutt", "u": "https://www.faktisk.no/faktasjekk/riktig-men-ogsa-litt-misvisende-om-utslippskutt/102711", "d": "2024-08-16", "p": [] },
+    { "t": "Nei, statsbudsjettet viser ikke at Norge bruker mer penger enn Sverige", "u": "https://www.faktisk.no/faktasjekk/nei-statsbudsjettet-viser-ikke-at-norge-bruker-mer-penger-enn-sverige/109917", "d": "2024-08-08", "p": [] }
+  ],
+  "selv": [
+    { "t": "SSB – offisiell statistikk", "u": "https://www.ssb.no/" },
+    { "t": "Stortinget – saker, voteringer og referater", "u": "https://www.stortinget.no/" },
+    { "t": "Regjeringen – budsjett og pressemeldinger", "u": "https://www.regjeringen.no/" },
+    { "t": "Brønnøysundregistrene – selskaper og roller", "u": "https://www.brreg.no/" },
+    { "t": "Poll of polls – meningsmålinger", "u": "https://www.pollofpolls.no/" }
+  ]
+}

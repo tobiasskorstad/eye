@@ -1,0 +1,627 @@
+{
+ "oppdatert": "2026-11-24",
+ "metode": "Hver sak beskriver hva partiet selv sier, og de sterkeste argumentene tilhengere og kritikere bruker. Alle partier får samme oppsett: tre saker, to argumenter for og to mot. EYE tar ikke stilling.",
+ "naa": {
+  "tittel": "Budsjettforhandlingene på overtid",
+  "tekst": "Arbeiderpartiet styrer alene i mindretall og har siden 6. november forhandlet med Senterpartiet, SV, Rødt og MDG om statsbudsjettet for 2027. Fristen for innstilling er 30. november, og budsjettet skal vedtas 7. desember. Den største floken er Senterpartiets ultimatum om lavere drivstoffavgifter mot MDGs krav om klimakutt allerede i 2027.",
+  "kilder": [
+   {
+    "tittel": "Fakta om budsjettforhandlingene",
+    "kilde": "Adresseavisen/NTB",
+    "dato": "2026-11-23",
+    "url": "https://www.adressa.no/nyheter/innenriks/i/r8AjvA/fakta-om-budsjettforhandlingene"
+   },
+   {
+    "tittel": "Ingen enighet om statsbudsjettet på Stortinget søndag",
+    "kilde": "NTB via Document",
+    "dato": "2026-11-22",
+    "url": "https://www.document.no/2026/11/22/ingen-enighet-om-statsbudsjettet-pa-stortinget-sondag"
+   }
+  ]
+ },
+ "maling": {
+  "kilde": "Poll of polls, snitt av nasjonale målinger november 2026",
+  "url": "https://www.pollofpolls.no/?cmd=Stortinget&do=visallesnitt",
+  "snitt": {
+   "FrP": 32.5,
+   "A": 21.3,
+   "H": 13.7,
+   "R": 8.4,
+   "SV": 5.5,
+   "Sp": 5.0,
+   "MDG": 4.2,
+   "KrF": 3.9,
+   "V": 3.6
+  }
+ },
+ "partier": {
+  "A": {
+   "leder": "Jonas Gahr Støre",
+   "rolle": "Regjeringsparti (mindretall)",
+   "om": "Sosialdemokratisk parti. Styrer alene og trenger fire andre partier for å få flertall for budsjettet.",
+   "saker": [
+    {
+     "tittel": "Bred skattelette",
+     "standpunkt": "Regjeringen foreslår å kutte inntektsskatten med 6,4 milliarder kroner i 2027, gjennom lavere trygdeavgift og høyere personfradrag. Kuttet finansieres blant annet ved å trappe ned elbilfordelene.",
+     "for": [
+      "Treffer de fleste lønnsmottakere, pensjonister og trygdede, og gjør det mer lønnsomt å jobbe.",
+      "Finansieres uten mer oljepengebruk."
+     ],
+     "mot": [
+      "SV mener de med høyest lønn får mest igjen, og at de med dårligst råd får minst.",
+      "Høyre mener det samlede skatte- og avgiftskuttet er nesten null når andre økninger regnes med."
+     ],
+     "kilde": "https://www.regjeringen.no/no/aktuelt/foreslar-milliardkutt-i-inntektsskatten-storste-pa-over-20-ar/id3174677/"
+    },
+    {
+     "tittel": "Tannhelsereform",
+     "standpunkt": "Ap har sluttet seg til en tannhelsereform der pasienter på sikt maksimalt skal betale 25 prosent av kostnaden selv.",
+     "for": [
+      "Tannhelse blir en del av velferdsstaten på linje med annen helse.",
+      "Trinnvis innføring holder kostnadene under kontroll."
+     ],
+     "mot": [
+      "Rødt mener regjeringen ikke har satt av penger til reformen.",
+      "Kritikere på høyresiden peker på store langsiktige utgifter i en tid med økte forsvarsbudsjetter."
+     ],
+     "kilde": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156"
+    },
+    {
+     "tittel": "Beholde formuesskatten",
+     "standpunkt": "Støre har sagt at Ap ikke vil være med på et skatteforlik som fjerner formuesskatten.",
+     "for": [
+      "Skatten bidrar til at de med størst formue betaler en del av fellesskapet.",
+      "Fjerning ville gitt store skattekutt til få."
+     ],
+     "mot": [
+      "Høyre og Frp mener skatten rammer norske eiere og arbeidsplasser.",
+      "Kritikere peker på at formuende flytter ut av landet."
+     ],
+     "kilde": "https://www.vg.no/nyheter/i/9kvXOq/statsbudsjett-2027-regjeringen-foreslaar-skattekutt-paa-6-4-milliarder-kroner"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "Foreslår milliardkutt i inntektsskatten – største på over 20 år",
+     "kilde": "Regjeringen",
+     "dato": "2026-10-07",
+     "url": "https://www.regjeringen.no/no/aktuelt/foreslar-milliardkutt-i-inntektsskatten-storste-pa-over-20-ar/id3174677/"
+    },
+    {
+     "tittel": "Budsjettforhandlingene: Ekspert tror Senterpartiet vil vike",
+     "kilde": "ABC Nyheter",
+     "dato": "2026-11-24",
+     "url": "https://www.abcnyheter.no/nyheter/budsjettforhandlingene-ekspert-tror-senterpartiet-vil-vike/1743170"
+    },
+    {
+     "tittel": "Derfor blir det ingen regjeringskrise",
+     "kilde": "Børsen/Dagbladet",
+     "dato": "2026-11-23",
+     "url": "https://borsen.dagbladet.no/meninger/tom-trussel-om-regjeringskrise/85458702"
+    }
+   ]
+  },
+  "FrP": {
+   "leder": "Sylvi Listhaug",
+   "rolle": "Største opposisjonsparti",
+   "om": "Liberalistisk parti. Klart største parti på målingene høsten 2026.",
+   "saker": [
+    {
+     "tittel": "Lavere skatter, kutt i staten",
+     "standpunkt": "Vil at folk og bedrifter skal sitte igjen med mer, og vil finansiere det med kutt i klimasubsidier, bistand og byråkrati. Lokalt vil partiet ha lavere eiendomsskatt og færre bomringer.",
+     "for": [
+      "Bedre privatøkonomi i en tid med høye priser.",
+      "Mindre offentlig sløsing og byråkrati."
+     ],
+     "mot": [
+      "Kutt i bistand og klimatiltak svekker Norges internasjonale forpliktelser.",
+      "Kritikere mener kuttene ikke dekker skattelettene uten mer oljepengebruk."
+     ],
+     "kilde": "https://www.adressa.no/nyheter/innenriks/i/0vnG1g/listhaug-vi-maa-ta-problemene-rundt-kjoekkenbordet-paa-alvor"
+    },
+    {
+     "tittel": "Strengere innvandring",
+     "standpunkt": "Vil stramme inn innvandringspolitikken.",
+     "for": [
+      "Mindre press på velferd, bolig og integrering.",
+      "Bedre kontroll med hvem som kommer."
+     ],
+     "mot": [
+      "Kan bryte med internasjonale forpliktelser for flyktninger.",
+      "Næringslivet trenger arbeidskraft utenfra."
+     ],
+     "kilde": "https://www.adressa.no/nyheter/innenriks/i/0vnG1g/listhaug-vi-maa-ta-problemene-rundt-kjoekkenbordet-paa-alvor"
+    },
+    {
+     "tittel": "Kjernekraft nå",
+     "standpunkt": "Krever sammen med KrF at regelverk, konsesjonsprosess og tilsyn for kjernekraft kommer på plass nå, slik at private kan investere.",
+     "for": [
+      "Norge trenger mer og stabil kraft.",
+      "Private aktører vil bruke egne penger på utbygging."
+     ],
+     "mot": [
+      "Regjeringens utvalg mener kjernekraft blir dyr og kommer sent.",
+      "Avfall og sikkerhet er uløste spørsmål."
+     ],
+     "kilde": "https://www.frp.no/nyheter/vil-ha-fortgang-om-kjernekraft"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "Listhaug: – Vi må ta problemene rundt kjøkkenbordet på alvor",
+     "kilde": "Adresseavisen/NTB",
+     "dato": "2026-11-14",
+     "url": "https://www.adressa.no/nyheter/innenriks/i/0vnG1g/listhaug-vi-maa-ta-problemene-rundt-kjoekkenbordet-paa-alvor"
+    },
+    {
+     "tittel": "Listhaug sjokkert over TV 2s avsløringer om skolevold",
+     "kilde": "TV 2",
+     "dato": "2026-11-23",
+     "url": "https://tv2.no/nyheter/listhaug-sjokkert-over-tv-2s-avsloringer-om-skolevold/19459544"
+    },
+    {
+     "tittel": "Ny krisemåling for Høyre – Frp slår egen rekord",
+     "kilde": "TV 2",
+     "dato": "2026-11-02",
+     "url": "https://www.tv2.no/nyheter/ny-krisemaling-for-hoyre-stor-jobb-a-snu/19371215/"
+    }
+   ]
+  },
+  "H": {
+   "leder": "Ine Eriksen Søreide",
+   "rolle": "Opposisjon",
+   "om": "Konservativt parti. Fikk ny leder i februar 2026 og har falt på målingene siden.",
+   "saker": [
+    {
+     "tittel": "Skattekutt på 24 milliarder",
+     "standpunkt": "Høyres alternative budsjett kutter skatten med 24 milliarder, finansiert blant annet med kutt i bistand (3,7 mrd.), Nav (4,6 mrd.) og landbruk.",
+     "for": [
+      "Flere skal jobbe, og det skal lønne seg mer.",
+      "Mer kapital til norske bedrifter og eiere."
+     ],
+     "mot": [
+      "Kutt i Nav kan ramme folk som står utenfor arbeidslivet.",
+      "Bistandskutt rammer verdens fattigste."
+     ],
+     "kilde": "https://inyheter.no/21/11/2026/hoyre-vil-kutte-46-milliarder-i-nav-lover-store-skattelettelser/"
+    },
+    {
+     "tittel": "Løse læringskrisen i skolen",
+     "standpunkt": "Vil blant annet bruke én milliard på fysiske lærebøker og kritiserer regjeringens skolepolitikk.",
+     "for": [
+      "Forskning tyder på at lesing på papir gir bedre forståelse.",
+      "Konkret tiltak lærere har bedt om."
+     ],
+     "mot": [
+      "Kritikere mener pengene heller burde gå til flere lærere.",
+      "Skolen er kommunenes ansvar, ikke bare statens."
+     ],
+     "kilde": "https://hoyre.no/"
+    },
+    {
+     "tittel": "Mer politi",
+     "standpunkt": "Vil styrke politiet og PST med nesten 600 millioner kroner.",
+     "for": [
+      "Færre politifolk i gatene og flere henleggelser.",
+      "Mer usikker sikkerhetssituasjon."
+     ],
+     "mot": [
+      "Penger løser ikke alt – organiseringen av politiet er også et problem.",
+      "Må prioriteres mot andre velferdsområder."
+     ],
+     "kilde": "https://klassekampen.no/artikkel/2026-11-16/hoyre-lover-stor-satsing-pa-politiet"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "Eriksen Søreide innrømmer: Høyre har bommet",
+     "kilde": "Aftenposten/NTB",
+     "dato": "2026-11-08",
+     "url": "https://www.aftenposten.no/norge/politikk/i/WmLKya/eriksen-soereide-innroemmer-hoeyre-har-bommet"
+    },
+    {
+     "tittel": "Høyre vil kutte 4,6 milliarder i Nav",
+     "kilde": "iNyheter",
+     "dato": "2026-11-21",
+     "url": "https://inyheter.no/21/11/2026/hoyre-vil-kutte-46-milliarder-i-nav-lover-store-skattelettelser/"
+    },
+    {
+     "tittel": "Søreide kritiserer kunnskapsministeren etter avsløringer om skolevold",
+     "kilde": "iNyheter",
+     "dato": "2026-11-24",
+     "url": "https://inyheter.no/24/11/2026/soreide-kritiserer-kunnskapsministeren-etter-avsloringer-om-skolevold"
+    }
+   ]
+  },
+  "R": {
+   "leder": "Marie Sneve Martinussen",
+   "rolle": "Budsjettpartner",
+   "om": "Sosialistisk parti. Forhandler budsjett med Ap.",
+   "saker": [
+    {
+     "tittel": "Tannhelse som neste velferdsreform",
+     "standpunkt": "Tannhelse er Rødts viktigste krav i budsjettforhandlingene, og partiet krever milliarder allerede i 2027.",
+     "for": [
+      "Det skal ikke koste mer å gå til tannlegen enn til fastlegen.",
+      "Mange dropper tannlegen fordi de ikke har råd."
+     ],
+     "mot": [
+      "Svært dyr reform på sikt.",
+      "Andre mener pengene bør gå til eldreomsorg eller forsvar først."
+     ],
+     "kilde": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156"
+    },
+    {
+     "tittel": "Frys norgespris",
+     "standpunkt": "Vil holde norgespris for strøm på 40 øre og hente 1,2 milliarder fra Statkraft, i stedet for regjeringens økning.",
+     "for": [
+      "Forutsigbar og lav strømpris for husholdningene.",
+      "Statkraft tjener godt på norsk kraft."
+     ],
+     "mot": [
+      "Lavere pris gir mindre insentiv til å spare strøm.",
+      "Å hente utbytte fra Statkraft svekker selskapets investeringsevne."
+     ],
+     "kilde": "https://www.adressa.no/nyheter/innenriks/i/MAVKAo/roedt-forslag-foer-budsjettforhandlingene-frys-norgespris"
+    },
+    {
+     "tittel": "Lavere matmoms",
+     "standpunkt": "Vil kutte momsen på mat fra 15 til 10 prosent.",
+     "for": [
+      "Lavere matpriser for alle.",
+      "Hjelper mest for dem med lav inntekt, som bruker mer av lønna på mat."
+     ],
+     "mot": [
+      "Økonomer mener kuttet ikke alltid kommer forbrukerne til gode.",
+      "Dyrt for staten, og like stor lettelse til dem med høy inntekt."
+     ],
+     "kilde": "https://dinside.dagbladet.no/okonomi/slar-full-alarm-det-er-skremmende/85412607"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "Rødt med tannhelsekrav: – Ligner en rød linje for oss",
+     "kilde": "Dagsavisen/NTB",
+     "dato": "2026-11-18",
+     "url": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156"
+    },
+    {
+     "tittel": "Rødt-forslag før budsjettforhandlingene: Frys norgespris",
+     "kilde": "Adresseavisen/NTB",
+     "dato": "2026-10-30",
+     "url": "https://www.adressa.no/nyheter/innenriks/i/MAVKAo/roedt-forslag-foer-budsjettforhandlingene-frys-norgespris"
+    }
+   ]
+  },
+  "SV": {
+   "leder": "Kirsti Bergstø",
+   "rolle": "Budsjettpartner",
+   "om": "Sosialistisk og miljøorientert parti. Forhandler budsjett med Ap.",
+   "saker": [
+    {
+     "tittel": "Mer skatt for de rikeste",
+     "standpunkt": "Vil gi skattekutt til lave og middels inntekter og øke skatten for de største formuene, med nye trinn over 100 millioner og 1 milliard. Samlet øker skattene med rundt 32 milliarder i helårseffekt.",
+     "for": [
+      "De aller rikeste betaler i dag lavere skatt enn mange vanlige arbeidstakere.",
+      "Nesten to av tre ville fått lavere skatt."
+     ],
+     "mot": [
+      "Øker det samlede skattenivået kraftig.",
+      "Kan få formuende og selskaper til å flytte ut."
+     ],
+     "kilde": "https://www.nrk.no/nyheter/sv-med-32-milliarder-i-okt-skatt-1.18070992"
+    },
+    {
+     "tittel": "Halv pris på barnehage",
+     "standpunkt": "Krever at makspris for barnehage halveres fra 1200 til 600 kroner fra høsten 2027.",
+     "for": [
+      "Billigere hverdag for barnefamilier.",
+      "Flere barn i barnehage gir bedre integrering og språk."
+     ],
+     "mot": [
+      "Koster 1,8 milliarder i året.",
+      "Gir like stor støtte til familier med høy inntekt."
+     ],
+     "kilde": "https://www.varingen.no/sv-krever-halv-pris-pa-barnehageplass/s/80-92-23946"
+    },
+    {
+     "tittel": "Klimakutt",
+     "standpunkt": "Vil ha klimakutt i budsjettet, men er mer åpen enn MDG for å få dem på lengre sikt, for eksempel gjennom karbonfangst.",
+     "for": [
+      "Norge må nå klimamålene.",
+      "Karbonfangst kan gi store kutt."
+     ],
+     "mot": [
+      "Høyere avgifter rammer folk med lange reiseveier.",
+      "Utsatte kutt kan bli kutt som aldri kommer."
+     ],
+     "kilde": "https://www.nettavisen.no/nyheter/nettavisen-erfarer-felles-front-mot-arbeiderpartiet-i-budsjettforhandlingene/s/80-95-273821"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "SV med 32 milliarder i økt skatt",
+     "kilde": "NRK",
+     "dato": "2026-11-02",
+     "url": "https://www.nrk.no/nyheter/sv-med-32-milliarder-i-okt-skatt-1.18070992"
+    },
+    {
+     "tittel": "SV knallhardt ut mot Ap-budsjettet",
+     "kilde": "VG",
+     "dato": "2026-10-14",
+     "url": "https://www.vg.no/nyheter/i/R56r4x/sv-knallhardt-ut-mot-ap-budsjettet-vedum-bedre-enn-stoltenberg"
+    },
+    {
+     "tittel": "SV krever halv pris på barnehageplass",
+     "kilde": "Varingen",
+     "dato": "2026-11-22",
+     "url": "https://www.varingen.no/sv-krever-halv-pris-pa-barnehageplass/s/80-92-23946"
+    }
+   ]
+  },
+  "Sp": {
+   "leder": "Trygve Slagsvold Vedum",
+   "rolle": "Budsjettpartner",
+   "om": "Distrikts- og bondeparti. Forhandler budsjett med Ap.",
+   "saker": [
+    {
+     "tittel": "Billigere diesel og bensin",
+     "standpunkt": "Har stilt ultimatum: Sp stemmer ikke for et budsjett uten kutt i drivstoffavgiftene. Kravet er et kutt på 4,51 kroner, verdt rundt 9 milliarder.",
+     "for": [
+      "Høye drivstoffpriser rammer folk i distriktene som må kjøre bil.",
+      "Gir lavere kostnader for næringsliv og landbruk."
+     ],
+     "mot": [
+      "MDG og SV mener kuttet går imot klimamålene.",
+      "Kritikere mener ultimatum låser forhandlingene."
+     ],
+     "kilde": "https://www.dagbladet.no/nyheter/ap-styrker-laget-tre-mot-en/85384449"
+    },
+    {
+     "tittel": "Gratis hurtigbåt",
+     "standpunkt": "Vil bruke 250 millioner på å gjøre hurtigbåtene gratis.",
+     "for": [
+      "Binder kysten sammen.",
+      "Likebehandling med byer som får billig kollektivtrafikk."
+     ],
+     "mot": [
+      "Gratis tilbud koster mye per reisende.",
+      "Pengene kunne gått til flere avganger i stedet."
+     ],
+     "kilde": "https://www.nrk.no/nordland/vedum-vil-kutte-hurtigbatpriser-med-250-millioner-1.18071624"
+    },
+    {
+     "tittel": "Nasjonal selvråderett",
+     "standpunkt": "Vil skjerpe kravene i Grunnloven for å overføre myndighet til internasjonale organer, og kritiserer Frp for å stemme imot.",
+     "for": [
+      "Viktige beslutninger skal tas i Norge.",
+      "Vern om kontroll over naturressurser og kraft."
+     ],
+     "mot": [
+      "Kan gjøre internasjonalt samarbeid vanskeligere.",
+      "Frp stemte imot forslaget i Stortinget."
+     ],
+     "kilde": "https://inyheter.no/12/11/2026/vedum-anklager-frp-for-a-svekke-norsk-selvraderett/"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "Vedums ultimatum kan ende med regjeringskrise",
+     "kilde": "Aftenposten",
+     "dato": "2026-11-03",
+     "url": "https://www.aftenposten.no/norge/politikk/i/581eKb/trygve-slagsvold-vedum-det-blir-kamp-i-hoest"
+    },
+    {
+     "tittel": "Vedum vil kutte hurtigbåtpriser med 250 millioner",
+     "kilde": "NRK",
+     "dato": "2026-11-02",
+     "url": "https://www.nrk.no/nordland/vedum-vil-kutte-hurtigbatpriser-med-250-millioner-1.18071624"
+    },
+    {
+     "tittel": "Vedum anklager Frp for å svekke norsk selvråderett",
+     "kilde": "iNyheter",
+     "dato": "2026-11-12",
+     "url": "https://inyheter.no/12/11/2026/vedum-anklager-frp-for-a-svekke-norsk-selvraderett/"
+    }
+   ]
+  },
+  "MDG": {
+   "leder": "Arild Hermstad (sykmeldt), Ingrid Liland fungerende",
+   "rolle": "Budsjettpartner",
+   "om": "Grønt parti. Forhandler budsjett med Ap.",
+   "saker": [
+    {
+     "tittel": "Klimakutt allerede i 2027",
+     "standpunkt": "Krever reelle kutt i klimagassutslippene neste år, ikke bare på lang sikt.",
+     "for": [
+      "Utsatte kutt blir dyrere og vanskeligere.",
+      "Norge ligger etter egne klimamål."
+     ],
+     "mot": [
+      "Raske kutt kan gi høyere priser for folk og bedrifter.",
+      "Senterpartiet mener folk i distriktene må skjermes."
+     ],
+     "kilde": "https://www.nrk.no/artikkel/mdg-advarsel-om-statsbudsjettet-lenger-unna-enn-noen-gang-1533737"
+    },
+    {
+     "tittel": "Månedskort til 499 kroner",
+     "standpunkt": "Vil innføre et nasjonalt månedskort for lokal kollektivtransport til 499 kroner, og 249 for studenter.",
+     "for": [
+      "Flere velger buss og tog, og utslippene går ned.",
+      "Billigere hverdag for dem som reiser mye."
+     ],
+     "mot": [
+      "Dyrt – rundt tre milliarder.",
+      "Hjelper lite der det knapt finnes kollektivtilbud."
+     ],
+     "kilde": "https://www.vg.no/nyheter/i/Gx75q9/mdg-vil-ha-landsdekkende-maanedskort-for-kollektivtransport"
+    },
+    {
+     "tittel": "Mindre olje",
+     "standpunkt": "Vil bruke 2,9 milliarder mindre oljepenger enn regjeringen og kutte i petroleumsforskning.",
+     "for": [
+      "Norge må forberede seg på en framtid etter oljen.",
+      "Mindre oljepengebruk demper prisveksten."
+     ],
+     "mot": [
+      "Oljenæringen gir arbeidsplasser og store inntekter.",
+      "Kutt i forskning kan svekke norsk teknologi."
+     ],
+     "kilde": "https://www.universitetsavisa.no/alternativt-budsjett-eva-franko-aas-ingrid-liland/kutter-oljeforskning-og-vil-ha-kjempebillig-buss/469578"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "MDG-advarsel om statsbudsjettet: – Lenger unna enn noen gang",
+     "kilde": "NRK",
+     "dato": "2026-11-23",
+     "url": "https://www.nrk.no/artikkel/mdg-advarsel-om-statsbudsjettet-lenger-unna-enn-noen-gang-1533737"
+    },
+    {
+     "tittel": "MDG frustrert over ultimatum i budsjettforhandlingene",
+     "kilde": "Bergens Tidende/NTB",
+     "dato": "2026-11-23",
+     "url": "https://www.bt.no/politikk/i/kMJV0v/mdg-frustrert-over-ultimatum-i-budsjettforhandlingene"
+    },
+    {
+     "tittel": "MDG vil fjerne alkohol og tobakk fra taxfree-hyllene",
+     "kilde": "TV 2",
+     "dato": "2026-11-05",
+     "url": "https://www.tv2.no/nyheter/mdg-vil-fjerne-alkohol-og-tobakk-fra-taxfree-hyllene/19388765/"
+    }
+   ]
+  },
+  "KrF": {
+   "leder": "Dag-Inge Ulstein",
+   "rolle": "Opposisjon",
+   "om": "Kristendemokratisk parti. Har tatt til orde for en «sunn fornuft-allianse» med Høyre, Frp og Sp.",
+   "saker": [
+    {
+     "tittel": "Mer bistand",
+     "standpunkt": "Vil øke bistanden med 4,6 milliarder sammenlignet med regjeringen. Det er partiets største satsing i budsjettet.",
+     "for": [
+      "Norge har råd og ansvar for å hjelpe verdens fattigste.",
+      "Partiet vil samtidig ha mer kontroll med hvordan pengene brukes."
+     ],
+     "mot": [
+      "Frp og Høyre vil kutte i bistanden.",
+      "Kritikere mener effekten av bistand er usikker."
+     ],
+     "kilde": "https://www.panoramanyheter.no/bistandsbudsjettet-statsbudsjett-2027-statsbudsjettet/ingen-motsetning-mellom-en-ambisios-bistandspolitikk-og-a-onske-kontroll-og-effektivitet/436171"
+    },
+    {
+     "tittel": "Kjernekraft",
+     "standpunkt": "Krever sammen med Frp at regelverk og tilsyn for kjernekraft kommer på plass nå.",
+     "for": [
+      "Stabil kraft uten utslipp.",
+      "Gjør Norge klar når teknologien er moden."
+     ],
+     "mot": [
+      "Regjeringens utvalg mener kjernekraft blir dyr og sen.",
+      "Avfall og sikkerhet er uløste spørsmål."
+     ],
+     "kilde": "https://www.tv2.no/nyheter/sammen-for-forste-gang-na-kan-vi-ikke-vente-lenger/19321653/"
+    },
+    {
+     "tittel": "Ny borgerlig allianse",
+     "standpunkt": "Vil samarbeide tettere med Høyre, Frp og Sp, uten Venstre, og avviser at partiet har dreid mot høyre.",
+     "for": [
+      "Partiene finner allerede sammen i mange enkeltsaker.",
+      "Kan gi et nytt flertall etter neste valg."
+     ],
+     "mot": [
+      "Sp mener utspillet er en avsporing.",
+      "Kritikere i egne rekker frykter at KrF mister sin profil."
+     ],
+     "kilde": "https://www.minerva.no/alternativt-statsbudsjett-dag-inge-ulstein-fremskrittspartiet/krf-avviser-hoyresving-krfs-politikk-ligger-fast/524748"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "KrF avviser høyresving: – KrFs politikk ligger fast",
+     "kilde": "Minerva",
+     "dato": "2026-11-20",
+     "url": "https://www.minerva.no/alternativt-statsbudsjett-dag-inge-ulstein-fremskrittspartiet/krf-avviser-hoyresving-krfs-politikk-ligger-fast/524748"
+    },
+    {
+     "tittel": "KrF vil øke bistanden med 4,6 milliarder kroner",
+     "kilde": "Panorama",
+     "dato": "2026-11-20",
+     "url": "https://www.panoramanyheter.no/bistandsbudsjettet-statsbudsjett-2027-statsbudsjettet/ingen-motsetning-mellom-en-ambisios-bistandspolitikk-og-a-onske-kontroll-og-effektivitet/436171"
+    },
+    {
+     "tittel": "Listhaug og Ulstein: – Nå kan vi ikke vente lenger",
+     "kilde": "TV 2",
+     "dato": "2026-10-14",
+     "url": "https://www.tv2.no/nyheter/sammen-for-forste-gang-na-kan-vi-ikke-vente-lenger/19321653/"
+    }
+   ]
+  },
+  "V": {
+   "leder": "Guri Melby",
+   "rolle": "Opposisjon",
+   "om": "Sosialliberalt parti. Fikk tre mandater i 2025.",
+   "saker": [
+    {
+     "tittel": "Mindre oljepenger, dyrere fossil",
+     "standpunkt": "Vil bruke mindre oljepenger enn regjeringen, og finansierer satsinger blant annet med kutt i sykelønnen og høyere avgifter på fossil energi.",
+     "for": [
+      "Mindre press på renter og priser.",
+      "Avgifter er et effektivt klimatiltak."
+     ],
+     "mot": [
+      "Kutt i sykelønn rammer syke arbeidstakere.",
+      "Høyere drivstoffpriser rammer folk med lange reiser."
+     ],
+     "kilde": "https://www.minerva.no/guri-melby-klima-og-miljo-statsbudsjettet-2027/ikke-krise-i-norge-men-mye-kunne-vaert-bedre/524364"
+    },
+    {
+     "tittel": "Bistand på én prosent",
+     "standpunkt": "Vil øke bistanden med 4,35 milliarder og bruke én prosent av BNI på bistand.",
+     "for": [
+      "Stabilitet og fattigdomsbekjempelse i verden.",
+      "Mer til Ukraina og klimainvesteringer."
+     ],
+     "mot": [
+      "Frp og Høyre vil kutte bistanden.",
+      "Pengene trengs også hjemme."
+     ],
+     "kilde": "https://www.panoramanyheter.no/bistandspolitikk-statsbudsjett-2027-statsbudsjettet/venstre-vil-oke-bistanden-med-435-milliarder/435968"
+    },
+    {
+     "tittel": "Boliger for unge",
+     "standpunkt": "Vil øke Husbankens låneramme med 20 milliarder til 54 milliarder.",
+     "for": [
+      "Hjelper førstegangskjøpere inn på boligmarkedet.",
+      "Flere boliger bygges."
+     ],
+     "mot": [
+      "Statlige lån kan presse boligprisene videre opp.",
+      "Øker statens risiko."
+     ],
+     "kilde": "https://www.bygg.no/boligbygging-husbanken-politikk/vil-oke-husbankens-laneramme-med-20-milliarder/2974215"
+    }
+   ],
+   "nyheter": [
+    {
+     "tittel": "Venstres alternative statsbudsjett: Kutt i sykelønn og dyrere fossil",
+     "kilde": "Minerva",
+     "dato": "2026-11-18",
+     "url": "https://www.minerva.no/guri-melby-klima-og-miljo-statsbudsjettet-2027/ikke-krise-i-norge-men-mye-kunne-vaert-bedre/524364"
+    },
+    {
+     "tittel": "Venstre vil øke bistanden med 4,35 milliarder",
+     "kilde": "Panorama",
+     "dato": "2026-11-18",
+     "url": "https://www.panoramanyheter.no/bistandspolitikk-statsbudsjett-2027-statsbudsjettet/venstre-vil-oke-bistanden-med-435-milliarder/435968"
+    },
+    {
+     "tittel": "Vil øke Husbankens låneramme med 20 milliarder",
+     "kilde": "Bygg.no",
+     "dato": "2026-11-17",
+     "url": "https://www.bygg.no/boligbygging-husbanken-politikk/vil-oke-husbankens-laneramme-med-20-milliarder/2974215"
+    }
+   ]
+  }
+ }
+}

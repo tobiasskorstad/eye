@@ -1,0 +1,21 @@
+{
+  "name": "eye",
+  "version": "0.1.0",
+  "description": "EYE – åpen innsikt i Stortinget, politikernes verv og selskaper",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "build-data": "node src/build.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "pdfjs-dist": "4.10.38"
+  },
+  "devDependencies": {
+    "pdfkit": "0.15.2"
+  }
+}
