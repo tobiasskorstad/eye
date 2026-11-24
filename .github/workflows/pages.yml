@@ -24,7 +24,7 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci --ignore-scripts --omit=dev
       # Forrige natts data og voteringscache: gir reserve hvis en kilde er nede, og sparer kall mot Stortinget.
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         with:
           path: |
             data/eye.json
@@ -34,7 +34,7 @@ jobs:
       - run: node src/build.js
         env:
           DATA_DIR: data/
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v6
         if: always()
         with:
           # internal.json (med fødselsdatoer for matching) caches aldri
