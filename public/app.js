@@ -29,13 +29,14 @@ const tc = s => String(s || '').toLowerCase().replace(/(^|[\s\-/(])([a-zæøå])
 const brSum = e => ({ nr: String(e.organisasjonsnummer).replace(/\D/g, ''), navn: tc(e.navn), form: e.organisasjonsform?.kode || '', formNavn: e.organisasjonsform?.beskrivelse || '',
   kommune: tc(e.forretningsadresse?.kommune || e.postadresse?.kommune || ''), nar: e.naeringskode1?.beskrivelse || '', ans: e.harRegistrertAntallAnsatte ? num(e.antallAnsatte) : -1,
   ar: String(e.stiftelsesdato || e.registreringsdatoEnhetsregisteret || '').slice(0, 4), flag: (e.konkurs ? 'K' : '') + (e.underAvvikling || e.underTvangsavviklingEllerTvangsopplosning ? 'V' : '') });
-async function brGet(p) { const r = await fetch(BRREG + p, { headers: { accept: 'application/json' }, credentials: 'omit', referrerPolicy: 'no-referrer' }); if (r.status === 404) return null; if (!r.ok) throw new Error('Brønnøysund svarte ikke – prøv igjen'); return r.json(); }
+async function brGet(p) { if (!/^(enheter|underenheter)(\/\d{9}(\/roller)?|\?size=15&navn=[^/#]*)$/.test(p)) throw new Error('ugyldig oppslag'); const r = await fetch(BRREG + p, { headers: { accept: 'application/json' }, credentials: 'omit', referrerPolicy: 'no-referrer' }); if (r.status === 404) return null; if (!r.ok) throw new Error('Brønnøysund svarte ikke – prøv igjen'); return r.json(); }
 async function brSearch(q) {
   const nr = q.replace(/\s/g, '');
   if (/^\d{9}$/.test(nr)) { const e = await brGet('enheter/' + nr); return e ? [brSum(e)] : []; }
   return ((await brGet('enheter?size=15&navn=' + encodeURIComponent(q)))?._embedded?.enheter || []).map(brSum);
 }
 async function brEnhet(nr) {
+  if (!/^\d{9}$/.test(nr)) return null;
   const e = await brGet('enheter/' + nr) || await brGet('underenheter/' + nr); if (!e) return null;
   const roller = await brGet('enheter/' + nr + '/roller').catch(() => null), m = new Map();
   for (const g of roller?.rollegrupper || []) for (const r of g.roller || []) {

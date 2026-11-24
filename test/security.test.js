@@ -46,3 +46,17 @@ test('publisering: stopper fødselsdatoer og ufullstendige data', () => {
   assert.equal(run({ reps: [...reps.slice(1), { ...reps[0], fodselsdato: '1980-01-01' }] }), false);
   assert.equal(run({ reps: [...reps.slice(1), { ...reps[0], fodt: '01.01.1980' }] }), false);
 });
+
+test('server henter bare fra kjente kilder (SSRF-vern)', async () => {
+  const { checkUrl } = await import('../src/http.js');
+  for (const u of ['http://169.254.169.254/latest/meta-data/', 'file:///etc/passwd', 'https://evil.example/', 'http://data.brreg.no/x', 'gopher://data.brreg.no/'])
+    assert.throws(() => checkUrl(u), u);
+  assert.ok(checkUrl('https://data.brreg.no/enhetsregisteret/api/enheter/923609016'));
+});
+
+test('RSS-tekst: tagger fjernes, ingen dobbel dekoding', async () => {
+  const { parseRss } = await import('../src/news.js');
+  const [i] = parseRss('<rss><channel><title>T</title><item><title><![CDATA[<scr<script>ipt>x</script> &amp;lt;b&amp;gt; Ap]]></title><link>https://www.nrk.no/a</link></item></channel></rss>', 'x');
+  assert.equal(/[<>]/.test(i.tittel), false);
+  assert.match(i.tittel, /&lt;b&gt;/, '&amp;lt; skal bli &lt;, ikke <');
+});

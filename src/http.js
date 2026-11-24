@@ -2,12 +2,30 @@ import { config } from './config.js';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// Vern mot SSRF: serveren henter bare fra kjente kilder, over https (http kun mot lokal testserver), og følger
+// bare omdirigeringer til de samme kildene.
+const ALLOWED = new Set();
+export function allowHosts(urls) { for (const u of urls) { try { ALLOWED.add(new URL(u).host); } catch { } } }
+allowHosts([config.stortingetApi, config.registerPage, config.brregApi, config.faktiskUrl, 'https://www.stortinget.no/', 'https://stortinget.no/']);
+export function checkUrl(url) {
+  const u = new URL(url);
+  const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(u.host);
+  if (!(u.protocol === 'https:' || (u.protocol === 'http:' && local))) throw Object.assign(new Error('ulovlig protokoll'), { fatal: true });
+  if (!ALLOWED.has(u.host)) throw Object.assign(new Error('ukjent kilde: ' + u.host), { fatal: true });
+  return u.href;
+}
+async function safeFetch(url, init, hops = 4) {
+  const res = await fetch(checkUrl(url), { ...init, redirect: 'manual' });
+  if (res.status >= 300 && res.status < 400 && res.headers.get('location') && hops > 0) return safeFetch(new URL(res.headers.get('location'), url).href, init, hops - 1);
+  return res;
+}
+
 /** Henter URL med retry og eksponentiell backoff. Returnerer null ved 404/410. */
 export async function fetchRaw(url, { retries = 3, accept = 'application/json' } = {}) {
   let lastErr;
   for (let i = 0; i <= retries; i++) {
     try {
-      const res = await fetch(url, { headers: { accept, 'user-agent': config.userAgent } });
+      const res = await safeFetch(url, { headers: { accept, 'user-agent': config.userAgent } });
       if (res.status === 404 || res.status === 410) return null;
       if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status} ${url}`);
       if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status} ${url}`), { fatal: true });

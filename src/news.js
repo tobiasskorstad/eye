@@ -1,5 +1,6 @@
 // Automatiske nyhetsoverskrifter fra RSS. Bare tittel, kilde, dato og lenke lagres.
 import { config } from './config.js';
+import { allowHosts } from './http.js';
 import { getText } from './http.js';
 
 // Verifisert 24.11.2026. Bredt spekter: riksmedier, regionale og alternative medier fra både høyre og venstre.
@@ -25,8 +26,13 @@ const PATTERNS = {
   MDG: ['\\bMDG\\b', 'Miljøpartiet'], KrF: ['\\bKrF\\b', 'Kristelig Folkeparti'], V: ['\\bVenstre\\b(?!side)', 'Venstre-leder'],
 };
 
-const decode = s => s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-  .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n)).replace(/<[^>]+>/g, '').trim();
+// Fjern tagger først (gjentatt til ingenting er igjen), dekod så entiteter i én omgang – ingen dobbel dekoding.
+const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", '#39': "'", nbsp: ' ' };
+const decode = s => {
+  let t = s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1'), prev;
+  do { prev = t; t = t.replace(/<[^<>]*>/g, ''); } while (t !== prev);
+  return t.replace(/[<>]/g, '').replace(/&(#\d+|#x[0-9a-f]+|\w+);/gi, (m, e) => e[0] === '#' ? String.fromCodePoint(parseInt(e[1] === 'x' || e[1] === 'X' ? e.slice(2) : e.slice(1), e[1] === 'x' || e[1] === 'X' ? 16 : 10) || 32) : ENT[e.toLowerCase()] ?? m).trim();
+};
 
 const NAMES = { 'nrk.no': 'NRK', 'vg.no': 'VG', 'aftenposten.no': 'Aftenposten', 'dagbladet.no': 'Dagbladet', 'dagsavisen.no': 'Dagsavisen', 'tv2.no': 'TV 2',
   'e24.no': 'E24', 'document.no': 'Document', 'inyheter.no': 'iNyheter', 'steigan.no': 'Steigan', 'faktisk.no': 'Faktisk.no', 'example.no': 'Testnytt' };
@@ -58,6 +64,7 @@ export function matchParties(items, leaders = {}) {
 
 export async function fetchNews(leaders, days = 30, perParty = 12) {
   const all = [];
+  allowHosts(feeds());
   for (const f of feeds()) {
     try { const xml = await getText(f); if (xml) all.push(...parseRss(xml, new URL(f).hostname)); } catch { /* én feed kan feile uten å stoppe resten */ }
   }
