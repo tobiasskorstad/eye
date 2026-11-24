@@ -45,7 +45,7 @@ jobs:
             data/bio-cache.json
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with: { path: site }
   deploy:
     needs: build
