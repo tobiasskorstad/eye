@@ -116,9 +116,10 @@ export async function buildData() {
   } else warnings.push('Fant ikke content/partier.json');
 
   // 5. Voteringer (sakte pga. API-kvote, cache på disk)
-  let stemmer = previous?.stemmer || null;
+  let stemmer = previous?.stemmer?.antall ? previous.stemmer : await readJson(path.join(config.contentDir, 'stemmer-snapshot.json'));
   try {
-    const fresh = await fetchVotes(sessions, config.maxNewVotes); log('voteringer', fresh.antall);
+    const { diag, ...fresh } = await fetchVotes(sessions, config.maxNewVotes); log('voteringer', fresh.antall, diag);
+    if (!fresh.antall) warnings.push(`Voteringer: ingen hentet (saker ${diag.saker}, voteringer ${diag.voteringer}, nye resultater ${diag.nye})`);
     if (fresh.antall >= Math.min(20, (previous?.stemmer?.antall || 0) / 2)) stemmer = fresh;
     else warnings.push(`Voteringer: fikk bare ${fresh.antall}, beholder forrige (${previous?.stemmer?.antall || 0})`);
   } catch (e) { warnings.push('Voteringer feilet: ' + e.message); }

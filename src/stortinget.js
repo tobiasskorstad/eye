@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { config } from './config.js';
 import { getJson, mapLimit } from './http.js';
 
@@ -49,9 +51,20 @@ export async function fetchQuestions(sessions) {
   return out;
 }
 
+/** Biografier endres sjelden: caches på disk og hentes bare for nye representanter (eller én gang i uken). */
 export async function fetchBiographies(ids) {
-  const bios = await mapLimit(ids, id => getJson(api(`kodetbiografi?personid=${encodeURIComponent(id)}`)).catch(() => null));
-  return Object.fromEntries(ids.map((id, i) => [id, bios[i]]));
+  const file = path.join(config.dataDir, 'bio-cache.json');
+  let cache = {};
+  try { cache = JSON.parse(await fs.readFile(file, 'utf8')); } catch { }
+  const week = 7 * 864e5, now = Date.now();
+  const todo = ids.filter(id => !cache[id] || now - cache[id].t > week);
+  for (const id of todo) {
+    const b = await getJson(api(`kodetbiografi?personid=${encodeURIComponent(id)}`)).catch(() => null);
+    if (b && !b.feilmelding) cache[id] = { t: now, b };
+  }
+  await fs.mkdir(config.dataDir, { recursive: true });
+  await fs.writeFile(file, JSON.stringify(cache));
+  return Object.fromEntries(ids.map(id => [id, cache[id]?.b || null]));
 }
 
 const cut = (s, n) => (s && s.length > n ? s.slice(0, n).replace(/\s\S*$/, '') + '…' : s || '');

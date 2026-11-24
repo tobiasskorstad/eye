@@ -15,8 +15,20 @@ export function checkUrl(url) {
   if (!origin || origin !== u.origin) throw Object.assign(new Error('ukjent kilde: ' + u.host), { fatal: true });
   return new URL(u.pathname + u.search, origin).href;
 }
+// Stortingets API har kvote per IP: alle kall dit går etter hverandre med fast mellomrom.
+const gate = new Map();
+function throttle(host) {
+  const gap = /stortinget\.no$/.test(host) ? config.stortingetDelayMs : 0;
+  if (!gap) return Promise.resolve();
+  const prev = gate.get(host) || Promise.resolve();
+  const next = prev.then(() => new Promise(r => setTimeout(r, gap)));
+  gate.set(host, next);
+  return prev;
+}
 async function safeFetch(url, init, hops = 4) {
-  const res = await fetch(checkUrl(url), { ...init, redirect: 'manual' });
+  const safe = checkUrl(url);
+  await throttle(new URL(safe).host);
+  const res = await fetch(safe, { ...init, redirect: 'manual' });
   if (res.status >= 300 && res.status < 400 && res.headers.get('location') && hops > 0) return safeFetch(new URL(res.headers.get('location'), url).href, init, hops - 1);
   return res;
 }
@@ -41,8 +53,15 @@ export async function fetchRaw(url, { retries = 3, accept = 'application/json' }
 }
 
 export async function getJson(url, opts) {
-  const res = await fetchRaw(url, opts);
-  return res ? res.json() : null;
+  for (let i = 0; i < 3; i++) {
+    const res = await fetchRaw(url, opts);
+    if (!res) return null;
+    const d = await res.json();
+    // Stortinget svarer 200 med feilmelding når kvoten er brukt opp: vent og prøv igjen.
+    if (d && typeof d.feilmelding === 'string' && /grensen/i.test(d.feilmelding)) { await sleep(60_000 * (i + 1)); continue; }
+    return d;
+  }
+  throw new Error('kvote brukt opp: ' + new URL(url).host);
 }
 
 export async function getText(url, opts) {

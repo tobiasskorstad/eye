@@ -29,6 +29,7 @@ jobs:
           path: |
             data/eye.json
             data/votes-cache.json
+            data/bio-cache.json
           key: eye-data-${{ github.run_id }}
           restore-keys: eye-data-
       - run: node src/build.js
@@ -41,6 +42,7 @@ jobs:
           path: |
             data/eye.json
             data/votes-cache.json
+            data/bio-cache.json
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
       - uses: actions/upload-pages-artifact@v3

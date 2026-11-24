@@ -30,6 +30,7 @@ export async function fetchVotes(sessions, max = 150) {
   let cache = {};
   try { cache = JSON.parse(await fs.readFile(cacheFile, 'utf8')); } catch { }
 
+  const diag = {};
   let saker = [];
   for (const s of sessions) {
     const d = await slowGet(api(`saker?sesjonid=${encodeURIComponent(s)}`));
@@ -38,6 +39,7 @@ export async function fetchVotes(sessions, max = 150) {
   // Fikk vi ingen saker (kvote/feil), bruk sakene vi allerede har i cachen.
   if (!saker.length) saker = Object.values(cache.saker || {});
   cache.saker = Object.fromEntries([...Object.values(cache.saker || {}), ...saker].map(x => [x.id, { id: x.id, status: 1, korttittel: x.korttittel, tittel: x.tittel, sist_oppdatert_dato: x.sist_oppdatert_dato }]));
+  diag.saker = saker.length;
   const newest = saker.sort((a, b) => (parseMsDate(b.sist_oppdatert_dato) || 0) - (parseMsDate(a.sist_oppdatert_dato) || 0)).slice(0, 250);
   const votes = [];
   for (const s of newest) {
@@ -45,6 +47,7 @@ export async function fetchVotes(sessions, max = 150) {
     cache[`sak:${s.id}`] = v.filter(x => x.personlig_votering).map(x => ({ id: x.votering_id, tid: x.votering_tid, tema: x.votering_tema, vedtatt: x.vedtatt, for: x.antall_for, mot: x.antall_mot, borte: x.antall_ikke_tilstede }));
     for (const x of cache[`sak:${s.id}`]) votes.push({ ...x, sak: s.id, tittel: s.korttittel || s.tittel });
   }
+  diag.voteringer = votes.length;
   votes.sort((a, b) => (parseMsDate(b.tid) || 0) - (parseMsDate(a.tid) || 0));
   let fetched = 0;
   for (const v of votes) {
@@ -55,9 +58,10 @@ export async function fetchVotes(sessions, max = 150) {
       fetched++;
     }
   }
+  diag.nye = fetched;
   await fs.mkdir(config.dataDir, { recursive: true });
   await fs.writeFile(cacheFile, JSON.stringify(cache));
-  return summarize(votes.filter(v => cache[`v:${v.id}`]).map(v => ({ ...v, res: cache[`v:${v.id}`] })));
+  return { ...summarize(votes.filter(v => cache[`v:${v.id}`]).map(v => ({ ...v, res: cache[`v:${v.id}`] }))), diag };
 }
 
 /** Partienes standpunkt per votering, enighet mellom partier og oppmøte per representant. */
