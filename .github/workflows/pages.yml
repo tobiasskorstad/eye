@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { persist-credentials: false }
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm }
       - run: npm ci --ignore-scripts --omit=dev
       # Forrige natts data og voteringscache: gir reserve hvis en kilde er nede, og sparer kall mot Stortinget.
