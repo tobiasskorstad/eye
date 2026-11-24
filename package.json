@@ -16,6 +16,6 @@
     "pdfjs-dist": "4.10.38"
   },
   "devDependencies": {
-    "pdfkit": "0.15.2"
+    "pdfkit": "0.21.0"
   }
 }
