@@ -4,15 +4,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Vern mot SSRF: serveren henter bare fra kjente kilder, over https (http kun mot lokal testserver), og følger
 // bare omdirigeringer til de samme kildene.
-const ALLOWED = new Set();
-export function allowHosts(urls) { for (const u of urls) { try { ALLOWED.add(new URL(u).host); } catch { } } }
+const ALLOWED = new Map(); // host -> fast opprinnelse; URL-en som hentes bygges på denne, ikke på inndata
+export function allowHosts(urls) { for (const u of urls) { try { const x = new URL(u); ALLOWED.set(x.host, x.origin); } catch { } } }
 allowHosts([config.stortingetApi, config.registerPage, config.brregApi, config.faktiskUrl, 'https://www.stortinget.no/', 'https://stortinget.no/']);
 export function checkUrl(url) {
   const u = new URL(url);
   const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(u.host);
   if (!(u.protocol === 'https:' || (u.protocol === 'http:' && local))) throw Object.assign(new Error('ulovlig protokoll'), { fatal: true });
-  if (!ALLOWED.has(u.host)) throw Object.assign(new Error('ukjent kilde: ' + u.host), { fatal: true });
-  return u.href;
+  const origin = ALLOWED.get(u.host);
+  if (!origin || origin !== u.origin) throw Object.assign(new Error('ukjent kilde: ' + u.host), { fatal: true });
+  return new URL(u.pathname + u.search, origin).href;
 }
 async function safeFetch(url, init, hops = 4) {
   const res = await fetch(checkUrl(url), { ...init, redirect: 'manual' });

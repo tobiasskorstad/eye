@@ -320,6 +320,7 @@ function orgHtml(c, personer, pols) {
   <div class="links"><a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${org(c.nr).replace(/ /g, '')}">Brønnøysundregistrene</a></div>`;
 }
 async function renderOrg(nr) {
+  if (!/^\d{9}$/.test(nr)) return;
   const v = $('v-org'), local = byNr[nr];
   const localPols = local ? local.ids.map(id => ({ id })) : [];
   v.innerHTML = local ? orgHtml(local, local.personer, localPols) : '<p class="loading">Henter fra Brønnøysund …</p>';

@@ -9,7 +9,7 @@ import * as br from './brreg.js';
 import { validOrgnr } from './register.js';
 
 // Kontrolltegn fjernes så ingen kan forfalske linjer i loggen via adressen.
-const log = (...a) => console.log(new Date().toISOString(), '[server]', ...a.map(x => String(x).replace(/[\x00-\x1f\x7f]/g, '?').slice(0, 300)));
+const log = (...a) => console.log(new Date().toISOString(), '[server]', ...a.map(x => String(x).replace(/\n|\r/g, '').replace(/[\x00-\x1f\x7f]/g, '?').slice(0, 300)));
 
 /* ---------- datatilstand ---------- */
 const state = { pub: null, pubRaw: null, pubGz: null, etag: '', internal: null, idx: new Map(), cosByNr: new Map(), building: false, lastBuildDay: '', lastError: '' };
