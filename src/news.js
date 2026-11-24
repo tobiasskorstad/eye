@@ -28,6 +28,10 @@ const PATTERNS = {
 const decode = s => s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
   .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n)).replace(/<[^>]+>/g, '').trim();
 
+const NAMES = { 'nrk.no': 'NRK', 'vg.no': 'VG', 'aftenposten.no': 'Aftenposten', 'dagbladet.no': 'Dagbladet', 'dagsavisen.no': 'Dagsavisen', 'tv2.no': 'TV 2',
+  'e24.no': 'E24', 'document.no': 'Document', 'inyheter.no': 'iNyheter', 'steigan.no': 'Steigan', 'faktisk.no': 'Faktisk.no', 'example.no': 'Testnytt' };
+export const sourceName = (link, fallback) => { try { const h = new URL(link).hostname.replace(/^www\./, ''); const k = Object.keys(NAMES).find(d => h === d || h.endsWith('.' + d)); return k ? NAMES[k] : fallback; } catch { return fallback; } };
+
 export function parseRss(xml, source) {
   const out = [];
   const channel = decode((xml.match(/<channel>[\s\S]*?<title>([\s\S]*?)<\/title>/) || [])[1] || source);
@@ -37,7 +41,7 @@ export function parseRss(xml, source) {
     const link = tag('link') || (it.match(/<link[^>]*href="([^"]+)"/) || [])[1] || '';
     const date = new Date(tag('pubDate') || tag('published') || tag('updated') || tag('dc:date'));
     const title = tag('title');
-    if (title && /^https?:\/\//.test(link)) out.push({ tittel: title, sammendrag: tag('description').slice(0, 400), url: link, dato: isNaN(date) ? '' : date.toISOString().slice(0, 10), kilde: channel });
+    if (title && /^https?:\/\//.test(link)) out.push({ tittel: title, sammendrag: tag('description').slice(0, 400), url: link, dato: isNaN(date) ? '' : date.toISOString().slice(0, 10), kilde: sourceName(link, channel) });
   }
   return out;
 }
@@ -71,7 +75,7 @@ export async function fetchFactchecks() {
   const out = new Map();
   for (const m of html.matchAll(/<a[^>]+href="((?:https:\/\/www\.faktisk\.no)?\/faktasjekk\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g)) {
     const u = m[1].startsWith('http') ? m[1] : 'https://www.faktisk.no' + m[1];
-    const t = decode(m[2]).replace(/^Faktasjekk\s*/, '').replace(/\s+/g, ' ').trim();
+    const t = decode(m[2]).replace(/^faktasjekk[:\s]*/i, '').replace(/\s+/g, ' ').trim();
     if (t.length > 15 && !out.has(u)) out.set(u, { t, u, d: '' });
   }
   const near = [...html.matchAll(/\/faktasjekk\/[^"]+\/(\d+)"[\s\S]{0,800}?datetime="([^"]+)"/g)];
