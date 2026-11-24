@@ -10,13 +10,17 @@ const api = p => `${config.stortingetApi}/${p}${p.includes('?') ? '&' : '?'}form
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const VOTE = { 1: 'borte', 2: 'for', 3: 'mot' }; // koder i voteringsresultat (verifisert mot antall_for/mot på 100 voteringer)
 
+let failures = 0; // mange feil på rad: gi opp for denne natten og bruk cache
 async function slowGet(url) {
-  for (let i = 0; i < 6; i++) {
+  if (failures >= 5) return null;
+  for (let i = 0; i < 4; i++) {
     const d = await getJson(url).catch(() => null);
-    if (d && d.feilmelding && /grensen/i.test(d.feilmelding)) { await sleep(30000); continue; } // kvote nådd
+    if (!d || (d.feilmelding && /grensen/i.test(d.feilmelding))) { await sleep(20000 * (i + 1)); continue; } // kvote nådd eller feil: vent og prøv igjen
     await sleep(config.stortingetDelayMs);
+    failures = 0;
     return d;
   }
+  failures++;
   return null;
 }
 
@@ -26,11 +30,14 @@ export async function fetchVotes(sessions, max = 150) {
   let cache = {};
   try { cache = JSON.parse(await fs.readFile(cacheFile, 'utf8')); } catch { }
 
-  const saker = [];
+  let saker = [];
   for (const s of sessions) {
     const d = await slowGet(api(`saker?sesjonid=${encodeURIComponent(s)}`));
     for (const x of d?.saker_liste || []) if (x.status === 1) saker.push(x); // 1 = behandlet
   }
+  // Fikk vi ingen saker (kvote/feil), bruk sakene vi allerede har i cachen.
+  if (!saker.length) saker = Object.values(cache.saker || {});
+  cache.saker = Object.fromEntries([...Object.values(cache.saker || {}), ...saker].map(x => [x.id, { id: x.id, status: 1, korttittel: x.korttittel, tittel: x.tittel, sist_oppdatert_dato: x.sist_oppdatert_dato }]));
   const newest = saker.sort((a, b) => (parseMsDate(b.sist_oppdatert_dato) || 0) - (parseMsDate(a.sist_oppdatert_dato) || 0)).slice(0, 250);
   const votes = [];
   for (const s of newest) {

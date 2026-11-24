@@ -43,6 +43,9 @@ export async function buildData() {
   const missingBios = Object.values(bios).filter(b => !b).length;
   if (missingBios) warnings.push(`${missingBios} biografier kunne ikke hentes`);
   const { reps, parti, kom } = st.buildReps(list, bios, questions);
+  // Manglende biografier (f.eks. når Stortingets API-kvote er nådd): bruk forrige natts opplysninger.
+  const prevRep = Object.fromEntries((previous?.reps || []).map(r => [r.id, r]));
+  for (const r of reps) if (!bios[r.id] && prevRep[r.id]) for (const k of ['utd', 'yrke', 'per', 'forst']) if (r[k] == null || r[k] === '' || r[k] === 0) r[k] = prevRep[r.id][k];
 
   // 2. Interesseregisteret
   let regDato = previous?.regDato || '', regUrl = previous?.regUrl || '';
@@ -114,11 +117,14 @@ export async function buildData() {
 
   // 5. Voteringer (sakte pga. API-kvote, cache på disk)
   let stemmer = previous?.stemmer || null;
-  try { stemmer = await fetchVotes(sessions, config.maxNewVotes); log('voteringer', stemmer.antall); }
-  catch (e) { warnings.push('Voteringer feilet: ' + e.message); }
+  try {
+    const fresh = await fetchVotes(sessions, config.maxNewVotes); log('voteringer', fresh.antall);
+    if (fresh.antall >= Math.min(20, (previous?.stemmer?.antall || 0) / 2)) stemmer = fresh;
+    else warnings.push(`Voteringer: fikk bare ${fresh.antall}, beholder forrige (${previous?.stemmer?.antall || 0})`);
+  } catch (e) { warnings.push('Voteringer feilet: ' + e.message); }
   if (stemmer) {
     const ids = new Set(reps.map(r => r.id));
-    stemmer.oppmote = Object.fromEntries(Object.entries(stemmer.oppmote).filter(([id]) => ids.has(id)).map(([id, a]) => [id, [a.n, a.borte]]));
+    stemmer.oppmote = Object.fromEntries(Object.entries(stemmer.oppmote).filter(([id]) => ids.has(id)).map(([id, a]) => [id, Array.isArray(a) ? a : [a.n, a.borte]]));
     stemmer.voteringer = stemmer.voteringer.slice(0, 150);
   }
 
