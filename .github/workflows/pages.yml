@@ -32,6 +32,7 @@ jobs:
             data/bio-cache.json
             data/varslet.json
             data/insider-cache.json
+            data/flagging-cache.json
           key: eye-data-${{ github.run_id }}
           restore-keys: eye-data-
       - run: node src/build.js
@@ -54,6 +55,7 @@ jobs:
             data/bio-cache.json
             data/varslet.json
             data/insider-cache.json
+            data/flagging-cache.json
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
         env:

@@ -9,7 +9,7 @@ import * as br from './brreg.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
 import { diff, merge } from './changes.js';
-import { fetchInsider, tagPoliticians } from './insider.js';
+import { fetchInsider, fetchFlagging, tagPoliticians } from './insider.js';
 import { fetchGovernment, fetchStatssekRegister, buildPep } from './pep.js';
 import { fetchPolls, fetchLeaders, mergeLeaders, buildNow, attachPromiseNews } from './auto.js';
 
@@ -132,6 +132,9 @@ export async function buildData() {
     innside = tagPoliticians(await fetchInsider(), people);
     log('innsidehandel', innside.length, 'meldinger,', innside.filter(i => i.pol).length, 'med politikere');
   } catch (e) { warnings.push('Innsidehandel (Oslo Børs) feilet: ' + e.message + ' – viser forrige'); }
+  let flagging = previous?.flagging || [];
+  try { flagging = (await fetchFlagging()).map(({ ant, kurs, k, ver, ...f }) => f); log('flaggemeldinger', flagging.length); }
+  catch (e) { warnings.push('Flaggemeldinger (Oslo Børs) feilet: ' + e.message + ' – viser forrige'); }
 
   // 4. Partier: redaksjonelt innhold + automatiske nyhetsoverskrifter
   let partier = await readJson(path.join(config.contentDir, 'partier.json'));
@@ -185,7 +188,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

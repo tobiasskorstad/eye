@@ -120,3 +120,14 @@ test('innsidehandel: kjøp/salg, antall og kurs leses ut, politikere merkes', as
   const t = tagPoliticians([{ tekst: 'Styremedlem Ola Nordmann har kjøpt aksjer', tittel: '' }, { tekst: 'Ola har kjøpt', tittel: '' }], [{ navn: 'Ola Nordmann', gruppe: 'Stortinget', ref: 'ON' }]);
   assert.equal(t[0].pol[0].ref, 'ON'); assert.equal(t[1].pol, undefined, 'bare fullt navn gir treff');
 });
+
+test('eiere: flaggemeldinger og navn/rolle på innsidere leses ut', async () => {
+  const { parseFlagging, who } = await import('../src/insider.js');
+  const f = parseFlagging('Fond forvaltet av Storebrand Asset Management AS solgte i dag 24.11.2026, 71865 aksjer i Scatec ASA. Etter salget eier fond forvaltet av Storebrand Asset Management AS 7 926 038 aksjer som utgjør en eierandel på 4,956 % av aksjene og stemmene i Scatec ASA.', '', 'Scatec ASA');
+  assert.deepEqual([f.eier, f.retning, f.pst], ['Storebrand Asset Management AS', 'ned', 4.956]);
+  const g = parseFlagging('Upon completion of the merger, Ferd AS will become the direct holder of 43,739,651 shares in General Oceans ASA, representing approximately 22.75% of the shares.', '', 'General Oceans ASA');
+  assert.equal(g.eier, 'Ferd AS'); assert.equal(g.pst, 22.75);
+  assert.deepEqual(who('Lars-Petter Nesvåg, board member in Norconsult ASA has today sold 85 000 shares'), { navn: 'Lars-Petter Nesvåg', rolle: 'board member' });
+  assert.deepEqual(who('Styreleder Ola Nordmann i Equinor ASA har kjøpt 1000 aksjer'), { navn: 'Ola Nordmann', rolle: 'Styreleder' });
+  assert.equal(who('The company has bought back shares'), null);
+});

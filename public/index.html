@@ -23,6 +23,7 @@
     <a href="#partier" data-s="pa">Partier</a>
     <a href="#forklart" data-s="du">Politikk for dummies</a>
     <a href="#handler" data-s="pe">Penger</a>
+    <a href="#eiere" data-s="ei">Eiere og innsidere</a>
     <a href="#faktasjekk" data-s="fa">Faktasjekk</a>
     <a href="#om" data-s="om">Kilder</a>
   </nav>
@@ -142,6 +143,33 @@
     <ul class="news" id="factCrit"></ul>
     <h2>Sjekk selv</h2>
     <ul class="news" id="factSelf"></ul>
+  </section>
+
+  <section id="v-owners" class="view" hidden>
+    <h1>Eiere og innsidere</h1>
+    <p class="lede">Hvem flytter de store pengene på Oslo Børs? Styreledere, konsernsjefer og andre toppledere må melde alle sine handler, og investorer må melde når de eier mer enn 5, 10, 15, 20, 25, 33, 50, 67 eller 90 prosent av et selskap. Alt hentes fra Oslo Børs hver tredje time.</p>
+    <div class="kpis" id="ok"></div>
+    <h2>Største handler fra toppledere og styremedlemmer</h2>
+    <p class="meta">Siste 60 dager, etter verdi. Verdien regnes ut fra antall og kurs i meldingen.</p>
+    <div class="tw"><table class="list" id="topTrades"><thead><tr><th>Dato</th><th>Hvem</th><th>Selskap</th><th class="n">Verdi, kr</th></tr></thead><tbody></tbody></table></div>
+    <h2>Innsidere som har handlet mest</h2>
+    <div class="tw"><table class="list" id="topPeople"><thead><tr><th>Navn</th><th>Rolle og selskap</th><th class="n">Handler</th><th class="n">Kjøpt for, kr</th><th class="n hide-s">Solgt for, kr</th></tr></thead><tbody></tbody></table></div>
+    <h2>De mest aktive storeierne</h2>
+    <div class="tw"><table class="list" id="topOwners"><thead><tr><th>Eier</th><th>Selskaper de har passert en grense i</th></tr></thead><tbody></tbody></table></div>
+    <details class="card"><summary><b>Hvorfor ikke en liste over landets millionærer?</b></summary>
+      <p>Formue og inntekt for privatpersoner står i skattelistene, men loven forbyr å legge dem ut i søkbar form. Selv pressen får bare bruke dem til journalistikk, og kan ikke publisere hele lister. Du kan søke selv hos <a href="https://www.skatteetaten.no/skatt/skattelister/" rel="noopener">Skatteetaten</a> (søket ditt blir synlig for den du søker på). EYE viser derfor bare det som er offentlig etter verdipapirloven: handler fra toppledere og store eierposter i børsselskaper.</p>
+    </details>
+  </section>
+
+  <section id="v-flagging" class="view" hidden>
+    <h1>Store eiere</h1>
+    <p class="lede">Flaggemeldinger fra Oslo Børs siste 90 dager: hver gang noen går over eller under en eierandel på 5, 10, 15, 20, 25, 1/3, 50, 2/3 eller 90 prosent.</p>
+    <div class="row">
+      <select id="fr" aria-label="Retning"><option value="">Opp og ned</option><option value="opp">Økte eierandel</option><option value="ned">Reduserte eierandel</option></select>
+      <input id="fq" type="search" placeholder="Søk etter eier eller selskap" aria-label="Søk i flaggemeldinger">
+    </div>
+    <div class="tw"><table class="list" id="flagTable"><thead><tr><th>Dato</th><th>Selskap</th><th>Eier</th><th class="n">Andel etter</th><th class="hide-s">Melding</th></tr></thead><tbody></tbody></table></div>
+    <p class="meta">Kilde: <a href="https://newsweb.oslobors.no/search?category=1006" rel="noopener">Oslo Børs NewsWeb, flagging</a>. Eier, retning og andel leses automatisk ut av teksten og kan være feil – noen meldinger har bare et vedlegg.</p>
   </section>
 
   <section id="v-insider" class="view" hidden>

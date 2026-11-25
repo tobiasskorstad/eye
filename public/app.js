@@ -89,14 +89,15 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
-  pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['innside', 'Innsidehandel børs'], ['selskaper', 'Selskaper']],
+  pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['selskaper', 'Selskaper']],
+  ei: [['eiere', 'Toppliste'], ['storeeiere', 'Store eiere'], ['innside', 'Alle innsidehandler']],
   fa: [], om: [], du: [], ko: [],
 };
-const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -501,7 +502,30 @@ function insiderView() {
   const k = L.filter(x => x.k === 'K'), s = L.filter(x => x.k === 'S');
   $('ik').innerHTML = `<div><b>${L.length}</b><span>meldinger siste 60 dager</span></div><div><b>${k.length}</b><span>kjøp</span></div><div><b>${s.length}</b><span>salg</span></div><div><b>${L.filter(x => x.pol).length}</b><span>nevner en politiker</span></div>`;
   const list = L.filter(x => (!t || x.k === t) && (!pol || x.pol) && (!q || (x.sel + ' ' + x.tekst + ' ' + x.tittel).toLowerCase().includes(q)));
-  $('insTable').tBodies[0].innerHTML = list.slice(0, 300).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><b>${esc(x.sel)}</b><div class="meta">${ITYPE[x.k] || '–'}</div></td><td>${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a>${x.pol ? `<div>${x.pol.map(p => `<span class="chip ok">${esc(p.navn)} · ${esc(p.gruppe)}</span>`).join(' ')}</div>` : ''}</td><td class="n hide-s">${x.ver ? nf(x.ver) : '–'}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen meldinger.</td></tr>';
+  $('insTable').tBodies[0].innerHTML = list.slice(0, 300).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><b>${esc(x.sel)}</b><div class="meta">${ITYPE[x.k] || '–'}${x.navn ? ' · ' + esc(x.navn) : ''}${x.rolle ? ', ' + esc(x.rolle) : ''}</div></td><td>${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a>${x.pol ? `<div>${x.pol.map(p => `<span class="chip ok">${esc(p.navn)} · ${esc(p.gruppe)}</span>`).join(' ')}</div>` : ''}</td><td class="n hide-s">${x.ver ? nf(x.ver) : '–'}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen meldinger.</td></tr>';
+}
+
+/* ---------- eiere og innsidere ---------- */
+const kr = n => n >= 1e9 ? nf(Math.round(n / 1e8) / 10) + ' mrd.' : n >= 1e6 ? nf(Math.round(n / 1e5) / 10) + ' mill.' : nf(n);
+function ownersView() {
+  const L = D.innside || [], F = D.flagging || [];
+  const sum = l => l.reduce((a, x) => a + (x.ver || 0), 0);
+  $('ok').innerHTML = `<div><b>${kr(sum(L.filter(x => x.k === 'K')))}</b><span>kjøpt av innsidere, 60 dager</span></div><div><b>${kr(sum(L.filter(x => x.k === 'S')))}</b><span>solgt av innsidere</span></div><div><b>${new Set(L.map(x => x.sel)).size}</b><span>selskaper med innsidehandel</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>`;
+  $('topTrades').tBodies[0].innerHTML = L.filter(x => x.ver && (x.k === 'K' || x.k === 'S')).sort((a, b) => b.ver - a.ver).slice(0, 25).map(x => `<tr><td class="n">${sdate(x.d)}</td><td>${esc(x.navn || '–')}<div class="meta">${ITYPE[x.k]}${x.rolle ? ' · ' + esc(x.rolle) : ''}</div></td><td>${esc(x.sel)} <a href="${url(x.u)}" rel="noopener" class="meta">melding</a></td><td class="n">${kr(x.ver)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen data.</td></tr>';
+  const people = new Map();
+  for (const x of L.filter(x => x.navn)) {
+    const p = people.get(x.navn) || { navn: x.navn, roller: new Set(), n: 0, k: 0, s: 0, pol: x.pol };
+    p.roller.add(`${x.rolle || ''} ${x.sel}`.trim()); p.n++; if (x.k === 'K') p.k += x.ver || 0; if (x.k === 'S') p.s += x.ver || 0; people.set(x.navn, p);
+  }
+  $('topPeople').tBodies[0].innerHTML = [...people.values()].sort((a, b) => (b.k + b.s) - (a.k + a.s) || b.n - a.n).slice(0, 30).map(p => `<tr><td><b>${esc(p.navn)}</b>${p.pol ? ' <span class="chip ok">politiker</span>' : ''}</td><td>${esc([...p.roller].join(' · '))}</td><td class="n">${p.n}</td><td class="n">${p.k ? kr(p.k) : '–'}</td><td class="n hide-s">${p.s ? kr(p.s) : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen data.</td></tr>';
+  const owners = new Map();
+  for (const f of F.filter(f => f.eier)) { const o = owners.get(f.eier) || { eier: f.eier, sel: new Map() }; o.sel.set(f.sel, f); owners.set(f.eier, o); }
+  $('topOwners').tBodies[0].innerHTML = [...owners.values()].sort((a, b) => b.sel.size - a.sel.size).slice(0, 20).map(o => `<tr><td><b>${esc(o.eier)}</b></td><td>${[...o.sel.values()].map(f => `${esc(f.sel)}${f.pst != null ? ` (${String(f.pst).replace('.', ',')} %${f.retning === 'opp' ? ' ▲' : f.retning === 'ned' ? ' ▼' : ''})` : ''}`).join(', ')}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Ingen data.</td></tr>';
+}
+function flaggingView() {
+  const r = $('fr').value, q = $('fq').value.trim().toLowerCase();
+  const list = (D.flagging || []).filter(f => (!r || f.retning === r) && (!q || (f.sel + ' ' + (f.eier || '') + ' ' + f.tekst).toLowerCase().includes(q)));
+  $('flagTable').tBodies[0].innerHTML = list.slice(0, 300).map(f => `<tr><td class="n">${sdate(f.d)}</td><td><b>${esc(f.sel)}</b></td><td>${esc(f.eier || '–')}${f.retning ? `<div class="meta">${f.retning === 'opp' ? '<span class="k">▲ økte</span>' : '<span class="s">▼ reduserte</span>'}</div>` : ''}</td><td class="n">${f.pst != null ? String(f.pst).replace('.', ',') + ' %' : '–'}</td><td class="hide-s">${esc(f.tekst || f.tittel)} <a href="${url(f.u)}" rel="noopener">Les meldingen</a></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen meldinger.</td></tr>';
 }
 
 /* ---------- aksjeposter (alle PEP) ---------- */
@@ -609,6 +633,7 @@ function goLive() {
   PORDER().filter(p => D.parti[p]).forEach(p => $('hp').add(new Option(pname(p), p)));
   holdingsView(); ['hg', 'hp', 'hq', 'hh'].forEach(id => $(id).addEventListener('input', holdingsView));
   insiderView(); ['it', 'iq', 'ip'].forEach(id => $(id).addEventListener('input', insiderView));
+  ownersView(); flaggingView(); ['fr', 'fq'].forEach(id => $(id).addEventListener('input', flaggingView));
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
   $('fp').addEventListener('input', factsView);
