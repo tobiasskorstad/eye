@@ -9,6 +9,7 @@ import * as br from './brreg.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
 import { diff, merge } from './changes.js';
+import { fetchGovernment, fetchStatssekRegister, buildPep } from './pep.js';
 import { fetchPolls, fetchLeaders, mergeLeaders, buildNow, attachPromiseNews } from './auto.js';
 
 const log = (...a) => console.log(new Date().toISOString(), '[build]', ...a);
@@ -51,11 +52,11 @@ export async function buildData() {
 
   // 2. Interesseregisteret
   let regDato = previous?.regDato || '', regUrl = previous?.regUrl || '';
-  let trades = [], candidates = new Map();
+  let trades = [], candidates = new Map(), regEntries = null;
   try {
     log('henter interesseregister');
     const r = await reg.fetchRegister();
-    regDato = r.date; regUrl = r.url;
+    regDato = r.date; regUrl = r.url; regEntries = r.entries;
     let unmatched = 0;
     for (const rep of reps) {
       const p = reg.matchPerson(r.entries, rep);
@@ -106,6 +107,17 @@ export async function buildData() {
   } else if (previous?.cos) {
     cos = previous.cos;
   }
+
+  // 3b. Andre politisk eksponerte personer (PEP) med offentlige aksjeopplysninger
+  let pep = previous?.pep || null;
+  try {
+    const gov = await fetchGovernment();
+    let ss = previous?.pep?.statssek || [], ssUrl = previous?.pep?.kilder?.statssek || '';
+    try { const r = await fetchStatssekRegister(); ss = r.list; ssUrl = r.url; } catch (e) { warnings.push('Regjeringens register (statssekretærer) feilet: ' + e.message); }
+    if (regEntries && gov.length) pep = buildPep(gov, regEntries, ss, { regjering: regUrl, statssek: ssUrl });
+    else if (pep) pep = { ...pep, statssek: ss };
+    log('PEP', pep?.regjering?.length, 'regjeringsmedlemmer,', ss.length, 'statssekretærer/rådgivere,', pep?.trades?.length, 'handler');
+  } catch (e) { warnings.push('Regjeringsmedlemmer feilet: ' + e.message); }
 
   // 4. Partier: redaksjonelt innhold + automatiske nyhetsoverskrifter
   let partier = await readJson(path.join(config.contentDir, 'partier.json'));
@@ -159,7 +171,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

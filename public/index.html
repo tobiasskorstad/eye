@@ -144,9 +144,28 @@
     <ul class="news" id="factSelf"></ul>
   </section>
 
+  <section id="v-holdings" class="view" hidden>
+    <h1>Aksjer hos politisk eksponerte personer</h1>
+    <p class="lede">Aksjer og eierinteresser som stortingsrepresentanter, regjeringsmedlemmer, statssekretærer og politiske rådgivere selv har oppgitt i de offentlige registrene. Teksten gjengis slik den står.</p>
+    <div class="kpis" id="hk"></div>
+    <div class="row">
+      <select id="hg" aria-label="Gruppe"><option value="">Alle grupper</option></select>
+      <select id="hp" aria-label="Parti"><option value="">Alle partier</option></select>
+      <input id="hq" type="search" placeholder="Søk etter navn eller selskap" aria-label="Søk i aksjeposter">
+      <label class="imp"><input type="checkbox" id="hh" checked> Bare de som eier noe</label>
+    </div>
+    <div class="tw"><table class="list" id="holdTable"><thead><tr><th>Navn</th><th class="hide-s">Rolle</th><th>Aksjer og eierinteresser</th></tr></thead><tbody></tbody></table></div>
+    <details class="card"><summary><b>Hvem er politisk eksponerte personer, og hvem mangler her?</b></summary>
+      <p>Hvem som er PEP i Norge, står i <a href="https://www.regjeringen.no/no/dokumenter/forskrift-om-stillinger-og-funksjoner-som-medforer-status-som-politisk-eksponert-person/id3173733/" rel="noopener">forskriften fra Finansdepartementet (1. oktober 2026)</a>. Her er bare de gruppene som har et offentlig register over aksjer:</p>
+      <ul><li><b>Med:</b> stortingsrepresentanter, statsministeren og statsrådene, statssekretærer (og politiske rådgivere, som står i samme register, men ikke er PEP).</li>
+      <li><b>Ikke med ennå:</b> dommere i Høyesterett og Arbeidsretten har et eget register over sidegjøremål og aksjeposter over 200 000 kroner, men det er ikke koblet til EYE ennå.</li>
+      <li><b>Ingen offentlige aksjeopplysninger:</b> partienes sentralstyrer, ambassadører, toppledere i departementene, Forsvaret, Norges Bank, tilsyn, direktorater og statlige foretak. Familiemedlemmer og nære medarbeidere tas ikke med; de er privatpersoner.</li></ul>
+    </details>
+  </section>
+
   <section id="v-trades" class="view" hidden>
     <h1>Aksjehandler</h1>
-    <p class="lede">Alle enkelthandler stortingsrepresentantene har meldt til Stortingets interesseregister denne perioden. Nyeste først.</p>
+    <p class="lede">Alle enkelthandler stortingsrepresentantene og regjeringsmedlemmene har meldt til Stortingets interesseregister denne perioden. Nyeste først. Se også <a href="#aksjeposter">aksjeposter for alle politisk eksponerte personer</a>.</p>
     <div class="kpis" id="tk"></div>
     <div class="row">
       <select id="tt" aria-label="Type handel"><option value="">Kjøp og salg</option><option value="K">Bare kjøp</option><option value="S">Bare salg</option></select>

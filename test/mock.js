@@ -120,6 +120,7 @@ export function startMock(port = 0) {
     if (p === '/st/sesjoner') return send(200, { innevaerende_sesjon: { id: '2026-2027' }, sesjoner_liste: [{ id: '2024-2025' }, { id: '2025-2026' }, { id: '2026-2027' }] });
     if (p === '/st/stortingsperioder') return send(200, { innevaerende_stortingsperiode: { id: '2025-2029' } });
     if (['/st/skriftligesporsmal', '/st/sporretimesporsmal', '/st/interpellasjoner'].includes(p)) return send(200, questions(u.searchParams.get('sesjonid'), p.slice(4)));
+    if (p === '/st/regjering') return send(200, { regjeringsmedlemmer_liste: [{ id: 'JGS', fornavn: 'Jonas Gahr', etternavn: 'Støre', tittel: 'Statsminister', departement: 'Statsministerens kontor', parti: { id: 'A' } }] });
     if (p === '/st/saker') return send(200, { saker_liste: [{ id: 501, status: 1, korttittel: 'Testsak om skatt', sist_oppdatert_dato: msDate(2026, 11, 20) }, { id: 502, status: 2, korttittel: 'Ubehandlet' }] });
     if (p === '/st/voteringer') return send(200, { sak_votering_liste: [{ votering_id: 9001, personlig_votering: true, votering_tid: msDate(2026, 11, 20), votering_tema: 'Forslag nr. 1', vedtatt: true, antall_for: 2, antall_mot: 1, antall_ikke_tilstede: 0 }, { votering_id: 9002, personlig_votering: false }] });
     if (p === '/st/voteringsresultat') return send(200, { voteringsresultat_liste: reps.slice(0, 4).map((r, i) => ({ representant: { id: r.id, parti: { id: r.parti } }, votering: [2, 3, 2, 1][i] })) });

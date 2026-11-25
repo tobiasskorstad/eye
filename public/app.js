@@ -48,7 +48,7 @@ async function brEnhet(nr) {
   return { ...brSum(e), personer: [...m.values()].map(p => ({ ...p, rep: known?.ids.find(id => byId[id].navn.toLowerCase() === p.navn.toLowerCase()) })), politikere: (known?.ids || []).map(id => ({ id })) };
 }
 
-let D, reps, byId, byH, cos, byNr, trades, P;
+let D, reps, byId, byH, cos, byNr, trades, P, holdings = [];
 
 /* ---------- data ---------- */
 async function load() {
@@ -70,7 +70,15 @@ function prepare(d) {
   reps = D.reps.map(r => ({ ...r, parti: String(r.parti).replace(/[^\wÅØÆåøæ]/g, ''), h: hid(r.id), reg: r.reg || {}, cos: [], trades: [] }));
   byId = Object.fromEntries(reps.map(r => [r.id, r]));
   byH = Object.fromEntries(reps.map(r => [r.h, r]));
-  trades = D.trades.map(t => ({ ...t, r: byId[t.rep] })).filter(t => t.r);
+  const PFIX = { Ap: 'A', Frp: 'FrP', Høyre: 'H' }, pp = p => PFIX[p] || p;
+  const gov = Object.fromEntries((D.pep?.regjering || []).map(g => [g.id, { navn: g.navn, parti: pp(g.parti), rolle: g.tittel, trades: [] }]));
+  trades = [...D.trades.map(t => ({ ...t, r: byId[t.rep] })), ...(D.pep?.trades || []).map(t => ({ ...t, r: gov[t.pep] }))].filter(t => t.r).sort((a, b) => b.d.localeCompare(a.d));
+  const NONE = /^(nei|ingen|har ingen|jeg har ingen|-|x)\b/i;
+  holdings = [
+    ...reps.map(r => ({ navn: r.navn, h: r.h, parti: r.parti, gruppe: 'Stortinget', rolle: r.vara ? 'Vararepresentant' : 'Stortingsrepresentant', tekst: r.reg?.['9'] || '' })),
+    ...(D.pep?.regjering || []).map(g => ({ navn: g.navn, parti: pp(g.parti), gruppe: 'Regjeringen', rolle: g.tittel, tekst: g.reg ? g.reg['9'] || '' : '' })),
+    ...(D.pep?.statssek || []).map(s => ({ navn: s.navn, parti: pp(s.parti), gruppe: 'Statssekretærer og politiske rådgivere', rolle: 'Statssekretær eller politisk rådgiver', tekst: s.felt?.aksjer || '' })),
+  ].map(x => ({ ...x, eier: !!x.tekst && !NONE.test(x.tekst.trim()) }));
   trades.forEach(t => t.r.trades.push(t));
   cos = D.cos.map(c => ({ ...c, ids: [...new Set([...(c.decl || []), ...Object.keys(c.roles || {})])].filter(i => byId[i]) }));
   cos.forEach(c => c.ids.forEach(i => byId[i].cos.push(c)));
@@ -81,14 +89,14 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
-  pe: [['handler', 'Aksjehandler'], ['selskaper', 'Selskaper']],
+  pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['selskaper', 'Selskaper']],
   fa: [], om: [], du: [], ko: [],
 };
-const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -478,12 +486,22 @@ function duSaveBox() {
 
 /* ---------- aksjehandler ---------- */
 function tradesView() {
-  const n = new Set(trades.map(t => t.rep)).size, sum = trades.reduce((a, t) => a + t.ver, 0);
+  const n = new Set(trades.map(t => t.rep || t.pep)).size, sum = trades.reduce((a, t) => a + t.ver, 0);
   const big = [...trades].sort((a, b) => b.ver - a.ver)[0];
-  $('tk').innerHTML = `<div><b>${trades.length}</b><span>handler</span></div><div><b>${n}</b><span>representanter</span></div><div><b>${nf(Math.round(sum / 1e5) / 10)} mill. kr</b><span>samlet verdi</span></div>${big ? `<div><b>${nf(big.ver)} kr</b><span>største: ${esc(big.r.navn)}, ${esc(big.sel)}</span></div>` : ''}`;
+  $('tk').innerHTML = `<div><b>${trades.length}</b><span>handler</span></div><div><b>${n}</b><span>personer</span></div><div><b>${nf(Math.round(sum / 1e5) / 10)} mill. kr</b><span>samlet verdi</span></div>${big ? `<div><b>${nf(big.ver)} kr</b><span>største: ${esc(big.r.navn)}, ${esc(big.sel)}</span></div>` : ''}`;
   const t = $('tt').value;
-  $('tradeTable').tBodies[0].innerHTML = trades.filter(x => !t || x.k === t).map(x => `<tr data-go="rep-${x.r.h}"><td class="n">${sdate(x.d)}</td><td><a href="#rep-${x.r.h}">${esc(x.r.navn)}</a> ${dot(x.r.parti)}<span class="meta">${esc(x.r.parti)}</span></td><td class="hide-s">${trade(x.k)}</td><td><span class="show-s">${trade(x.k)} </span>${esc(x.sel)}</td><td class="n hide-s">${nf(x.ant)}</td><td class="n">${nf(x.ver)}</td></tr>`).join('')
+  $('tradeTable').tBodies[0].innerHTML = trades.filter(x => !t || x.k === t).map(x => `<tr${x.r.h ? ` data-go="rep-${x.r.h}"` : ''}><td class="n">${sdate(x.d)}</td><td>${x.r.h ? `<a href="#rep-${x.r.h}">${esc(x.r.navn)}</a>` : esc(x.r.navn)} ${dot(x.r.parti)}<span class="meta">${esc(x.r.parti)}${x.r.rolle ? ' · ' + esc(x.r.rolle) : ''}</span></td><td class="hide-s">${trade(x.k)}</td><td><span class="show-s">${trade(x.k)} </span>${esc(x.sel)}</td><td class="n hide-s">${nf(x.ant)}</td><td class="n">${nf(x.ver)}</td></tr>`).join('')
     || '<tr><td colspan="6" class="empty">Ingen handler.</td></tr>';
+}
+
+/* ---------- aksjeposter (alle PEP) ---------- */
+function holdingsView() {
+  const g = $('hg').value, p = $('hp').value, q = $('hq').value.trim().toLowerCase(), only = $('hh').checked;
+  const groups = [...new Set(holdings.map(x => x.gruppe))];
+  $('hk').innerHTML = groups.map(gr => { const l = holdings.filter(x => x.gruppe === gr); return `<div><b>${l.filter(x => x.eier).length} av ${l.length}</b><span>${esc(gr)}: oppgir aksjer eller eierandeler</span></div>`; }).join('');
+  const list = holdings.filter(x => (!g || x.gruppe === g) && (!p || x.parti === p) && (!only || x.eier) && (!q || (x.navn + ' ' + x.tekst).toLowerCase().includes(q)))
+    .sort((a, b) => b.eier - a.eier || a.navn.localeCompare(b.navn, 'nb'));
+  $('holdTable').tBodies[0].innerHTML = list.slice(0, 400).map(x => `<tr><td>${x.h ? `<a href="#rep-${x.h}">${esc(x.navn)}</a>` : esc(x.navn)} ${dot(x.parti)}<span class="meta">${esc(x.parti)}</span><div class="meta show-s">${esc(x.rolle)}</div></td><td class="hide-s">${esc(x.rolle)}</td><td>${x.tekst ? esc(x.tekst) : '<span class="meta">Ingenting oppgitt</span>'}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Ingen treff.</td></tr>';
 }
 
 /* ---------- selskaper ---------- */
@@ -577,6 +595,9 @@ function goLive() {
     try { await api(`profiles?id=eq.${KO.s.user.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ epostvarsler: e.target.checked }) }); KO.profil.epostvarsler = e.target.checked; }
     catch (err) { e.target.checked = !e.target.checked; alertBox(err.message); }
   });
+  [...new Set(holdings.map(x => x.gruppe))].forEach(g => $('hg').add(new Option(g, g)));
+  PORDER().filter(p => D.parti[p]).forEach(p => $('hp').add(new Option(pname(p), p)));
+  holdingsView(); ['hg', 'hp', 'hq', 'hh'].forEach(id => $(id).addEventListener('input', holdingsView));
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
   $('fp').addEventListener('input', factsView);

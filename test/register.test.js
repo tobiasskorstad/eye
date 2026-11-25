@@ -80,3 +80,29 @@ test('dato fra filnavn og navnematch', () => {
   assert.equal(matchPerson(P, { fornavn: 'Marius Arion', etternavn: 'Nilsen' }).etternavn, 'Nilsen');
   assert.equal(matchPerson(P, { fornavn: 'Jørgen', etternavn: 'Kristiansen' }).fornavn, 'Jørgen H.');
 });
+
+test('PEP: regjeringens register for statssekretærer tolkes', async () => {
+  const { parseStatssekRegister } = await import('../src/pep.js');
+  const { STATSSEK } = await import('./fixtures/statssek.js');
+  const l = parseStatssekRegister(STATSSEK);
+  assert.equal(l.length, 3);
+  assert.deepEqual(l.map(x => x.navn), ['Karl Kristian Bekeng', 'Bård Flaarønning', 'Marte Gerhardsen']);
+  assert.equal(l[0].har, false); assert.equal(l[1].har, true);
+  assert.match(l[1].felt.aksjer, /^Telenor ASA, eierandel 0%, antall aksjer: 3063 DnB Bank ASA.*Equinor ASA, eierandel 0%, antall aksjer: 62$/);
+  assert.equal(l[0].felt.aksjer, undefined);
+  assert.equal(l[1].felt.verv, undefined, 'tom etikett skal ikke fange neste etikett');
+});
+
+test('PEP: registerets regjeringsdel skilles fra representantene', async () => {
+  const { parseRegisterSections } = await import('../src/register.js');
+  const { governmentEntries, buildPep } = await import('../src/pep.js');
+  const reps = Array.from({ length: 110 }, (_, i) => `Etternavn${String.fromCharCode(65 + (i % 26))}x${i}, Fornavn (H, Oslo)\n§2 Styreverv mv. Ingen`).join('\n');
+  const raw = `Representanter\n${reps}\nRegjeringsmedlemmer\nStøre, Jonas Gahr (A, Oslo)\n§9 Selskapsinteresser Femstø AS (100 pst. eierandel)\nVararepresentanter\nOla, Nordmann (H, Oslo)\n§2 Styreverv mv. Ingen\n`;
+  const e = parseRegisterSections(raw);
+  assert.equal(e.filter(x => x.seksjon === 'regjering').length, 1);
+  assert.equal(e.filter(x => x.seksjon === 'vara').length, 1);
+  const gov = [{ id: 'JGS', navn: 'Jonas Gahr Støre', fornavn: 'Jonas Gahr', etternavn: 'Støre', tittel: 'Statsminister', dep: 'SMK', parti: 'A' }];
+  assert.ok(governmentEntries(gov, e)[0].e);
+  const pep = buildPep(gov, e, [], {});
+  assert.match(pep.regjering[0].reg['9'], /Femstø AS/);
+});

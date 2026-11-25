@@ -46,6 +46,20 @@ const HEAD = /^([^\n,§]{2,40}), ([^\n(§]{2,60}) \(([A-Za-zæøåÆØÅ]+), ([^
 const LABEL = /^(Styreverv mv\.|Selvstendig næring|Lønnet stilling m\.?v\.|Tidligere arbeidsgiver|Framtidig arbeidsgiver|Fremtidig arbeidsgiver|Økonomisk støtte[^ ]*|Eiendom i næring|Selskapsinteresser|Gjeld[^ ]*|Utenlandsreiser|Gaver|Andre forhold)\s*/;
 
 /** Deler registerteksten i personer med paragrafer. */
+/** Som parseRegister, men tar vare på hvilken del av registeret personen står i (representant, vara, regjering). */
+export function parseRegisterSections(raw) {
+  const marks = [...raw.matchAll(/^(Representanter|Vararepresentanter|Regjeringsmedlemmer|Regjeringens medlemmer)\s*$/gm)];
+  if (!marks.length) return parseRegister(raw).map(e => ({ ...e, seksjon: 'rep' }));
+  const out = [];
+  marks.forEach((m, i) => {
+    const seg = raw.slice(m.index + m[0].length, i + 1 < marks.length ? marks[i + 1].index : raw.length);
+    const first = seg.search(HEAD); if (first < 0) return;
+    const seksjon = /Regjering/.test(m[1]) ? 'regjering' : /Vara/.test(m[1]) ? 'vara' : 'rep';
+    out.push(...parseRegister(seg.slice(first)).map(e => ({ ...e, seksjon })));
+  });
+  return out.length >= 100 ? out : parseRegister(raw).map(e => ({ ...e, seksjon: 'rep' }));
+}
+
 export function parseRegister(raw) {
   let R = raw
     .replace(/^\d+\s+Ajourført pr\.[^\n]*\n/gm, '')
@@ -150,7 +164,7 @@ export async function fetchRegister() {
   const bytes = await getBuffer(url);
   if (!bytes) throw new Error('Kunne ikke laste ned register-PDF');
   const text = await pdfToText(bytes);
-  const entries = parseRegister(text);
+  const entries = parseRegisterSections(text);
   if (entries.length < 100) throw new Error(`Registeret ga bare ${entries.length} personer – formatet kan ha endret seg`);
   return { url, date, entries };
 }
