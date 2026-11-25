@@ -112,9 +112,12 @@ export async function buildData() {
   let pep = previous?.pep || null;
   try {
     const gov = await fetchGovernment();
-    let ss = previous?.pep?.statssek || [], ssUrl = previous?.pep?.kilder?.statssek || '';
-    try { const r = await fetchStatssekRegister(); ss = r.list; ssUrl = r.url; } catch (e) { warnings.push('Regjeringens register (statssekretærer) feilet: ' + e.message); }
-    if (regEntries && gov.length) pep = buildPep(gov, regEntries, ss, { regjering: regUrl, statssek: ssUrl });
+    // Regjeringen.no avviser av og til kall fra skyservere. Da brukes forrige natts data, ellers siste lagrede øyeblikksbilde.
+    const snap = await readJson(path.join(config.contentDir, 'statssek-snapshot.json'));
+    let ss = previous?.pep?.statssek?.length ? previous.pep.statssek : snap?.list || [], ssUrl = previous?.pep?.kilder?.statssek || snap?.url || '', ssDato = previous?.pep?.kilder?.statssekDato || snap?.dato || '';
+    try { const r = await fetchStatssekRegister(); ss = r.list; ssUrl = r.url; ssDato = new Date().toISOString().slice(0, 10); }
+    catch (e) { warnings.push(`Regjeringens register (statssekretærer) kunne ikke hentes (${e.message}) – viser versjonen fra ${ssDato}`); }
+    if (regEntries && gov.length) pep = buildPep(gov, regEntries, ss, { regjering: regUrl, statssek: ssUrl, statssekDato: ssDato });
     else if (pep) pep = { ...pep, statssek: ss };
     log('PEP', pep?.regjering?.length, 'regjeringsmedlemmer,', ss.length, 'statssekretærer/rådgivere,', pep?.trades?.length, 'handler');
   } catch (e) { warnings.push('Regjeringsmedlemmer feilet: ' + e.message); }

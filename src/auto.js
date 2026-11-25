@@ -35,7 +35,7 @@ export async function fetchLeaders() {
   const byQ = {};
   for (const b of d?.results?.bindings || []) (byQ[b.p.value.split('/').pop()] ||= new Set()).add(b.leaderLabel.value);
   const out = {};
-  for (const [k, q] of Object.entries(QID)) if (byQ[q]?.size === 1) out[k] = [...byQ[q]][0]; // bare entydige svar
+  for (const [k, q] of Object.entries(QID)) if (byQ[q]?.size === 1 && !/^Q\d+$/.test([...byQ[q]][0])) out[k] = [...byQ[q]][0]; // bare entydige svar med navn
   return out;
 }
 /** Beholder redaksjonell tilleggsinfo («(sykmeldt)») når navnet fortsatt stemmer, ellers byttes lederen ut. */

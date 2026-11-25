@@ -58,11 +58,12 @@ export function parseStatssekRegister(text) {
   });
 }
 
+// Siste kjente adresse til PDF-en (brukes hvis oversiktssiden ikke svarer).
+const REGJ_PDF = 'https://www.regjeringen.no/contentassets/fc1a9092514341438119914b3e2b0461/register-for-verv-og-okonomiske-interesser.pdf';
 export async function fetchStatssekRegister() {
-  const html = await getText(REGJ_PAGE);
+  const html = await getText(REGJ_PAGE).catch(() => '');
   const href = html.match(/href="([^"]*register-for-verv-og-okonomiske-interesser[^"]*\.pdf)"/i)?.[1];
-  if (!href) throw new Error('fant ikke regjeringens register-PDF');
-  const url = new URL(href.replace(/&amp;/g, '&'), REGJ_PAGE).href;
+  const url = href ? new URL(href.replace(/&amp;/g, '&'), REGJ_PAGE).href : REGJ_PDF;
   const bytes = await getBuffer(url); if (!bytes) throw new Error('kunne ikke laste ned regjeringens register');
   const list = parseStatssekRegister(await pdfToText(bytes));
   if (list.length < 20) throw new Error(`regjeringens register ga bare ${list.length} personer`);

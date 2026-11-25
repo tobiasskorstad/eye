@@ -76,7 +76,7 @@ function prepare(d) {
   const NONE = /^(nei|ingen|har ingen|jeg har ingen|-|x)\b/i;
   holdings = [
     ...reps.map(r => ({ navn: r.navn, h: r.h, parti: r.parti, gruppe: 'Stortinget', rolle: r.vara ? 'Vararepresentant' : 'Stortingsrepresentant', tekst: r.reg?.['9'] || '' })),
-    ...(D.pep?.regjering || []).map(g => ({ navn: g.navn, parti: pp(g.parti), gruppe: 'Regjeringen', rolle: g.tittel, tekst: g.reg ? g.reg['9'] || '' : '' })),
+    ...(D.pep?.regjering || []).map(g => ({ navn: g.navn, parti: pp(g.parti), gruppe: 'Regjeringen', rolle: g.tittel, tekst: g.reg ? g.reg['9'] || '' : '', mangler: !g.reg })),
     ...(D.pep?.statssek || []).map(s => ({ navn: s.navn, parti: pp(s.parti), gruppe: 'Statssekretærer og politiske rådgivere', rolle: 'Statssekretær eller politisk rådgiver', tekst: s.felt?.aksjer || '' })),
   ].map(x => ({ ...x, eier: !!x.tekst && !NONE.test(x.tekst.trim()) }));
   trades.forEach(t => t.r.trades.push(t));
@@ -501,7 +501,7 @@ function holdingsView() {
   $('hk').innerHTML = groups.map(gr => { const l = holdings.filter(x => x.gruppe === gr); return `<div><b>${l.filter(x => x.eier).length} av ${l.length}</b><span>${esc(gr)}: oppgir aksjer eller eierandeler</span></div>`; }).join('');
   const list = holdings.filter(x => (!g || x.gruppe === g) && (!p || x.parti === p) && (!only || x.eier) && (!q || (x.navn + ' ' + x.tekst).toLowerCase().includes(q)))
     .sort((a, b) => b.eier - a.eier || a.navn.localeCompare(b.navn, 'nb'));
-  $('holdTable').tBodies[0].innerHTML = list.slice(0, 400).map(x => `<tr><td>${x.h ? `<a href="#rep-${x.h}">${esc(x.navn)}</a>` : esc(x.navn)} ${dot(x.parti)}<span class="meta">${esc(x.parti)}</span><div class="meta show-s">${esc(x.rolle)}</div></td><td class="hide-s">${esc(x.rolle)}</td><td>${x.tekst ? esc(x.tekst) : '<span class="meta">Ingenting oppgitt</span>'}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Ingen treff.</td></tr>';
+  $('holdTable').tBodies[0].innerHTML = list.slice(0, 400).map(x => `<tr><td>${x.h ? `<a href="#rep-${x.h}">${esc(x.navn)}</a>` : esc(x.navn)} ${dot(x.parti)}<span class="meta">${esc(x.parti)}</span><div class="meta show-s">${esc(x.rolle)}</div></td><td class="hide-s">${esc(x.rolle)}</td><td>${x.tekst ? esc(x.tekst) : `<span class="meta">${x.mangler ? 'Står ikke i registeret ennå' : 'Ingenting oppgitt'}</span>`}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Ingen treff.</td></tr>';
 }
 
 /* ---------- selskaper ---------- */

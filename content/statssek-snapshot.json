@@ -1,0 +1,628 @@
+{
+"dato": "2026-11-16",
+"url": "https://www.regjeringen.no/contentassets/fc1a9092514341438119914b3e2b0461/register-for-verv-og-okonomiske-interesser.pdf",
+"list": [
+{
+"navn": "Karl Kristian Bekeng",
+"etternavn": "Bekeng",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Astrid Bergmål",
+"etternavn": "Bergmål",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Trine Bilet",
+"etternavn": "Bilet",
+"parti": "Ap",
+"fylke": "Østfold",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Sunniva Bjerkaas",
+"etternavn": "Bjerkaas",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Petra Brinch",
+"etternavn": "Brinch",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Anette Davidsen",
+"etternavn": "Davidsen",
+"parti": "Ap",
+"fylke": "Nordland",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Line Eldring",
+"etternavn": "Eldring",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Andreas Flåm",
+"etternavn": "Flåm",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Nei"
+}
+},
+{
+"navn": "Bård Flaarønning",
+"etternavn": "Flaarønning",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Telenor ASA, eierandel 0%, antall aksjer: 3063 DnB Bank ASA, eierandel 0%, antall aksjer: 191 Equinor ASA, eierandel 0%, antall aksjer: 62"
+}
+},
+{
+"navn": "Marte Gerhardsen",
+"etternavn": "Gerhardsen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Hannah Gitmark",
+"etternavn": "Gitmark",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Eier 667 ordinære aksjer (0,039%) i Bikeloop AS."
+}
+},
+{
+"navn": "Marte Grindaker",
+"etternavn": "Grindaker",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Emilie Kleiven Græsli",
+"etternavn": "Græsli",
+"parti": "Ap",
+"fylke": "Trøndelag",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Kristina Sigurdsdottir Hansen",
+"etternavn": "Hansen",
+"parti": "Ap",
+"fylke": "Finnmark",
+"har": true,
+"felt": {
+"aksjer": "Jeg har ingen selskapsinteresser og ingen aksjer"
+}
+},
+{
+"navn": "Kristoffer André Hansen",
+"etternavn": "Hansen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Agnete Masternes Hanssen",
+"etternavn": "Hanssen",
+"parti": "Ap",
+"fylke": "Finnmark",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Erlend Hanstveit",
+"etternavn": "Hanstveit",
+"parti": "Ap",
+"fylke": "Vestland",
+"har": true,
+"felt": {
+"aksjer": "Har solgt aksjer i Apter AS, og selskapet er avvikla (fikk ikkje lagt inn kommentar hvis eg valgte \"nei\" i nedtrekksmenyen, men oppdatert status er altså at underteikna ikkje har registreringspliktige aksjer lengre)."
+}
+},
+{
+"navn": "Wegard Harsvik",
+"etternavn": "Harsvik",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Astrid Willa Eide Hoem",
+"etternavn": "Hoem",
+"parti": "Ap",
+"fylke": "Møre og Romsdal",
+"har": true,
+"felt": {
+"aksjer": "Jeg har ingen, min samboer eier 469 aksjer i Yara."
+}
+},
+{
+"navn": "Thomas Boe Hornburg",
+"etternavn": "Hornburg",
+"parti": "Ap",
+"fylke": "Akershus",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Astrid Huitfeldt",
+"etternavn": "Huitfeldt",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Siri Storstein Hytten",
+"etternavn": "Hytten",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Signe Ramson Høie",
+"etternavn": "Høie",
+"parti": "Ap",
+"fylke": "Buskerud",
+"har": true,
+"felt": {
+"aksjer": "Nei."
+}
+},
+{
+"navn": "Halvard Hølleland",
+"etternavn": "Hølleland",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Stine Renate Håheim",
+"etternavn": "Håheim",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Halvard Ingebrigtsen",
+"etternavn": "Ingebrigtsen",
+"parti": "Ap",
+"fylke": "Akershus",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Marte Ingul",
+"etternavn": "Ingul",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Feddie Ocean Distillery AS (org.nr. 817 719 562): 20 000 unoterte aksjer (0,044 % eierandel). Eierskapet er fryst i tråd med gjeldende retningslinjer, og forblir fryst så lenge jeg er utnevnt. Selskapet er informert om dette."
+}
+},
+{
+"navn": "Munir Jaber",
+"etternavn": "Jaber",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Øyvind Jacobsen",
+"etternavn": "Jacobsen",
+"parti": "Ap",
+"fylke": "Rogaland",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Andreas Skretting Jansen",
+"etternavn": "Jansen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Marius Meisfjord Jøsevold",
+"etternavn": "Jøsevold",
+"parti": "Ap",
+"fylke": "Nordland",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Kristine Kallset",
+"etternavn": "Kallset",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Andreas Motzfeldt Kravik",
+"etternavn": "Kravik",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Sissel Kruse Larsen",
+"etternavn": "Larsen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Helge Flø Kvamsås",
+"etternavn": "Kvamsås",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Nei."
+}
+},
+{
+"navn": "Ada Lassen-Urdahl",
+"etternavn": "Lassen-Urdahl",
+"parti": "Ap",
+"fylke": "Vestfold",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Trygve Gudmund Harlem Losnedahl",
+"etternavn": "Losnedahl",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Deltaker med 50% ansvarsandel i INNOVASJON RYGHS VEI DA orgnr 993846228, som er under avvikling. Selskapet har ikke aktivitet og har vært sovende i flere år. Selskapsmøtet vedtok avvikling den 21. september 2026 og meldingen om avvikling ble godkjent av Brønnøysundregistrene 28. september 2026."
+}
+},
+{
+"navn": "Sofie Rosten Løvdahl",
+"etternavn": "Løvdahl",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Sigrid Hagerup Melhuus",
+"etternavn": "Melhuus",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Usman Mushtaq",
+"etternavn": "Mushtaq",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "15000 aksjer i Easy Comply AS"
+}
+},
+{
+"navn": "Ingrid Myhr",
+"etternavn": "Myhr",
+"parti": "Ap",
+"fylke": "Innlandet",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Anette Stegegjerdet Norberg",
+"etternavn": "Norberg",
+"parti": "Ap",
+"fylke": "Vestland",
+"har": true,
+"felt": {
+"aksjer": "Ingen, men ektefelle har aksjar i Luster Energiverk."
+}
+},
+{
+"navn": "Ola Helmich Borchgrevink Pedersen",
+"etternavn": "Pedersen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Eivind Vad Petersson",
+"etternavn": "Petersson",
+"parti": "Ap",
+"fylke": "Akershus",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Ida Maria Pinnerød",
+"etternavn": "Pinnerød",
+"parti": "Ap",
+"fylke": "Nordland",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Bhanuja Rasiah",
+"etternavn": "Rasiah",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Ellen Reitan",
+"etternavn": "Reitan",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Herman Høgby Robertsen",
+"etternavn": "Robertsen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Ellen Rønning-Arnesen",
+"etternavn": "Rønning-Arnesen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Even Tronstad Sagebakken",
+"etternavn": "Sagebakken",
+"parti": "Ap",
+"fylke": "Agder",
+"har": true,
+"felt": {
+"aksjer": "Ingen"
+}
+},
+{
+"navn": "Jakob Schram",
+"etternavn": "Schram",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Nicklas Simonsen",
+"etternavn": "Simonsen",
+"parti": "Ap",
+"fylke": "Troms",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Sigrid Ina Simonsen",
+"etternavn": "Simonsen",
+"parti": "Ap",
+"fylke": "Troms",
+"har": true,
+"felt": {
+"aksjer": "Agilyx ASA, eierandel: 0%, antall aksjer: 95 Barents Blue AS, eierandel: 0%, antall aksjer: 70 Kongsberg Automotive ASA, eierandel: 0%, antall aksjer: 1900 NOS NOVA AS, eierandel: 0%, antall aksjer: 70 Ocean Sun AS, eierandel: 0%, antall aksjer: 130 Scatec ASA, eierandel: 0%, antall aksjer: 50"
+}
+},
+{
+"navn": "Erlend Skaug Ingebrigtsen",
+"etternavn": "Ingebrigtsen",
+"parti": "Ap",
+"fylke": "Nordland",
+"har": true,
+"felt": {
+"aksjer": "EKTE AS https://www.proff.no/selskap/ekte- as/oslo/medie-og- kommunikasjonsr%C3%A5dgivning/IFD3GI3101I Eier privat: 110 aksjer i Sparebank 1 Nord-Norge 700 aksjer i Måsøval 52 aksjer i MOWI 450 aksjer i GIGANTE Salmon 800 aksjer i Salmon Evolution 25 aksjer i Tomra Systems Samt 3 fond Alt handlet i Nordnet"
+}
+},
+{
+"navn": "Snorre Erichsen Skjevrak",
+"etternavn": "Skjevrak",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Per Gunnar Skorge",
+"etternavn": "Skorge",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Synnøve Mjeldheim Skaar",
+"etternavn": "Skaar",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Ole Martin Juul Slyngstadli",
+"etternavn": "Slyngstadli",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Ingen."
+}
+},
+{
+"navn": "Mathias Solli",
+"etternavn": "Solli",
+"parti": "Ap",
+"fylke": "Trøndelag",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Trude Storheim",
+"etternavn": "Storheim",
+"parti": "Ap",
+"fylke": "Vestland",
+"har": true,
+"felt": {
+"aksjer": "Eg eig 1/3 del av aksjene i Kapellankåken AS på Voss. Kapellankåken er eit ideelt aksjeselskap. Aksjekapitalen er på 300 000."
+}
+},
+{
+"navn": "Ragnhild Sjoner Syrstad",
+"etternavn": "Syrstad",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Elisabeth Sæther",
+"etternavn": "Sæther",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Edvin Søvik",
+"etternavn": "Søvik",
+"parti": "Ap",
+"fylke": "Akershus",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Fredrik Tiochta Sørlie",
+"etternavn": "Sørlie",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Per Anders Torvik Langerød",
+"etternavn": "Langerød",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Renate Tårnes",
+"etternavn": "Tårnes",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Jakob Vorren",
+"etternavn": "Vorren",
+"parti": "Ap",
+"fylke": "Møre og Romsdal",
+"har": true,
+"felt": {
+"aksjer": "1 aksje i Øra kafe drift AS, eierandel 0,962%, 1 aksje Hauger golfbane AS eierandel 0,09 %"
+}
+},
+{
+"navn": "Tarje Iversen Wanvik",
+"etternavn": "Wanvik",
+"parti": "Ap",
+"fylke": "Vestland",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Vegard Grøslie Wennesland",
+"etternavn": "Wennesland",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Marianne Wilhelmsen",
+"etternavn": "Wilhelmsen",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {
+"aksjer": "Dignio AS 1898 aksjer, 0,05391 % Berner Invest AS (20% eierandel, 20 aksjer) - Familieselskap. Berner Invest AS eier totalt 62 000 aksjer i Scana ASA som totalt har 461.892.898 aksjer. Hele Berner Invest eier dermed 0,01342303 % av Scana og mine 20% i Berner Invest blir dermed 0,00268461 % og 12400 aksjer. Wilhelmsen AS (20,332% eierandel, 4001 aksjer) - Familieselskap som kun har eierandeler i Dignio AS hvor undertegnede eier 4384 aksjer i Dignio. Ardoq AS. Her har jeg ansattopsjoner, hvorav nesten halvparten (3229 aksjer) er i ferd med å bli konvertert til aksjer. Resterende opsjoner (4009) vil etter all sannsynlighet bli utløst og konvertert i løpet av sommeren 2025. Vil i så fall registrere på nytt."
+}
+},
+{
+"navn": "Milla Skaug Ødegaard",
+"etternavn": "Ødegaard",
+"parti": "Ap",
+"fylke": "Akershus",
+"har": false,
+"felt": {}
+},
+{
+"navn": "Joakim Øren",
+"etternavn": "Øren",
+"parti": "Ap",
+"fylke": "Oslo",
+"har": true,
+"felt": {}
+},
+{
+"navn": "Martin Østtveit-Moe",
+"etternavn": "Østtveit-Moe",
+"parti": "Ap",
+"fylke": "Akershus",
+"har": true,
+"felt": {}
+}
+]
+}
