@@ -120,3 +120,31 @@ footer{max-width:1100px;margin:0 auto;padding:16px 16px 32px;color:var(--mute);f
   .weigh{grid-template-columns:1fr}
   dl.facts{grid-template-columns:1fr;gap:0}dl.facts dd{margin-bottom:10px}
 }
+
+/* politikk for dummies */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.tbtn{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:40px}
+.tbtn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.du{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.du h3{margin:0 0 6px}
+.du .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.du .two div{background:var(--soft);border-radius:8px;padding:10px;font-size:15px}
+.du .claim{font-weight:700;font-size:17px;margin:12px 0 8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:14px;flex:1 1 0;min-width:84px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 6px;cursor:pointer;min-height:40px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.du label.imp{display:inline-flex;gap:6px;align-items:center;margin-top:8px;font-size:15px}
+.du details{margin-top:10px}
+.du summary{cursor:pointer;font-weight:600}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;font-size:13px;text-align:center}
+.scale div{background:var(--soft);border-radius:6px;padding:6px 2px;min-height:44px}
+.scale b{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
+.scale span{display:inline-block;margin:2px}
+.res{border:2px solid var(--ink);border-radius:12px;padding:16px;margin:18px 0}
+.res .row2{display:grid;grid-template-columns:10em 1fr 3.5em;gap:8px;align-items:center;margin:6px 0}
+.res .bar{height:12px;border-radius:6px;background:var(--soft);overflow:hidden}
+.res .bar i{display:block;height:100%}
+.glossary{margin:8px 0 12px}
+.glossary dt{font-weight:700;margin-top:8px}
+.glossary dd{margin:2px 0 0}
+@media (max-width:600px){.du .two{grid-template-columns:1fr}.res .row2{grid-template-columns:7em 1fr 3em}.scale{font-size:12px}}

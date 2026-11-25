@@ -1,76 +1,239 @@
 {
-  "oppdatert": "2026-11-24",
-  "metode": "Løftene er hentet fra partiprogram og uttalelser i valgkampen 2025. Status bygger på offisielle tall og nyhetsdekning, med kilde for begge deler. Statusene er: Innfridd, Delvis, Pågår, Bak skjema, Brutt, Brutt og rettet, Ikke innfridd.",
-  "regjering": {
-    "parti": "A",
-    "tittel": "Regjeringen (Ap): hva ble lovet, og hva har skjedd",
-    "lofter": [
-      { "lofte": "Det samlede skatte- og avgiftsnivået skal ikke øke", "lovet": "Ap-nestleder Tonje Brenna, programløfte 2025",
-        "status": "Pågår", "hva": "Regjeringen foreslår å kutte inntektsskatten med 6,4 milliarder i 2027. Høyre mener netto skatte- og avgiftskutt er nesten null når andre økninger regnes med.",
-        "kilder": [{ "t": "Dagbladet: Gir skatteløfte", "u": "https://www.dagbladet.no/nyheter/gir-skattelofte/82007420" }, { "t": "Regjeringen: Foreslår milliardkutt i inntektsskatten", "u": "https://www.regjeringen.no/no/aktuelt/foreslar-milliardkutt-i-inntektsskatten-storste-pa-over-20-ar/id3174677/" }, { "t": "Nettavisen: Høyre om «skattebløff»", "u": "https://www.nettavisen.no/okonomi/statsbudsjettet-hoyre-raser-mot-skattekutt-en-skattebloff/s/80-95-138212" }] },
-      { "lofte": "Gratis ferje og sletting av studielån i distriktene skal fortsette", "lovet": "Støre og Vestre i valgkampen 2025",
-        "status": "Brutt og rettet", "hva": "Regjeringens første budsjett etter valget fjernet ordningene. Etter sterke reaksjoner beklaget Støre og Ap snudde, slik at gratis ferje og sletting av inntil 25 000 kroner studielån i 189 kommuner ble videreført.",
-        "kilder": [{ "t": "Dagbladet: Her startet bråket", "u": "https://www.dagbladet.no/nyheter/her-startet-braket/83750316" }, { "t": "Altinget: Prisen for Aps løftebrudd", "u": "https://www.altinget.no/artikkel/prisen-for-aps-loeftebrudd-%C3%A9n-milliard-kroner-og-fullt-av-ministre-i-skammekroken" }] },
-      { "lofte": "Kortere ventetid i helsetjenestene", "lovet": "Ett av Aps fem løfter 2025–2029",
-        "status": "Delvis", "hva": "Regjeringen oppgir at 59 000 færre står i helsekø og at ventetidene er de korteste på fem år. Snittet til behandling er fortsatt rundt fem og en halv måned. Nytt mål er 60 dager.",
-        "kilder": [{ "t": "Arbeiderpartiets partiprogram", "u": "https://www.arbeiderpartiet.no/om/program/" }, { "t": "Regjeringen: Nye ventetidsmål", "u": "https://www.regjeringen.no/no/aktuelt/nye-ventetidsmal/id3167193/" }] },
-      { "lofte": "30 000 flere unge under 30 i jobb innen 2030", "lovet": "Ungdomsløftet, lansert august 2025",
-        "status": "Bak skjema", "hva": "Nav-tall viser 4000 færre unge utenfor arbeid og utdanning i 2025. Med det tempoet nås ikke målet innen 2030, og rundt 110 000 står fortsatt utenfor.",
-        "kilder": [{ "t": "Regjeringen: Færre unge er utenfor", "u": "https://www.regjeringen.no/no/aktuelt/farre-unge-er-utenfor-arbeid-og-utdanning/id3169875/" }, { "t": "NTB/Sol: 16 flere unge i jobb hver dag", "u": "https://sol.no/nyheter/ikke-et-luftslott/85022694" }] },
-      { "lofte": "Nå klimamålene (55 prosent kutt innen 2030)", "lovet": "Ett av Aps fem løfter 2025–2029",
-        "status": "Bak skjema", "hva": "Utslippene var 44 millioner tonn i 2025, 14,1 prosent lavere enn i 1990. Målet er minst 55 prosent kutt innen 2030.",
-        "kilder": [{ "t": "SSB: Norge har kuttet 14 prosent siden 1990", "u": "https://www.ssb.no/natur-og-miljo/forurensning-og-klima/statistikk/utslipp-til-luft/artikler/norge-har-kuttet-14-prosent-i-klimagasser-siden-1990" }] },
-      { "lofte": "Bedre råd for folk flest", "lovet": "Ett av Aps fem løfter 2025–2029",
-        "status": "Ikke innfridd", "hva": "Norges Bank har satt opp styringsrenten to ganger i 2026, til 4,5 prosent, og reversert fjorårets kutt. Renten settes av Norges Bank, ikke regjeringen, men påvirker folks økonomi direkte.",
-        "kilder": [{ "t": "Norges Bank: Rentebeslutning september 2026", "u": "https://www.norges-bank.no/tema/pengepolitikk/Rentemoter/2026/september-2026/" }] },
-      { "lofte": "Fast, forutsigbar strømpris (norgespris)", "lovet": "Ap før valget 2025",
-        "status": "Innfridd", "hva": "Norgespris er innført. I budsjettet for 2027 foreslår regjeringen å øke prisen med 12,5 prosent, fra 40 til 45 øre per kilowattime.",
-        "kilder": [{ "t": "Adresseavisen/NTB: Frys norgespris", "u": "https://www.adressa.no/nyheter/innenriks/i/MAVKAo/roedt-forslag-foer-budsjettforhandlingene-frys-norgespris" }] },
-      { "lofte": "Tannhelsereform", "lovet": "Avtalt med budsjettpartnerne",
-        "status": "Pågår", "hva": "Partiene er enige om en reform der pasienter på sikt maksimalt betaler 25 prosent. Rødt sier regjeringen ikke har satt av penger til den i 2027.",
-        "kilder": [{ "t": "Dagsavisen/NTB: Rødt med tannhelsekrav", "u": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156" }] }
-    ]
-  },
-  "gjennomslag": {
-    "tittel": "Hva fikk de andre partiene gjennom?",
-    "tekst": "Budsjettpartnerne får gjennomslag i budsjettforhandlingene. Opposisjonen kan vinne enkeltsaker når den finner flertall i Stortinget.",
-    "partier": {
-      "Sp": [
-        { "sak": "3 milliarder mer til kommunene i 2026-budsjettet (sammen med Ap og Rødt)", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" },
-        { "sak": "Styrket legevakt i distriktene", "u": "https://www.stortinget.no/globalassets/pdf/referater/stortinget/2025-2026/refs-202526-12-15.pdf" },
-        { "sak": "Fjerning av veibruksavgiften på diesel og bensin, vedtatt 26. mars 2026 med H, FrP, KrF og R", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8" }
-      ],
-      "R": [
-        { "sak": "Høyere fribeløp for uføre som jobber litt ved siden av trygden", "u": "https://www.altinget.no/artikkel/dramatisk-budsjett-loerdag-mdg-bryter-ut-sv-fortsetter-aa-forhandle" },
-        { "sak": "Enighet om en tannhelsereform", "u": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156" },
-        { "sak": "Nei til gruvedrift på havbunnen i hele perioden", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" }
-      ],
-      "MDG": [
-        { "sak": "Utredning av et nasjonalt månedskort for kollektivtransport", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" },
-        { "sak": "En omstillingskommisjon for Norge", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" },
-        { "sak": "CO₂-prising på sokkelen også etter 2030", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" }
-      ],
-      "SV": [
-        { "sak": "Lovfestet gratis halvdagsplass på SFO for 1.–3. trinn", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" },
-        { "sak": "Mer til skogvern og klimainvesteringsfondet", "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093" },
-        { "sak": "Fikk ikke gjennomslag for endringer i oljefondets investeringer", "u": "https://www.parat24.com/nyheter/regjeringen-sikrer-flertall-for-statsbudsjettet-2026/300336", "tap": true }
-      ],
-      "FrP": [
-        { "sak": "Fjerning av veibruksavgiften – Frp foreslo det først, flertall 26. mars 2026", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8" },
-        { "sak": "Ventetidsgaranti på 30 dager i somatikken – foreslått, ikke vedtatt", "u": "https://sykepleien.no/2026/01/regjeringen-ventetider-blir-ikke-tallfestet-enna", "tap": true }
-      ],
-      "H": [
-        { "sak": "Forslag om å fjerne veibruksavgiften fikk flertall 26. mars 2026", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8" },
-        { "sak": "Krav om felles energi- og klimamelding fikk flertall", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-05-19/?all=true" },
-        { "sak": "Hormoner på blå resept", "u": "https://hoyre.no/" }
-      ],
-      "KrF": [
-        { "sak": "Del av flertallet som fjernet veibruksavgiften", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8" },
-        { "sak": "Forslag fra Høyre og KrF vedtatt med 59 mot 42 stemmer 24. mars 2026", "u": "https://www.stortinget.no/no/saker-og-publikasjoner/publikasjoner/referater/stortinget/2025-2026/refs-202526-03-24/?all=true" }
-      ],
-      "V": [
-        { "sak": "Ingen store gjennomslag funnet i vår gjennomgang. Partiet fikk tre mandater i 2025.", "u": "https://www.dagsavisen.no/nyheter/guri-melby-mener-venstre-star-naermere-ap-enn-frp/10067980", "tap": true }
-      ]
+ "oppdatert": "2026-11-24",
+ "metode": "Løftene er hentet fra partiprogram og uttalelser i valgkampen 2025. Status bygger på offisielle tall og nyhetsdekning, med kilde for begge deler. Statusene er: Innfridd, Delvis, Pågår, Bak skjema, Brutt, Brutt og rettet, Ikke innfridd.",
+ "regjering": {
+  "parti": "A",
+  "tittel": "Regjeringen (Ap): hva ble lovet, og hva har skjedd",
+  "lofter": [
+   {
+    "lofte": "Det samlede skatte- og avgiftsnivået skal ikke øke",
+    "lovet": "Ap-nestleder Tonje Brenna, programløfte 2025",
+    "status": "Pågår",
+    "hva": "Regjeringen foreslår å kutte inntektsskatten med 6,4 milliarder i 2027. Høyre mener netto skatte- og avgiftskutt er nesten null når andre økninger regnes med.",
+    "kilder": [
+     {
+      "t": "Dagbladet: Gir skatteløfte",
+      "u": "https://www.dagbladet.no/nyheter/gir-skattelofte/82007420"
+     },
+     {
+      "t": "Regjeringen: Foreslår milliardkutt i inntektsskatten",
+      "u": "https://www.regjeringen.no/no/aktuelt/foreslar-milliardkutt-i-inntektsskatten-storste-pa-over-20-ar/id3174677/"
+     },
+     {
+      "t": "Nettavisen: Høyre om «skattebløff»",
+      "u": "https://www.nettavisen.no/okonomi/statsbudsjettet-hoyre-raser-mot-skattekutt-en-skattebloff/s/80-95-138212"
+     }
+    ],
+    "sok": "skatt|avgift"
+   },
+   {
+    "lofte": "Gratis ferje og sletting av studielån i distriktene skal fortsette",
+    "lovet": "Støre og Vestre i valgkampen 2025",
+    "status": "Brutt og rettet",
+    "hva": "Regjeringens første budsjett etter valget fjernet ordningene. Etter sterke reaksjoner beklaget Støre og Ap snudde, slik at gratis ferje og sletting av inntil 25 000 kroner studielån i 189 kommuner ble videreført.",
+    "kilder": [
+     {
+      "t": "Dagbladet: Her startet bråket",
+      "u": "https://www.dagbladet.no/nyheter/her-startet-braket/83750316"
+     },
+     {
+      "t": "Altinget: Prisen for Aps løftebrudd",
+      "u": "https://www.altinget.no/artikkel/prisen-for-aps-loeftebrudd-%C3%A9n-milliard-kroner-og-fullt-av-ministre-i-skammekroken"
+     }
+    ],
+    "sok": "ferje|studielån"
+   },
+   {
+    "lofte": "Kortere ventetid i helsetjenestene",
+    "lovet": "Ett av Aps fem løfter 2025–2029",
+    "status": "Delvis",
+    "hva": "Regjeringen oppgir at 59 000 færre står i helsekø og at ventetidene er de korteste på fem år. Snittet til behandling er fortsatt rundt fem og en halv måned. Nytt mål er 60 dager.",
+    "kilder": [
+     {
+      "t": "Arbeiderpartiets partiprogram",
+      "u": "https://www.arbeiderpartiet.no/om/program/"
+     },
+     {
+      "t": "Regjeringen: Nye ventetidsmål",
+      "u": "https://www.regjeringen.no/no/aktuelt/nye-ventetidsmal/id3167193/"
+     }
+    ],
+    "sok": "ventetid|helsekø|sykehus"
+   },
+   {
+    "lofte": "30 000 flere unge under 30 i jobb innen 2030",
+    "lovet": "Ungdomsløftet, lansert august 2025",
+    "status": "Bak skjema",
+    "hva": "Nav-tall viser 4000 færre unge utenfor arbeid og utdanning i 2025. Med det tempoet nås ikke målet innen 2030, og rundt 110 000 står fortsatt utenfor.",
+    "kilder": [
+     {
+      "t": "Regjeringen: Færre unge er utenfor",
+      "u": "https://www.regjeringen.no/no/aktuelt/farre-unge-er-utenfor-arbeid-og-utdanning/id3169875/"
+     },
+     {
+      "t": "NTB/Sol: 16 flere unge i jobb hver dag",
+      "u": "https://sol.no/nyheter/ikke-et-luftslott/85022694"
+     }
+    ],
+    "sok": "ungdom|unge.*jobb|ledighet|NAV"
+   },
+   {
+    "lofte": "Nå klimamålene (55 prosent kutt innen 2030)",
+    "lovet": "Ett av Aps fem løfter 2025–2029",
+    "status": "Bak skjema",
+    "hva": "Utslippene var 44 millioner tonn i 2025, 14,1 prosent lavere enn i 1990. Målet er minst 55 prosent kutt innen 2030.",
+    "kilder": [
+     {
+      "t": "SSB: Norge har kuttet 14 prosent siden 1990",
+      "u": "https://www.ssb.no/natur-og-miljo/forurensning-og-klima/statistikk/utslipp-til-luft/artikler/norge-har-kuttet-14-prosent-i-klimagasser-siden-1990"
+     }
+    ],
+    "sok": "klima|utslipp"
+   },
+   {
+    "lofte": "Bedre råd for folk flest",
+    "lovet": "Ett av Aps fem løfter 2025–2029",
+    "status": "Ikke innfridd",
+    "hva": "Norges Bank har satt opp styringsrenten to ganger i 2026, til 4,5 prosent, og reversert fjorårets kutt. Renten settes av Norges Bank, ikke regjeringen, men påvirker folks økonomi direkte.",
+    "kilder": [
+     {
+      "t": "Norges Bank: Rentebeslutning september 2026",
+      "u": "https://www.norges-bank.no/tema/pengepolitikk/Rentemoter/2026/september-2026/"
+     }
+    ],
+    "sok": "strøm|rente|levekostnad|prisvekst|matpris"
+   },
+   {
+    "lofte": "Fast, forutsigbar strømpris (norgespris)",
+    "lovet": "Ap før valget 2025",
+    "status": "Innfridd",
+    "hva": "Norgespris er innført. I budsjettet for 2027 foreslår regjeringen å øke prisen med 12,5 prosent, fra 40 til 45 øre per kilowattime.",
+    "kilder": [
+     {
+      "t": "Adresseavisen/NTB: Frys norgespris",
+      "u": "https://www.adressa.no/nyheter/innenriks/i/MAVKAo/roedt-forslag-foer-budsjettforhandlingene-frys-norgespris"
+     }
+    ],
+    "sok": "norgespris|strømpris|strømstøtte"
+   },
+   {
+    "lofte": "Tannhelsereform",
+    "lovet": "Avtalt med budsjettpartnerne",
+    "status": "Pågår",
+    "hva": "Partiene er enige om en reform der pasienter på sikt maksimalt betaler 25 prosent. Rødt sier regjeringen ikke har satt av penger til den i 2027.",
+    "kilder": [
+     {
+      "t": "Dagsavisen/NTB: Rødt med tannhelsekrav",
+      "u": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156"
+     }
+    ],
+    "sok": "tannhelse|tannlege"
+   }
+  ]
+ },
+ "gjennomslag": {
+  "tittel": "Hva fikk de andre partiene gjennom?",
+  "tekst": "Budsjettpartnerne får gjennomslag i budsjettforhandlingene. Opposisjonen kan vinne enkeltsaker når den finner flertall i Stortinget.",
+  "partier": {
+   "Sp": [
+    {
+     "sak": "3 milliarder mer til kommunene i 2026-budsjettet (sammen med Ap og Rødt)",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    },
+    {
+     "sak": "Styrket legevakt i distriktene",
+     "u": "https://www.stortinget.no/globalassets/pdf/referater/stortinget/2025-2026/refs-202526-12-15.pdf"
+    },
+    {
+     "sak": "Fjerning av veibruksavgiften på diesel og bensin, vedtatt 26. mars 2026 med H, FrP, KrF og R",
+     "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8"
     }
+   ],
+   "R": [
+    {
+     "sak": "Høyere fribeløp for uføre som jobber litt ved siden av trygden",
+     "u": "https://www.altinget.no/artikkel/dramatisk-budsjett-loerdag-mdg-bryter-ut-sv-fortsetter-aa-forhandle"
+    },
+    {
+     "sak": "Enighet om en tannhelsereform",
+     "u": "https://www.dagsavisen.no/nyheter/rodt-med-tannhelsekrav-ligner-en-rod-linje-for-oss/10639156"
+    },
+    {
+     "sak": "Nei til gruvedrift på havbunnen i hele perioden",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    }
+   ],
+   "MDG": [
+    {
+     "sak": "Utredning av et nasjonalt månedskort for kollektivtransport",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    },
+    {
+     "sak": "En omstillingskommisjon for Norge",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    },
+    {
+     "sak": "CO₂-prising på sokkelen også etter 2030",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    }
+   ],
+   "SV": [
+    {
+     "sak": "Lovfestet gratis halvdagsplass på SFO for 1.–3. trinn",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    },
+    {
+     "sak": "Mer til skogvern og klimainvesteringsfondet",
+     "u": "https://www.nrk.no/nyheter/statsbudsjettet_-dette-er-de-enige-om-1.17677093"
+    },
+    {
+     "sak": "Fikk ikke gjennomslag for endringer i oljefondets investeringer",
+     "u": "https://www.parat24.com/nyheter/regjeringen-sikrer-flertall-for-statsbudsjettet-2026/300336",
+     "tap": true
+    }
+   ],
+   "FrP": [
+    {
+     "sak": "Fjerning av veibruksavgiften – Frp foreslo det først, flertall 26. mars 2026",
+     "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8"
+    },
+    {
+     "sak": "Ventetidsgaranti på 30 dager i somatikken – foreslått, ikke vedtatt",
+     "u": "https://sykepleien.no/2026/01/regjeringen-ventetider-blir-ikke-tallfestet-enna",
+     "tap": true
+    }
+   ],
+   "H": [
+    {
+     "sak": "Forslag om å fjerne veibruksavgiften fikk flertall 26. mars 2026",
+     "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8"
+    },
+    {
+     "sak": "Krav om felles energi- og klimamelding fikk flertall",
+     "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-05-19/?all=true"
+    },
+    {
+     "sak": "Hormoner på blå resept",
+     "u": "https://hoyre.no/"
+    }
+   ],
+   "KrF": [
+    {
+     "sak": "Del av flertallet som fjernet veibruksavgiften",
+     "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2025-2026/refs-202526-03-26?m=8"
+    },
+    {
+     "sak": "Forslag fra Høyre og KrF vedtatt med 59 mot 42 stemmer 24. mars 2026",
+     "u": "https://www.stortinget.no/no/saker-og-publikasjoner/publikasjoner/referater/stortinget/2025-2026/refs-202526-03-24/?all=true"
+    }
+   ],
+   "V": [
+    {
+     "sak": "Ingen store gjennomslag funnet i vår gjennomgang. Partiet fikk tre mandater i 2025.",
+     "u": "https://www.dagsavisen.no/nyheter/guri-melby-mener-venstre-star-naermere-ap-enn-frp/10067980",
+     "tap": true
+    }
+   ]
   }
+ }
 }

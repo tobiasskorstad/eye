@@ -18,13 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { persist-credentials: false }
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm }
       - run: npm ci --ignore-scripts --omit=dev
       # Forrige natts data og voteringscache: gir reserve hvis en kilde er nede, og sparer kall mot Stortinget.
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         with:
           path: |
             data/eye.json
@@ -35,7 +35,7 @@ jobs:
       - run: node src/build.js
         env:
           DATA_DIR: data/
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v6
         if: always()
         with:
           # internal.json (med fødselsdatoer for matching) caches aldri
@@ -45,7 +45,7 @@ jobs:
             data/bio-cache.json
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with: { path: site }
   deploy:
     needs: build
@@ -58,4 +58,4 @@ jobs:
       url: ${{ steps.d.outputs.page_url }}
     steps:
       - id: d
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

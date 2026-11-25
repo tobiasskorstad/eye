@@ -8,6 +8,7 @@ import * as reg from './register.js';
 import * as br from './brreg.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
+import { fetchPolls, fetchLeaders, mergeLeaders, buildNow, attachPromiseNews } from './auto.js';
 
 const log = (...a) => console.log(new Date().toISOString(), '[build]', ...a);
 
@@ -108,6 +109,10 @@ export async function buildData() {
   // 4. Partier: redaksjonelt innhold + automatiske nyhetsoverskrifter
   let partier = await readJson(path.join(config.contentDir, 'partier.json'));
   if (partier) {
+    // Partiledere (Wikidata) og målinger (Poll of polls) hentes automatisk; redaksjonelle verdier er reserve.
+    try { mergeLeaders(partier.partier, await fetchLeaders(), warnings); } catch (e) { warnings.push('Partiledere (Wikidata) feilet: ' + e.message); }
+    try { const m = await fetchPolls(); if (m) partier.maling = m; else warnings.push('Målinger: kunne ikke tolke Poll of polls'); }
+    catch (e) { warnings.push('Målinger feilet: ' + e.message); if (previous?.partier?.maling?.utvikling) partier.maling = previous.partier.maling; }
     try {
       const leaders = Object.fromEntries(Object.entries(partier.partier).map(([k, v]) => [k, v.leder]));
       partier.auto = await fetchNews(leaders);
@@ -130,7 +135,14 @@ export async function buildData() {
   }
 
   // 6. Løfter og faktasjekk (redaksjonelt + automatisk)
-  const lofter = await readJson(path.join(config.contentDir, 'lofter.json'));
+  const lofter = attachPromiseNews(await readJson(path.join(config.contentDir, 'lofter.json')), partier?.auto, stemmer);
+  if (partier) partier.naaAuto = buildNow(partier.auto, stemmer);
+  const dummies = await readJson(path.join(config.contentDir, 'dummies.json'));
+  // Redaksjonelt innhold som ikke er oppdatert på lenge, vises med varsel (men publiseres fortsatt).
+  for (const [navn, c] of [['partier', partier], ['lofter', lofter], ['dummies', dummies]]) {
+    const d = c?.oppdatert && (Date.now() - Date.parse(c.oppdatert)) / 864e5;
+    if (d > 60) warnings.push(`Redaksjonelt innhold «${navn}» er ${Math.round(d)} dager gammelt`);
+  }
   const faktasjekk = await readJson(path.join(config.contentDir, 'faktasjekk.json'));
   if (faktasjekk) {
     try {
@@ -146,7 +158,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, partier, stemmer, lofter, faktasjekk, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   await writeJsonAtomic(files.internal(), internal);
   await writeJsonAtomic(files.public(), pub);

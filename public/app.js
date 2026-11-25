@@ -81,14 +81,14 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
   pe: [['handler', 'Aksjehandler'], ['selskaper', 'Selskaper']],
-  fa: [], om: [],
+  fa: [], om: [], du: [],
 };
-const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], om: ['om', 'om'] };
+const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -173,7 +173,12 @@ const newsList = list => `<ul class="news">${list.map(n => `<li><a href="${url(n
 function partiesView() {
   if (!P) { $('v-parties').innerHTML = '<h1>Partiene</h1><p class="empty">Partiinnhold mangler.</p>'; return; }
   $('partiesLede').textContent = `De ${Object.keys(P.partier).length} partiene på Stortinget: hva de vil, hva tilhengere og kritikere sier, og siste nytt. Oppdatert ${date(P.oppdatert, true)}.`;
-  $('now').innerHTML = P.naa ? `<h3>Akkurat nå: ${esc(P.naa.tittel)}</h3><p>${esc(P.naa.tekst)}</p><div class="meta">Kilder: ${P.naa.kilder.map(k => `<a href="${url(k.url)}" rel="noopener">${esc(k.kilde)}</a>`).join(', ')}</div>` : '';
+  const fresh = P.naa && (Date.parse(D.hentet) - Date.parse(P.oppdatert)) / 864e5 <= 7, A = P.naaAuto;
+  $('now').innerHTML = (fresh ? `<h3>Akkurat nå: ${esc(P.naa.tittel)}</h3><p>${esc(P.naa.tekst)}</p><div class="meta">Kilder: ${P.naa.kilder.map(k => `<a href="${url(k.url)}" rel="noopener">${esc(k.kilde)}</a>`).join(', ')}</div>` : '')
+    + (A && (A.nyheter.length || A.vedtak.length) ? `<h3>${fresh ? 'Siste døgn' : 'Akkurat nå'}</h3>${A.nyheter.length ? `<ul class="news">${A.nyheter.map(n => `<li><a href="${url(n.url)}" rel="noopener">${esc(n.tittel)}</a><div class="meta">${esc(n.kilde)} · ${date(n.dato)} · ${n.ps.map(x => `${dot(x)}${esc(short(x))}`).join(' ')}</div></li>`).join('')}</ul>` : ''}${A.vedtak.length ? `<p class="meta"><b>Sist behandlet i Stortinget:</b> ${A.vedtak.map(v => `<a href="https://www.stortinget.no/no/Saker-og-publikasjoner/Saker/Sak/?p=${encodeURIComponent(v.sak)}" rel="noopener">${esc(v.tittel)}</a> (${sdate(v.d)})`).join(' · ')}</p>` : ''}<p class="meta">Hentes automatisk hver natt.</p>` : '');
+  const U = P.maling?.utvikling || [];
+  $('trendTitle').hidden = !U.length;
+  $('trendTable').innerHTML = U.length ? `<thead><tr><th></th>${U.map(r => `<th>${esc(r.label)}</th>`).join('')}</tr></thead><tbody>${partyOrder().map(p => `<tr><th style="text-align:left">${dot(p)}${esc(short(p))}</th>${U.map((r, i) => { const v = r.snitt[p], pv = i ? U[i - 1].snitt[p] : v, d = v - pv; return `<td title="${d > 0 ? '+' : ''}${d.toFixed(1)}">${v != null ? num(v).toFixed(1).replace('.', ',') : '–'}${i && Math.abs(d) >= 1 ? (d > 0 ? ' ▲' : ' ▼') : ''}</td>`; }).join('')}</tr>`).join('')}</tbody>` : '';
   const order = partyOrder(), tot = reps.length;
   $('pollTable').tBodies[0].innerHTML = order.map(p => {
     const seats = reps.filter(r => r.parti === p).length, sp = 100 * seats / tot, poll = P.maling?.snitt[p];
@@ -239,12 +244,13 @@ const STCLS = { 'Innfridd': 'ok', 'Delvis': 'part', 'Pågår': 'go', 'Bak skjema
 const stPill = s => `<span class="st st-${STCLS[s] || 'go'}">${esc(s)}</span>`;
 const srcLinks = ks => ks.map(k => `<a href="${url(k.u)}" rel="noopener">${esc(k.t)}</a>`).join(' · ');
 let promStatus = '';
+const promLatest = x => (x.siste?.length || x.voteringer?.length) ? `<details><summary>Siste om dette (oppdateres automatisk)</summary>${x.siste?.length ? newsList(x.siste) : ''}${x.voteringer?.length ? `<ul class="news">${x.voteringer.map(v => `<li>${esc(v.tittel)} – ${esc(v.tema)}<div class="meta">${sdate(v.d)} · <b class="${v.vedtatt ? 'k' : 's'}">${v.vedtatt ? 'Vedtatt' : 'Forkastet'}</b> ${num(v.for)}–${num(v.mot)}</div></li>`).join('')}</ul>` : ''}</details>` : '';
 function promisesView() {
   const L = D.lofter; if (!L) { $('v-promises').innerHTML = '<h1>Løfter og resultater</h1><p class="empty">Mangler innhold.</p>'; return; }
   $('promLede').textContent = `${L.regjering.tittel}. ${L.metode}`;
   const sts = [...new Set(L.regjering.lofter.map(x => x.status))];
   $('promFilter').innerHTML = ['', ...sts].map(s => `<button class="filterbtn" data-st="${esc(s)}" aria-pressed="${s === promStatus}">${s ? esc(s) + ' (' + L.regjering.lofter.filter(x => x.status === s).length + ')' : 'Alle (' + L.regjering.lofter.length + ')'}</button>`).join('');
-  $('promList').innerHTML = L.regjering.lofter.filter(x => !promStatus || x.status === promStatus).map(x => `<div class="prom"><h3>${stPill(x.status)} ${esc(x.lofte)}</h3><div class="meta">Lovet av: ${esc(x.lovet)}</div><p>${esc(x.hva)}</p><div class="meta">Kilder: ${srcLinks(x.kilder)}</div></div>`).join('');
+  $('promList').innerHTML = L.regjering.lofter.filter(x => !promStatus || x.status === promStatus).map(x => `<div class="prom"><h3>${stPill(x.status)} ${esc(x.lofte)}</h3><div class="meta">Lovet av: ${esc(x.lovet)}</div><p>${esc(x.hva)}</p><div class="meta">Kilder: ${srcLinks(x.kilder)}</div>${promLatest(x)}</div>`).join('');
   $('gjTitle').textContent = L.gjennomslag.tittel; $('gjText').textContent = L.gjennomslag.tekst;
   $('gjGrid').innerHTML = PORDER().filter(p => L.gjennomslag.partier[p]).map(p => `<div class="pcard" style="--pc:${col(p)}"><b><a href="#parti-${p}">${esc(pname(p))}</a></b><div class="meta">${esc(P?.partier[p]?.rolle || '')}</div><ul>${L.gjennomslag.partier[p].map(g => `<li>${g.tap ? '✗ ' : '✓ '}<a href="${url(g.u)}" rel="noopener">${esc(g.sak)}</a></li>`).join('')}</ul></div>`).join('');
 }
@@ -277,6 +283,58 @@ function factsView() {
   $('factList').innerHTML = F.sjekker.filter(x => !p || (x.p || []).includes(p)).map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a><div class="meta">Faktisk.no · ${date(x.d)}${(x.p || []).length ? ' · ' + x.p.map(y => `${dot(y)}${esc(short(y))}`).join(' ') : ''}</div></li>`).join('') || '<li class="empty">Ingen faktasjekker for valget.</li>';
   $('factCrit').innerHTML = F.kritikk.map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a><div class="meta">${date(x.d)}</div></li>`).join('');
   $('factSelf').innerHTML = F.selv.map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a></li>`).join('');
+}
+
+/* ---------- politikk for dummies ---------- */
+// Svarene holdes bare i minnet. Ingenting lagres, sendes eller legges i adressen.
+const DU = { sel: new Set(), ans: {}, vik: {} };
+const SCALE = [[-2, 'Helt uenig'], [-1, 'Litt uenig'], [0, 'Nøytral'], [1, 'Litt enig'], [2, 'Helt enig']];
+const SLABEL = Object.fromEntries(SCALE);
+const ABC = () => Object.keys(D.dummies?.tema[0]?.partier || {}).sort((a, b) => pname(a).localeCompare(pname(b), 'nb'));
+function dummiesView() {
+  const X = D.dummies; if (!X) { $('v-dummies').innerHTML = '<h1>Politikk for dummies</h1><p class="empty">Mangler innhold.</p>'; return; }
+  $('duLede').textContent = X.om;
+  $('duMethod').textContent = X.metode + ` Sist gjennomgått ${date(X.oppdatert, true)}.`;
+  $('duWords').innerHTML = X.ordliste.map(o => `<dt>${esc(o.ord)}</dt><dd>${esc(o.forklaring)}</dd>`).join('');
+  $('duTopics').innerHTML = X.tema.map(t => `<button class="tbtn" data-t="${esc(t.id)}" aria-pressed="${DU.sel.has(t.id)}">${esc(t.navn)}</button>`).join('') + `<button class="tbtn" data-t="*">Alle</button>`;
+  const chosen = X.tema.filter(t => DU.sel.has(t.id));
+  $('duCards').innerHTML = chosen.length ? `<h2>2. Hva mener du?</h2>` + chosen.map(t => duCard(t)).join('') : '<p class="empty">Velg minst én sak over.</p>';
+  duResult();
+}
+function duCard(t) {
+  const votes = (S()?.voteringer || []).filter(v => new RegExp(t.sok, 'i').test(v.tittel + ' ' + v.tema)).slice(0, 3);
+  const byPos = SCALE.map(([v, l]) => `<div><b>${l}</b>${ABC().filter(p => t.partier[p] === v).map(p => `<span title="${esc(pname(p))}${t.merk?.[p] ? ': ' + esc(t.merk[p]) : ''}">${dot(p)}${esc(short(p))}</span>`).join('')}</div>`).join('');
+  return `<div class="du" id="du-${esc(t.id)}"><h3>${esc(t.navn)}</h3><p>${esc(t.kort)}</p>
+  <div class="two"><div><b>Argument for:</b> ${esc(t.for)}</div><div><b>Argument mot:</b> ${esc(t.mot)}</div></div>
+  <p class="claim">«${esc(t.pastand)}»</p>
+  <div class="seg" role="group" aria-label="Hva mener du">${SCALE.map(([v, l]) => `<button data-a="${esc(t.id)}" data-v="${v}" aria-pressed="${DU.ans[t.id] === v}">${l}</button>`).join('')}</div>
+  <label class="imp"><input type="checkbox" data-w="${esc(t.id)}" ${DU.vik[t.id] ? 'checked' : ''}> Dette er ekstra viktig for meg</label>
+  <details><summary>Hva partiene mener</summary><div class="scale">${byPos}</div>
+  <ul>${ABC().filter(p => t.merk?.[p]).map(p => `<li>${dot(p)}<b>${esc(pname(p))}:</b> ${esc(t.merk[p])}</li>`).join('')}</ul>
+  ${votes.length ? `<p><b>Slik har de stemt nylig</b> (hentes automatisk):</p><ul class="news">${votes.map(v => `<li>${esc(v.tittel)} – ${esc(v.tema)}<div class="meta">${sdate(v.d)} · ${v.vedtatt ? 'Vedtatt' : 'Forkastet'} ${num(v.for)}–${num(v.mot)}</div><div>${PORDER().filter(x => v.pos[x]).map(x => posCell(x, v.pos[x])).join('')}</div></li>`).join('')}</ul>` : ''}
+  <p class="meta">Kilder: ${srcLinks(t.kilder)}</p></details></div>`;
+}
+function duScores() {
+  const X = D.dummies, done = X.tema.filter(t => DU.sel.has(t.id) && DU.ans[t.id] != null);
+  if (!done.length) return { done, list: [] };
+  const list = ABC().map(p => {
+    let s = 0, w = 0; const enig = [], uenig = [];
+    for (const t of done) {
+      const k = DU.vik[t.id] ? 2 : 1, d = Math.abs(DU.ans[t.id] - t.partier[p]);
+      s += k * (1 - d / 4); w += k;
+      if (d <= 1) enig.push(t.navn); else if (d >= 3) uenig.push(t.navn);
+    }
+    return { p, pct: Math.round(100 * s / w), enig, uenig };
+  }).sort((a, b) => b.pct - a.pct || pname(a.p).localeCompare(pname(b.p), 'nb'));
+  return { done, list };
+}
+function duResult() {
+  const { done, list } = duScores();
+  $('duResult').innerHTML = done.length ? `<div class="res"><h2>3. Disse partiene er mest enige med deg</h2>
+  <p class="meta">Basert på ${done.length} ${done.length === 1 ? 'sak' : 'saker'}. Jo flere saker du svarer på, jo mer treffsikkert. Dette er ikke et råd om hva du bør stemme.</p>
+  ${list.map(r => `<div class="row2"><a href="#parti-${r.p}">${dot(r.p)}${esc(pname(r.p))}</a><div class="bar"><i style="width:${r.pct}%;background:${col(r.p)}"></i></div><b class="n">${r.pct} %</b></div>
+  <div class="meta" style="margin:-2px 0 8px">${r.enig.length ? 'Enige om: ' + esc(r.enig.join(', ')) : ''}${r.enig.length && r.uenig.length ? ' · ' : ''}${r.uenig.length ? 'Uenige om: ' + esc(r.uenig.join(', ')) : ''}</div>`).join('')}
+  <button class="filterbtn" id="duReset">Start på nytt</button></div>` : '';
 }
 
 /* ---------- aksjehandler ---------- */
@@ -364,7 +422,14 @@ function goLive() {
   Object.entries(D.kom).sort((a, b) => a[1].localeCompare(b[1], 'nb')).forEach(([k, v]) => $('ko').add(new Option(v, k)));
   for (const sel of ['vp', 'np', 'fp']) PORDER().filter(p => D.parti[p]).forEach(p => $(sel).add(new Option(pname(p), p)));
   [...new Set(allNews().map(n => n.kilde))].sort().forEach(s => $('ns').add(new Option(s, s)));
-  chamber(); repList(); tradesView(); cosView(); partiesView(); votesView(); agreeView(); promisesView(); newsView(); factsView();
+  chamber(); repList(); tradesView(); cosView(); partiesView(); votesView(); agreeView(); promisesView(); newsView(); factsView(); dummiesView();
+  $('v-dummies').addEventListener('click', e => {
+    const t = e.target.closest('[data-t]'), a = e.target.closest('[data-a]');
+    if (t) { const id = t.dataset.t; if (id === '*') D.dummies.tema.forEach(x => DU.sel.add(x.id)); else DU.sel.has(id) ? DU.sel.delete(id) : DU.sel.add(id); dummiesView(); }
+    else if (a) { DU.ans[a.dataset.a] = Number(a.dataset.v); for (const b of a.parentNode.children) b.setAttribute('aria-pressed', b === a); duResult(); }
+    else if (e.target.id === 'duReset') { DU.sel.clear(); DU.ans = {}; DU.vik = {}; dummiesView(); scrollTo(0, 0); }
+  });
+  $('v-dummies').addEventListener('change', e => { const w = e.target.dataset.w; if (w) { DU.vik[w] = e.target.checked; duResult(); } });
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
   $('fp').addEventListener('input', factsView);

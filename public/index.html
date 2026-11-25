@@ -20,6 +20,7 @@
   <nav aria-label="Hovedmeny" id="mainnav">
     <a href="#stortinget" data-s="st">Stortinget</a>
     <a href="#partier" data-s="pa">Partier</a>
+    <a href="#forklart" data-s="du">Politikk for dummies</a>
     <a href="#handler" data-s="pe">Penger</a>
     <a href="#faktasjekk" data-s="fa">Faktasjekk</a>
     <a href="#om" data-s="om">Kilder</a>
@@ -55,12 +56,26 @@
     <h2>Mandater og målinger</h2>
     <div class="tw"><table id="pollTable"><thead><tr><th>Parti</th><th class="n">Mandater nå</th><th class="n">Snitt målinger</th><th class="hide-s">Mandater nå / målinger</th></tr></thead><tbody></tbody></table></div>
     <p class="meta" id="pollSrc"></p>
+    <h2 id="trendTitle">Utvikling siste måneder</h2>
+    <div class="tw"><table id="trendTable" class="matrix"></table></div>
     <h2>Hva partiene står for</h2>
     <div class="pgrid" id="pgrid"></div>
   </section>
 
   <section id="v-party" class="view" hidden></section>
 
+
+  <section id="v-dummies" class="view" hidden>
+    <h1>Politikk for dummies</h1>
+    <p class="lede" id="duLede"></p>
+    <details class="glossary"><summary>Ord du bør kunne</summary><dl id="duWords"></dl></details>
+    <h2>1. Hva bryr du deg om?</h2>
+    <p class="meta">Trykk på sakene du vil se. Du kan velge så mange du vil.</p>
+    <div class="chips" id="duTopics"></div>
+    <div id="duCards"></div>
+    <div id="duResult"></div>
+    <p class="meta" id="duMethod"></p>
+  </section>
 
   <section id="v-votes" class="view" hidden>
     <h1>Voteringer</h1>
