@@ -27,6 +27,10 @@ export function diff(prev, next, today = new Date().toISOString().slice(0, 10)) 
   for (const r of next.reps) if (r.siste?.id && prevQ[r.id] && prevQ[r.id] !== r.siste.id)
     add('rep', r.id, `${r.navn} stilte nytt spørsmål: ${r.siste.tit}`, { key: r.siste.id, lenke: `#rep-${r.id}` });
 
+  const oldI = new Set((prev.innside || []).map(i => i.id));
+  for (const i of next.innside || []) if (!oldI.has(i.id)) for (const p of i.pol || []) if (p.ref && rep[p.ref])
+    add('rep', p.ref, `Innsidehandel: ${i.tittel}`, { key: 'i' + i.id, lenke: i.u });
+
   const oldF = new Set((prev.faktasjekk?.sjekker || []).map(s => s.u));
   for (const s of next.faktasjekk?.sjekker || []) if (!oldF.has(s.u)) for (const p of s.p || [])
     add('parti', p, `Ny faktasjekk: ${s.t}`, { key: s.u, lenke: s.u });

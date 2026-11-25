@@ -6,6 +6,8 @@ import path from 'node:path';
 
 const { SUPABASE_URL: SB, SUPABASE_SECRET_KEY: KEY, RESEND_API_KEY: RESEND, EPOST_FRA: FRA, SITE_URL = 'https://tobiasskorstad.github.io/eye/' } = process.env;
 const dataDir = process.argv[2] || 'data';
+// Bygget kjører hver tredje time, men e-post sendes bare én gang i døgnet (kjøringen rundt kl. 03 norsk tid).
+if (process.env.GITHUB_EVENT_NAME === 'schedule' && new Date().getUTCHours() !== 2) { console.log('[varsler] sendes bare om natten'); process.exit(0); }
 if (!SB || !KEY || !RESEND || !FRA) { console.log('[varsler] ikke satt opp – hopper over'); process.exit(0); }
 if (!/^https:\/\/[a-z0-9]{10,40}\.supabase\.co$/.test(SB)) throw new Error('ugyldig SUPABASE_URL');
 

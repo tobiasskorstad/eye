@@ -3,7 +3,7 @@
 name: publiser
 on:
   schedule:
-    - cron: '7 2 * * *'   # 03:07 norsk vintertid
+    - cron: '7 */3 * * *'   # hver tredje time (03:07, 06:07, … norsk vintertid)
   workflow_dispatch:
   push:
     branches: [main]
@@ -31,6 +31,7 @@ jobs:
             data/votes-cache.json
             data/bio-cache.json
             data/varslet.json
+            data/insider-cache.json
           key: eye-data-${{ github.run_id }}
           restore-keys: eye-data-
       - run: node src/build.js
@@ -52,6 +53,7 @@ jobs:
             data/votes-cache.json
             data/bio-cache.json
             data/varslet.json
+            data/insider-cache.json
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
         env:

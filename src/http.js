@@ -34,11 +34,11 @@ async function safeFetch(url, init, hops = 4) {
 }
 
 /** Henter URL med retry og eksponentiell backoff. Returnerer null ved 404/410. */
-export async function fetchRaw(url, { retries = 3, accept = 'application/json' } = {}) {
+export async function fetchRaw(url, { retries = 3, accept = 'application/json', method = 'GET' } = {}) {
   let lastErr;
   for (let i = 0; i <= retries; i++) {
     try {
-      const res = await safeFetch(url, { headers: { accept, 'user-agent': config.userAgent } });
+      const res = await safeFetch(url, { method: method === 'POST' ? 'POST' : 'GET', headers: { accept, 'user-agent': config.userAgent } });
       if (res.status === 404 || res.status === 410) return null;
       if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status} ${url}`);
       if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status} ${url}`), { fatal: true });

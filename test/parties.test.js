@@ -108,3 +108,15 @@ test('voteringscache: andre kjøring gir samme resultat (cache ødelegges ikke)'
     assert.equal(a.antall, 1); assert.equal(b.antall, 1, 'cachet kjøring skal gi samme antall');
   } finally { srv.close(); }
 });
+
+test('innsidehandel: kjøp/salg, antall og kurs leses ut, politikere merkes', async () => {
+  const { parseInsider, tagPoliticians } = await import('../src/insider.js');
+  const a = parseInsider('Sandnes, 25 November 2026: Deputy employee representative to the Board,\nTrond Myklebust in Vår Energi has bought 6000 shares in the company at a price\nof NOK 42.79 per share. Following the transaction, Trond Myklebust holds 10 328 shares.\n\nContact', 'Vår Energi ASA: Notification of trade by primary insider');
+  assert.equal(a.k, 'K'); assert.equal(a.ant, 6000); assert.equal(a.kurs, 42.79);
+  const b = parseInsider('Lars-Petter Nesvåg, board member in Norconsult ASA has today sold 85 000 shares in the Company at a price of NOK 35.225 per share.', '');
+  assert.equal(b.k, 'S'); assert.equal(b.ant, 85000); assert.equal(b.kurs, 35.225);
+  const c = parseInsider('On 25 November 2026, Jarah Invest AS purchased 44,575 shares in Induct AS at a price of NOK 0.42 per share.', '');
+  assert.equal(c.ant, 44575); assert.equal(c.kurs, 0.42);
+  const t = tagPoliticians([{ tekst: 'Styremedlem Ola Nordmann har kjøpt aksjer', tittel: '' }, { tekst: 'Ola har kjøpt', tittel: '' }], [{ navn: 'Ola Nordmann', gruppe: 'Stortinget', ref: 'ON' }]);
+  assert.equal(t[0].pol[0].ref, 'ON'); assert.equal(t[1].pol, undefined, 'bare fullt navn gir treff');
+});

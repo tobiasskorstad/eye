@@ -144,6 +144,19 @@
     <ul class="news" id="factSelf"></ul>
   </section>
 
+  <section id="v-insider" class="view" hidden>
+    <h1>Innsidehandel på Oslo Børs</h1>
+    <p class="lede">Alle handler som styremedlemmer, toppledere og deres nærstående i børsnoterte selskaper har meldt de siste 60 dagene. De må melde fra innen tre virkedager. Siden sjekker nye meldinger hver tredje time.</p>
+    <div class="kpis" id="ik"></div>
+    <div class="row">
+      <select id="it" aria-label="Type handel"><option value="">Alle handler</option><option value="K">Kjøp</option><option value="S">Salg</option><option value="T">Tildeling/opsjoner</option></select>
+      <input id="iq" type="search" placeholder="Søk etter selskap eller navn" aria-label="Søk i innsidehandel">
+      <label class="imp"><input type="checkbox" id="ip"> Bare der en politiker er nevnt</label>
+    </div>
+    <div class="tw"><table class="list" id="insTable"><thead><tr><th>Dato</th><th>Selskap</th><th>Melding</th><th class="n hide-s">Verdi, kr</th></tr></thead><tbody></tbody></table></div>
+    <p class="meta">Kilde: <a href="https://newsweb.oslobors.no/search?category=1102" rel="noopener">Oslo Børs NewsWeb, meldepliktig handel for primærinnsidere</a>. Type, antall og verdi leses automatisk ut av meldingsteksten og kan være feil – sjekk alltid meldingen.</p>
+  </section>
+
   <section id="v-holdings" class="view" hidden>
     <h1>Aksjer hos politisk eksponerte personer</h1>
     <p class="lede">Aksjer og eierinteresser som stortingsrepresentanter, regjeringsmedlemmer, statssekretærer og politiske rådgivere selv har oppgitt i de offentlige registrene. Teksten gjengis slik den står.</p>

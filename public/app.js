@@ -89,14 +89,14 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
-  pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['selskaper', 'Selskaper']],
+  pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['innside', 'Innsidehandel børs'], ['selskaper', 'Selskaper']],
   fa: [], om: [], du: [], ko: [],
 };
-const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -494,6 +494,16 @@ function tradesView() {
     || '<tr><td colspan="6" class="empty">Ingen handler.</td></tr>';
 }
 
+/* ---------- innsidehandel (Oslo Børs) ---------- */
+const ITYPE = { K: '<span class="k">Kjøp</span>', S: '<span class="s">Salg</span>', T: 'Tildeling', U: '–' };
+function insiderView() {
+  const L = D.innside || [], t = $('it').value, q = $('iq').value.trim().toLowerCase(), pol = $('ip').checked;
+  const k = L.filter(x => x.k === 'K'), s = L.filter(x => x.k === 'S');
+  $('ik').innerHTML = `<div><b>${L.length}</b><span>meldinger siste 60 dager</span></div><div><b>${k.length}</b><span>kjøp</span></div><div><b>${s.length}</b><span>salg</span></div><div><b>${L.filter(x => x.pol).length}</b><span>nevner en politiker</span></div>`;
+  const list = L.filter(x => (!t || x.k === t) && (!pol || x.pol) && (!q || (x.sel + ' ' + x.tekst + ' ' + x.tittel).toLowerCase().includes(q)));
+  $('insTable').tBodies[0].innerHTML = list.slice(0, 300).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><b>${esc(x.sel)}</b><div class="meta">${ITYPE[x.k] || '–'}</div></td><td>${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a>${x.pol ? `<div>${x.pol.map(p => `<span class="chip ok">${esc(p.navn)} · ${esc(p.gruppe)}</span>`).join(' ')}</div>` : ''}</td><td class="n hide-s">${x.ver ? nf(x.ver) : '–'}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen meldinger.</td></tr>';
+}
+
 /* ---------- aksjeposter (alle PEP) ---------- */
 function holdingsView() {
   const g = $('hg').value, p = $('hp').value, q = $('hq').value.trim().toLowerCase(), only = $('hh').checked;
@@ -598,6 +608,7 @@ function goLive() {
   [...new Set(holdings.map(x => x.gruppe))].forEach(g => $('hg').add(new Option(g, g)));
   PORDER().filter(p => D.parti[p]).forEach(p => $('hp').add(new Option(pname(p), p)));
   holdingsView(); ['hg', 'hp', 'hq', 'hh'].forEach(id => $(id).addEventListener('input', holdingsView));
+  insiderView(); ['it', 'iq', 'ip'].forEach(id => $(id).addEventListener('input', insiderView));
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
   $('fp').addEventListener('input', factsView);

@@ -9,6 +9,7 @@ import * as br from './brreg.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
 import { diff, merge } from './changes.js';
+import { fetchInsider, tagPoliticians } from './insider.js';
 import { fetchGovernment, fetchStatssekRegister, buildPep } from './pep.js';
 import { fetchPolls, fetchLeaders, mergeLeaders, buildNow, attachPromiseNews } from './auto.js';
 
@@ -122,6 +123,16 @@ export async function buildData() {
     log('PEP', pep?.regjering?.length, 'regjeringsmedlemmer,', ss.length, 'statssekretærer/rådgivere,', pep?.trades?.length, 'handler');
   } catch (e) { warnings.push('Regjeringsmedlemmer feilet: ' + e.message); }
 
+  // 3c. Innsidehandel på Oslo Børs (alle styremedlemmer og toppledere i børsselskaper)
+  let innside = previous?.innside || [];
+  try {
+    const people = [...reps.map(r => ({ navn: r.navn, gruppe: 'Stortinget', ref: r.id })),
+      ...(pep?.regjering || []).map(g => ({ navn: g.navn, gruppe: 'Regjeringen', ref: g.id })),
+      ...(pep?.statssek || []).map(s => ({ navn: s.navn, gruppe: 'Statssekretær/rådgiver' }))];
+    innside = tagPoliticians(await fetchInsider(), people);
+    log('innsidehandel', innside.length, 'meldinger,', innside.filter(i => i.pol).length, 'med politikere');
+  } catch (e) { warnings.push('Innsidehandel (Oslo Børs) feilet: ' + e.message + ' – viser forrige'); }
+
   // 4. Partier: redaksjonelt innhold + automatiske nyhetsoverskrifter
   let partier = await readJson(path.join(config.contentDir, 'partier.json'));
   if (partier) {
@@ -174,7 +185,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);
