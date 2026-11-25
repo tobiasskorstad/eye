@@ -16,6 +16,7 @@
       <input id="gq" type="search" autocomplete="off" placeholder="Søk etter politiker, selskap eller orgnr" aria-label="Søk" aria-controls="gres" aria-expanded="false">
       <div id="gres" class="gres" hidden></div>
     </div>
+    <a id="kontoLink" class="konto" href="#konto" hidden>Logg inn</a>
   </div>
   <nav aria-label="Hovedmeny" id="mainnav">
     <a href="#stortinget" data-s="st">Stortinget</a>
@@ -74,7 +75,27 @@
     <div class="chips" id="duTopics"></div>
     <div id="duCards"></div>
     <div id="duResult"></div>
+    <div id="duSave"></div>
     <p class="meta" id="duMethod"></p>
+  </section>
+
+  <section id="v-konto" class="view" hidden></section>
+
+  <section id="v-personvern" class="view" hidden>
+    <h1>Personvern</h1>
+    <p class="lede">EYE kan brukes uten konto. Lager du en konto, lagrer vi så lite som mulig, og du kan slette alt selv når som helst.</p>
+    <h2>Hva vi lagrer</h2>
+    <ul>
+      <li><b>Innlogging:</b> e-postadressen og navnet du får fra Google eller Apple, og når du sist logget inn. Vi får aldri passordet ditt.</li>
+      <li><b>Det du følger:</b> hvilke politikere, partier og selskaper du har trykket «Følg» på.</li>
+      <li><b>Varsler:</b> om du vil ha e-post når noe nytt skjer.</li>
+      <li><b>Svar i Politikk for dummies:</b> bare hvis du selv krysser av for det. Svarene viser politiske meninger, som er særlig sensitive opplysninger etter personvernforordningen (artikkel 9). Derfor lagres de bare med ditt uttrykkelige samtykke, og de slettes med en gang du trekker samtykket.</li>
+    </ul>
+    <h2>Hvorfor og hvor</h2>
+    <p>Grunnlaget er samtykket ditt (artikkel 6 nr. 1 a og artikkel 9 nr. 2 a). Dataene lagres hos Supabase i EU (Frankfurt). Vi selger ikke data, viser ikke reklame og bruker ingen sporing eller analyseverktøy. Svar i Politikk for dummies som ikke lagres, forlater aldri nettleseren din.</p>
+    <h2>Dine rettigheter</h2>
+    <p>Under «Min side» kan du laste ned alle data om deg, trekke samtykke og slette kontoen. Sletting fjerner alt med en gang. Du kan også klage til Datatilsynet.</p>
+    <p class="meta">Behandlingsansvarlig er eieren av EYE. Kontakt via <a href="https://github.com/tobiasskorstad/eye/issues" rel="noopener">GitHub</a>.</p>
   </section>
 
   <section id="v-votes" class="view" hidden>

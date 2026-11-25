@@ -81,14 +81,14 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
   pe: [['handler', 'Aksjehandler'], ['selskaper', 'Selskaper']],
-  fa: [], om: [], du: [],
+  fa: [], om: [], du: [], ko: [],
 };
-const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'] };
+const HASHVIEW = { stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -100,7 +100,7 @@ function route() {
   if ((m = h.match(/^rep-(\w+)$/)) && byH[m[1]]) { renderRep(byH[m[1]]); show('rep', 'st', 'stortinget'); }
   else if ((m = h.match(/^parti-(\w+)$/)) && P?.partier[m[1]]) { renderParty(m[1]); show('party', 'pa', 'partier'); }
   else if ((m = h.match(/^org-(\d{9})$/))) { renderOrg(m[1]); show('org', 'pe', 'selskaper'); }
-  else { const [v, s] = HASHVIEW[h] || HASHVIEW.stortinget; show(v, s, HASHVIEW[h] ? h : 'stortinget'); document.title = 'EYE – Stortinget, penger og makt'; }
+  else { const [v, s] = HASHVIEW[h] || HASHVIEW.stortinget; if (v === 'konto') kontoView(); show(v, s, HASHVIEW[h] ? h : 'stortinget'); document.title = 'EYE – Stortinget, penger og makt'; }
   scrollTo(0, 0);
 }
 
@@ -143,7 +143,7 @@ function renderRep(r) {
   }).join('');
   const sum = r.trades.reduce((a, t) => a + t.ver, 0);
   $('v-rep').innerHTML = `<a class="back" href="#stortinget">← Alle representanter</a>
-  <div class="head"><div class="badge" style="background:${col(r.parti)}">${esc((ini[0][0] + ini.at(-1)[0]).toUpperCase())}</div><div><h1>${esc(r.navn)}</h1><div class="meta">${P?.partier[r.parti] ? `<a href="#parti-${r.parti}">${esc(D.parti[r.parti] || r.parti)}</a>` : esc(D.parti[r.parti] || r.parti)} · ${esc(r.fylke)}${r.vara ? ' · møtende vararepresentant' : ''}</div></div></div>
+  <div class="head"><div class="badge" style="background:${col(r.parti)}">${esc((ini[0][0] + ini.at(-1)[0]).toUpperCase())}</div><div><h1>${esc(r.navn)}</h1><div class="meta">${P?.partier[r.parti] ? `<a href="#parti-${r.parti}">${esc(D.parti[r.parti] || r.parti)}</a>` : esc(D.parti[r.parti] || r.parti)} · ${esc(r.fylke)}${r.vara ? ' · møtende vararepresentant' : ''}</div></div>${followBtn('rep', r.id)}</div>
   <div class="kpis"><div><b>${num(r.q)}</b><span>spørsmål til regjeringen</span></div><div><b>${r.cos.length}</b><span>selskaper og organisasjoner</span></div><div><b>${r.trades.length}</b><span>aksjehandler${sum ? `, ${nf(sum)} kr` : ''}</span></div></div>
   <dl class="facts">
     <dt>Komité</dt><dd>${r.kom.length ? r.kom.map(k => esc(D.kom[k] || k)).join(', ') : '–'}</dd>
@@ -207,7 +207,7 @@ function renderParty(p) {
   const q = mine.reduce((a, r) => a + r.q, 0), tr = trades.filter(t => t.r.parti === p).length, co = new Set(mine.flatMap(r => r.cos.map(c => c.nr))).size;
   const auto = (P.auto?.[p] || []).filter(n => !x.nyheter.some(m => m.url === n.url));
   $('v-party').innerHTML = `<a class="back" href="#partier">← Alle partier</a>
-  <div class="head"><div class="badge" style="background:${col(p)}">${esc(short(p))}</div><div><h1>${esc(pname(p))}</h1><div class="meta">${esc(x.leder)} · ${esc(x.rolle)}</div></div></div>
+  <div class="head"><div class="badge" style="background:${col(p)}">${esc(short(p))}</div><div><h1>${esc(pname(p))}</h1><div class="meta">${esc(x.leder)} · ${esc(x.rolle)}</div></div>${followBtn('parti', p)}</div>
   <p>${esc(x.om)}</p>
   <div class="kpis"><div><b>${mine.length}</b><span>mandater</span></div><div><b>${P.maling?.snitt[p] != null ? P.maling.snitt[p].toFixed(1).replace('.', ',') + ' %' : '–'}</b><span>snitt på målinger</span></div><div><b>${nf(q)}</b><span>spørsmål til regjeringen</span></div><div><b>${tr}</b><span>aksjehandler, ${co} selskaper</span></div></div>
   <h2>Partiets saker, veid</h2><p class="meta">${esc(P.metode)}</p>
@@ -329,12 +329,151 @@ function duScores() {
   return { done, list };
 }
 function duResult() {
+  duSaveBox();
   const { done, list } = duScores();
   $('duResult').innerHTML = done.length ? `<div class="res"><h2>3. Disse partiene er mest enige med deg</h2>
   <p class="meta">Basert på ${done.length} ${done.length === 1 ? 'sak' : 'saker'}. Jo flere saker du svarer på, jo mer treffsikkert. Dette er ikke et råd om hva du bør stemme.</p>
   ${list.map(r => `<div class="row2"><a href="#parti-${r.p}">${dot(r.p)}${esc(pname(r.p))}</a><div class="bar"><i style="width:${r.pct}%;background:${col(r.p)}"></i></div><b class="n">${r.pct} %</b></div>
   <div class="meta" style="margin:-2px 0 8px">${r.enig.length ? 'Enige om: ' + esc(r.enig.join(', ')) : ''}${r.enig.length && r.uenig.length ? ' · ' : ''}${r.uenig.length ? 'Uenige om: ' + esc(r.uenig.join(', ')) : ''}</div>`).join('')}
   <button class="filterbtn" id="duReset">Start på nytt</button></div>` : '';
+}
+
+
+/* ---------- konto (Supabase, innlogging med Google/Apple) ---------- */
+// Slås bare på når nettstedet er bygget med SUPABASE_URL og SUPABASE_ANON_KEY (meta eye-auth).
+// Ingen tredjepartsskript: innlogging er PKCE-flyten mot Supabase Auth, data hentes via REST med brukerens token.
+const AUTH = (() => { try { const a = JSON.parse(document.querySelector('meta[name="eye-auth"]')?.content || 'null'); return a && /^https:\/\/[a-z0-9]{10,40}\.supabase\.co$/.test(a.url) && /^[\w.-]{20,}$/.test(a.key) ? a : null; } catch { return null; } })();
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch { } } };
+const KO = { s: null, profil: null, folger: new Set(), svar: null, prov: null, melding: '' };
+const b64u = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function authPost(path, body) {
+  const r = await fetch(AUTH.url + '/auth/v1/' + path, { method: 'POST', headers: { apikey: AUTH.key, 'content-type': 'application/json' }, body: JSON.stringify(body), credentials: 'omit' });
+  if (!r.ok) throw new Error('Innloggingen feilet'); return r.json();
+}
+function saveSession(s) { KO.s = s ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600), user: { id: s.user?.id, email: s.user?.email } } : null; store.set('eye-sesjon', KO.s); }
+async function session() {
+  if (!KO.s) return null;
+  if (KO.s.expires_at * 1000 - Date.now() < 60_000) {
+    try { saveSession(await authPost('token?grant_type=refresh_token', { refresh_token: KO.s.refresh_token })); } catch { saveSession(null); }
+  }
+  return KO.s;
+}
+async function api(path, opt = {}) {
+  const s = await session(); if (!s) throw new Error('Du er ikke logget inn');
+  const r = await fetch(AUTH.url + '/rest/v1/' + path, { ...opt, credentials: 'omit', headers: { apikey: AUTH.key, authorization: 'Bearer ' + s.access_token, 'content-type': 'application/json', ...(opt.headers || {}) } });
+  if (r.status === 401) { saveSession(null); throw new Error('Innloggingen er utløpt'); }
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || 'Noe gikk galt');
+  return r.status === 204 ? null : r.json().catch(() => null);
+}
+async function login(provider) {
+  if (!['google', 'apple'].includes(provider)) return;
+  const verifier = b64u(crypto.getRandomValues(new Uint8Array(48)));
+  const challenge = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  try { sessionStorage.setItem('eye-pkce', verifier); } catch { }
+  location.href = `${AUTH.url}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(location.origin + location.pathname)}&code_challenge=${challenge}&code_challenge_method=s256`;
+}
+async function logout() { const s = KO.s; saveSession(null); KO.profil = null; KO.folger.clear(); KO.svar = null; if (s) fetch(AUTH.url + '/auth/v1/logout', { method: 'POST', headers: { apikey: AUTH.key, authorization: 'Bearer ' + s.access_token }, credentials: 'omit' }).catch(() => { }); kontoChanged(); }
+async function loadMine() {
+  const [p, f] = await Promise.all([api('profiles?select=*'), api('folger?select=type,ref')]);
+  KO.profil = p?.[0] || null; KO.folger = new Set((f || []).map(x => `${x.type}:${x.ref}`));
+  if (KO.profil?.samtykke_svar) {
+    KO.svar = await api('svar?select=tema,svar,viktig');
+    for (const x of KO.svar || []) if (!(x.tema in DU.ans)) { DU.sel.add(x.tema); DU.ans[x.tema] = x.svar; DU.vik[x.tema] = x.viktig; }
+  }
+}
+async function kontoInit() {
+  if (!AUTH) return;
+  $('kontoLink').hidden = false;
+  const q = new URLSearchParams(location.search), code = q.get('code');
+  if (code) {
+    let verifier = null; try { verifier = sessionStorage.getItem('eye-pkce'); sessionStorage.removeItem('eye-pkce'); } catch { }
+    history.replaceState(null, '', location.pathname + '#konto');
+    try { if (verifier) saveSession(await authPost('token?grant_type=pkce', { auth_code: code, code_verifier: verifier })); }
+    catch { KO.melding = 'Innloggingen feilet. Prøv igjen.'; }
+  } else if (q.get('error_description')) { KO.melding = 'Innloggingen ble avbrutt.'; history.replaceState(null, '', location.pathname + '#konto'); }
+  else KO.s = store.get('eye-sesjon');
+  if (KO.s) try { await loadMine(); } catch (e) { KO.melding = e.message; }
+  kontoChanged(); route();
+}
+function kontoChanged() {
+  $('kontoLink').textContent = KO.s ? 'Min side' : 'Logg inn';
+  for (const b of document.querySelectorAll('[data-f]')) b.setAttribute('aria-pressed', KO.folger.has(b.dataset.f)), b.textContent = KO.folger.has(b.dataset.f) ? '★ Følger' : '☆ Følg';
+  if (!$('v-konto').hidden) kontoView();
+  if (D.dummies) dummiesView();
+}
+function followBtn(type, ref) { if (!AUTH) return ''; const k = `${type}:${ref}`, on = KO.folger.has(k); return `<button class="follow" data-f="${esc(k)}" aria-pressed="${on}">${on ? '★ Følger' : '☆ Følg'}</button>`; }
+async function toggleFollow(k) {
+  if (!KO.s) { KO.melding = 'Logg inn for å følge politikere, partier og selskaper.'; location.hash = 'konto'; return; }
+  const [type, ref] = k.split(':'), on = KO.folger.has(k);
+  try {
+    if (on) { await api(`folger?type=eq.${encodeURIComponent(type)}&ref=eq.${encodeURIComponent(ref)}`, { method: 'DELETE' }); KO.folger.delete(k); }
+    else { await api('folger', { method: 'POST', headers: { prefer: 'return=minimal,resolution=ignore-duplicates' }, body: JSON.stringify({ type, ref }) }); KO.folger.add(k); }
+  } catch (e) { alertBox(e.message); }
+  kontoChanged();
+}
+function alertBox(m) { KO.melding = m; if (!$('v-konto').hidden) kontoView(); }
+const followName = (type, ref) => type === 'rep' ? byId[ref]?.navn || ref : type === 'parti' ? pname(ref) : byNr[ref]?.navn || D.cos.find(c => c.nr === ref)?.navn || 'Org.nr. ' + org(ref);
+const hashLink = h => /^#[\w-]*$/.test(h) ? h : '#';
+const followHref = (type, ref) => type === 'rep' ? `#rep-${byId[ref]?.h || ''}` : type === 'parti' ? `#parti-${ref}` : `#org-${ref}`;
+async function kontoView() {
+  const v = $('v-konto'); document.title = 'Min side – EYE';
+  if (!AUTH) { v.innerHTML = '<h1>Konto</h1><p class="empty">Brukerkontoer er ikke slått på ennå.</p>'; return; }
+  const msg = KO.melding ? `<p class="card" role="status">${esc(KO.melding)}</p>` : ''; KO.melding = '';
+  if (!KO.s) {
+    if (!KO.prov) KO.prov = await fetch(AUTH.url + '/auth/v1/settings', { headers: { apikey: AUTH.key }, credentials: 'omit' }).then(r => r.json()).then(s => s.external || {}).catch(() => ({ google: true }));
+    v.innerHTML = `<h1>Logg inn</h1>${msg}<p class="lede">Med en konto kan du følge politikere, partier og selskaper og se hva som er nytt siden sist. Du kan også lagre svarene dine i Politikk for dummies, hvis du vil.</p>
+    <div class="login">${KO.prov.google ? '<button data-login="google">Fortsett med Google</button>' : ''}${KO.prov.apple ? '<button class="apple" data-login="apple">Fortsett med Apple</button>' : ''}${!KO.prov.google && !KO.prov.apple ? '<p class="empty">Ingen innloggingsmåter er slått på ennå.</p>' : ''}</div>
+    <p class="meta">Vi får e-postadressen din fra Google eller Apple, aldri passordet. Les <a href="#personvern">personvernerklæringen</a>.</p>`;
+    return;
+  }
+  const seen = KO.profil?.sist_sett || '1970-01-01', mine = [...KO.folger].map(k => k.split(':'));
+  const feed = (D.endringer || []).filter(e => KO.folger.has(`${e.type}:${e.ref}`) || (e.type === 'rep' && KO.folger.has(`parti:${e.parti}`))).slice(0, 50);
+  v.innerHTML = `<h1>Min side</h1>${msg}<p class="meta">Logget inn som ${esc(KO.s.user?.email || '')}</p>
+  <div class="card"><h2>Nytt siden sist</h2>${!mine.length ? '<p class="empty">Du følger ingenting ennå. Trykk «☆ Følg» på en politiker, et parti eller et selskap.</p>' : feed.length ? `<ul class="news">${feed.map(e => `<li class="${e.d > seen.slice(0, 10) ? 'new' : ''}"><a href="${e.lenke?.startsWith('#') ? hashLink(e.lenke) : url(e.lenke)}">${esc(e.tekst)}</a><div class="meta">${date(e.d)}</div></li>`).join('')}</ul>` : '<p class="empty">Ingenting nytt de siste 60 dagene.</p>'}</div>
+  <div class="card"><h2>Du følger</h2>${mine.length ? `<ul>${mine.map(([t, r]) => `<li><a href="${hashLink(followHref(t, r))}">${esc(followName(t, r))}</a> <button class="filterbtn" data-f="${esc(t + ':' + r)}">Slutt å følge</button></li>`).join('')}</ul>` : '<p class="empty">Ingenting ennå.</p>'}
+  <label class="imp"><input type="checkbox" id="koEpost" ${KO.profil?.epostvarsler ? 'checked' : ''}> Send meg e-post når det skjer noe nytt (maks én om dagen)</label></div>
+  <div class="card"><h2>Svar i Politikk for dummies</h2>${KO.profil?.samtykke_svar ? `<p>Du har gitt samtykke ${date(KO.profil.samtykke_svar.slice(0, 10))}. ${KO.svar?.length || 0} svar er lagret.</p><button class="danger" id="koTrekk">Trekk samtykke og slett svarene</button>` : '<p>Svarene dine lagres ikke. Du kan slå på lagring nederst i <a href="#forklart">Politikk for dummies</a>.</p>'}</div>
+  <div class="card"><h2>Dine data</h2><p><button class="filterbtn" id="koEksport">Last ned alt vi har om deg</button> <button class="filterbtn" id="koUt">Logg ut</button></p><p><button class="danger" id="koSlett">Slett kontoen min</button></p><p class="meta"><a href="#personvern">Personvern</a></p></div>`;
+  if (KO.profil) api(`profiles?id=eq.${KO.s.user.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ sist_sett: new Date().toISOString() }) }).catch(() => { });
+}
+async function kontoClick(e) {
+  const t = e.target;
+  if (t.dataset.login) return login(t.dataset.login);
+  if (t.closest('[data-f]')) return toggleFollow(t.closest('[data-f]').dataset.f);
+  if (t.id === 'koUt') return logout();
+  if (t.id === 'koEksport') {
+    const data = { konto: KO.s.user, profil: KO.profil, folger: [...KO.folger], svar: KO.profil?.samtykke_svar ? await api('svar?select=*') : [] };
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })); a.download = 'mine-eye-data.json'; a.click(); return;
+  }
+  if (t.id === 'koTrekk') { await setConsent(false); return; }
+  if (t.id === 'koSlett' && confirm('Slette kontoen og alt som er lagret? Dette kan ikke angres.')) {
+    try { await api('rpc/slett_meg', { method: 'POST', body: '{}' }); saveSession(null); KO.folger.clear(); KO.profil = null; KO.melding = 'Kontoen og alle data er slettet.'; kontoChanged(); } catch (err) { alertBox(err.message); }
+  }
+}
+async function setConsent(on) {
+  try {
+    await api(`profiles?id=eq.${KO.s.user.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ samtykke_svar: on ? new Date().toISOString() : null }) });
+    await loadMine(); if (on) await duAutoSave(true); else KO.svar = [];
+  } catch (e) { KO.melding = e.message; }
+  kontoChanged();
+}
+let duTimer;
+async function duAutoSave(now) {
+  if (!KO.s || !KO.profil?.samtykke_svar) return;
+  clearTimeout(duTimer);
+  const run = async () => {
+    const rows = Object.entries(DU.ans).filter(([t]) => DU.sel.has(t)).map(([tema, svar]) => ({ tema, svar, viktig: !!DU.vik[tema], lagret: new Date().toISOString() }));
+    if (rows.length) await api('svar', { method: 'POST', headers: { prefer: 'return=minimal,resolution=merge-duplicates' }, body: JSON.stringify(rows) }).catch(() => { });
+    KO.svar = rows;
+  };
+  if (now) return run(); duTimer = setTimeout(run, 800);
+}
+function duSaveBox() {
+  const box = $('duSave'); if (!box) return;
+  if (!AUTH) { box.innerHTML = ''; return; }
+  box.innerHTML = !KO.s ? `<p class="meta">Vil du lagre svarene? <a href="#konto">Logg inn</a>. Uten konto forsvinner de når du lukker siden.</p>`
+    : KO.profil?.samtykke_svar ? `<p class="meta">Svarene dine lagres på kontoen din. <a href="#konto">Endre på Min side</a>.</p>`
+    : `<div class="card"><label class="imp"><input type="checkbox" id="duConsent"> Jeg samtykker til at EYE lagrer svarene mine. Jeg forstår at de viser politiske meninger, og at jeg kan slette dem når som helst.</label></div>`;
 }
 
 /* ---------- aksjehandler ---------- */
@@ -371,7 +510,7 @@ async function liveSearch(q) {
 function orgHtml(c, personer, pols) {
   const roleRows = (personer || []).map(p => { const r = p.rep && byId[p.rep]; return `<tr><td>${r ? `<a class="rep" href="#rep-${r.h}">${esc(p.navn)}</a> ${dot(r.parti)}<span class="meta">${esc(r.parti)}</span>` : esc(p.navn)}</td><td>${esc(p.rolle)}</td></tr>`; }).join('');
   const declOnly = pols.filter(p => !(personer || []).some(x => x.rep === p.id));
-  return `<a class="back" href="#selskaper">← Selskaper</a><h1>${esc(c.navn)}</h1><div class="meta">Org.nr. ${org(c.nr)} · ${esc(FORM[c.form] || c.formNavn || c.form)}</div>
+  return `<a class="back" href="#selskaper">← Selskaper</a><div class="head"><h1>${esc(c.navn)}</h1>${followBtn('org', c.nr)}</div><div class="meta">Org.nr. ${org(c.nr)} · ${esc(FORM[c.form] || c.formNavn || c.form)}</div>
   <dl class="facts"><dt>Kommune</dt><dd>${esc(c.kommune || '–')}</dd><dt>Bransje</dt><dd>${esc(c.nar || '–')}</dd><dt>Ansatte</dt><dd>${c.ans > 0 ? nf(c.ans) : 'Ikke registrert'}</dd><dt>Registrert</dt><dd>${esc(c.ar || '–')}</dd><dt>Status</dt><dd>${flag(c.flag) || 'Aktiv'}</dd></dl>
   <h2>Roller</h2>${roleRows ? `<table><thead><tr><th>Navn</th><th>Rolle</th></tr></thead><tbody>${roleRows}</tbody></table>` : `<p class="empty">${c.nRoller ? `${c.nRoller} roller registrert. Henter navn fra Brønnøysund …` : 'Ingen personroller registrert.'}</p>`}
   ${declOnly.length ? `<h3>Oppgitt i interesseregisteret av</h3><p>${polChips(declOnly.map(p => p.id))}</p>` : ''}
@@ -426,10 +565,18 @@ function goLive() {
   $('v-dummies').addEventListener('click', e => {
     const t = e.target.closest('[data-t]'), a = e.target.closest('[data-a]');
     if (t) { const id = t.dataset.t; if (id === '*') D.dummies.tema.forEach(x => DU.sel.add(x.id)); else DU.sel.has(id) ? DU.sel.delete(id) : DU.sel.add(id); dummiesView(); }
-    else if (a) { DU.ans[a.dataset.a] = Number(a.dataset.v); for (const b of a.parentNode.children) b.setAttribute('aria-pressed', b === a); duResult(); }
+    else if (a) { DU.ans[a.dataset.a] = Number(a.dataset.v); for (const b of a.parentNode.children) b.setAttribute('aria-pressed', b === a); duResult(); duAutoSave(); }
     else if (e.target.id === 'duReset') { DU.sel.clear(); DU.ans = {}; DU.vik = {}; dummiesView(); scrollTo(0, 0); }
   });
-  $('v-dummies').addEventListener('change', e => { const w = e.target.dataset.w; if (w) { DU.vik[w] = e.target.checked; duResult(); } });
+  $('v-dummies').addEventListener('change', e => { const w = e.target.dataset.w; if (w) { DU.vik[w] = e.target.checked; duResult(); duAutoSave(); } });
+  kontoInit();
+  document.addEventListener('click', e => { if (e.target.closest('#v-konto, [data-f], [data-login]')) kontoClick(e); });
+  $('v-dummies').addEventListener('change', e => { if (e.target.id === 'duConsent' && e.target.checked) setConsent(true); });
+  $('v-konto').addEventListener('change', async e => {
+    if (e.target.id !== 'koEpost') return;
+    try { await api(`profiles?id=eq.${KO.s.user.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ epostvarsler: e.target.checked }) }); KO.profil.epostvarsler = e.target.checked; }
+    catch (err) { e.target.checked = !e.target.checked; alertBox(err.message); }
+  });
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
   $('fp').addEventListener('input', factsView);

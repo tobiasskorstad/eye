@@ -30,11 +30,19 @@ jobs:
             data/eye.json
             data/votes-cache.json
             data/bio-cache.json
+            data/varslet.json
           key: eye-data-${{ github.run_id }}
           restore-keys: eye-data-
       - run: node src/build.js
         env:
           DATA_DIR: data/
+      - run: node tools/notify.js data
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EPOST_FRA: ${{ vars.EPOST_FRA }}
       - uses: actions/cache/save@v6
         if: always()
         with:
@@ -43,8 +51,12 @@ jobs:
             data/eye.json
             data/votes-cache.json
             data/bio-cache.json
+            data/varslet.json
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v5
         with: { path: site }
   deploy:

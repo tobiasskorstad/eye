@@ -7,9 +7,16 @@ import crypto from 'node:crypto';
 const root = new URL('..', import.meta.url).pathname;
 const [dataFile = path.join(root, 'data/eye.json'), out = path.join(root, 'site')] = process.argv.slice(2);
 
+// Brukerkontoer (valgfritt): Supabase-prosjektets adresse og offentlige «anon»-nøkkel. Begge er ment å være offentlige;
+// sikkerheten ligger i tilgangsreglene i databasen (supabase/schema.sql).
+const SB_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/$/, ''), SB_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
+const auth = /^https:\/\/[a-z0-9]{10,40}\.supabase\.co$/.test(SB_URL) && /^[\w.-]{20,}$/.test(SB_KEY) ? { url: SB_URL, key: SB_KEY } : null;
+if ((SB_URL || SB_KEY) && !auth) throw new Error('SUPABASE_URL/SUPABASE_ANON_KEY har feil format');
+if (auth && (/^sb_secret_/.test(SB_KEY) || /service_role/.test(Buffer.from(SB_KEY.split('.')[1] || '', 'base64url').toString()))) throw new Error('Det er service_role-nøkkelen – den må aldri publiseres. Bruk anon-nøkkelen.');
 export const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
-  "connect-src 'self' https://data.brreg.no; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'";
-const head = csp => `<meta http-equiv="Content-Security-Policy" content="${csp}">\n<meta name="referrer" content="strict-origin-when-cross-origin">`;
+  `connect-src 'self' https://data.brreg.no${auth ? ' ' + auth.url : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'`;
+const head = csp => `<meta http-equiv="Content-Security-Policy" content="${csp}">\n<meta name="referrer" content="strict-origin-when-cross-origin">` +
+  (auth ? `\n<meta name="eye-auth" content='${JSON.stringify(auth)}'>` : '');
 
 const data = JSON.parse(await fs.readFile(dataFile, 'utf8'));
 if (!Array.isArray(data.reps) || data.reps.length < 150) throw new Error('data ser ufullstendige ut – publiserer ikke');

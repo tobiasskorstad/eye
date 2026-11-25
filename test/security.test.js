@@ -60,3 +60,47 @@ test('RSS-tekst: tagger fjernes, ingen dobbel dekoding', async () => {
   assert.equal(/[<>]/.test(i.tittel), false);
   assert.match(i.tittel, /&lt;b&gt;/, '&amp;lt; skal bli &lt;, ikke <');
 });
+
+test('kontoer: databasen har tilgangsregler på alle tabeller og ingenting for anonyme', () => {
+  const sql = fs.readFileSync(new URL('../supabase/schema.sql', import.meta.url), 'utf8');
+  const tables = [...sql.matchAll(/create table if not exists public\.(\w+)/g)].map(m => m[1]);
+  assert.deepEqual(tables.sort(), ['folger', 'profiles', 'svar']);
+  for (const t of tables) {
+    assert.match(sql, new RegExp(`alter table public\\.${t}\\s+enable row level security`), t + ' mangler RLS');
+    assert.match(sql, new RegExp(`revoke all on [^;]*public\\.${t}[^;]* from anon`), t + ' er åpen for anonyme');
+  }
+  assert.doesNotMatch(sql, /grant [^;]* to anon/i);
+  assert.match(sql, /samtykke_svar is not null/, 'svar krever samtykke');
+  for (const f of sql.matchAll(/create or replace function [^]*?security definer set search_path = ''/g)) assert.ok(f);
+  assert.equal((sql.match(/security definer/g) || []).length, (sql.match(/security definer set search_path = ''/g) || []).length, 'alle security definer-funksjoner må låse search_path');
+});
+
+test('kontoer: hemmelig nøkkel stoppes, offentlig nøkkel og CSP settes', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'eye-')), f = path.join(dir, 'd.json');
+  fs.writeFileSync(f, JSON.stringify({ reps: Array.from({ length: 169 }, (_, i) => ({ id: 'R' + i, fodt: 1980 })) }));
+  const run = env => { try { execFileSync('node', ['tools/pages.js', f, path.join(dir, 's')], { stdio: 'pipe', env: { ...process.env, ...env } }); return fs.readFileSync(path.join(dir, 's/index.html'), 'utf8'); } catch { return null; } };
+  const url = 'https://abcdefghijklmnopqrst.supabase.co';
+  assert.equal(run({ SUPABASE_URL: url, SUPABASE_ANON_KEY: 'sb_secret_abcdefghijklmnopqrstuvwxyz' }), null);
+  const jwt = 'x.' + Buffer.from('{"role":"service_role"}').toString('base64url') + '.y_abcdefghijklmn';
+  assert.equal(run({ SUPABASE_URL: url, SUPABASE_ANON_KEY: jwt }), null);
+  assert.equal(run({ SUPABASE_URL: 'https://evil.example', SUPABASE_ANON_KEY: 'sb_publishable_abcdefghijklmnopqrst' }), null);
+  const html = run({ SUPABASE_URL: url, SUPABASE_ANON_KEY: 'sb_publishable_abcdefghijklmnopqrst' });
+  assert.match(html, new RegExp(`connect-src 'self' https://data.brreg.no ${url.replace(/\./g, '\\.')};`));
+  assert.match(html, /name="eye-auth"/);
+  const plain = run({ SUPABASE_URL: '', SUPABASE_ANON_KEY: '' });
+  assert.doesNotMatch(plain, /eye-auth/);
+});
+
+test('endringer: nye aksjehandler, selskaper og spørsmål oppdages, ingenting dobbelt', async () => {
+  const { diff, merge } = await import('../src/changes.js');
+  const prev = { reps: [{ id: 'A1', navn: 'Ola', parti: 'H', siste: { id: '1' } }], trades: [], cos: [{ nr: '1', navn: 'X AS', decl: [] }], faktasjekk: { sjekker: [] } };
+  const next = { reps: [{ id: 'A1', navn: 'Ola', parti: 'H', siste: { id: '2', tit: 'Hvorfor?' } }], trades: [{ rep: 'A1', d: '2026-11-20', k: 'K', sel: 'Equinor', ant: 10 }], cos: [{ nr: '1', navn: 'X AS', decl: ['A1'], roles: {} }], faktasjekk: { sjekker: [{ u: 'https://www.faktisk.no/x', t: 'Sjekk', p: ['H'] }] } };
+  const e = diff(prev, next, '2026-11-25');
+  assert.equal(e.filter(x => x.type === 'rep').length, 3);
+  assert.ok(e.some(x => x.type === 'org' && x.ref === '1'));
+  assert.ok(e.some(x => x.type === 'parti' && x.ref === 'H'));
+  assert.deepEqual(diff(next, next, '2026-11-25'), []);
+  assert.deepEqual(diff(null, next), [], 'første kjøring gir ingen endringer');
+  assert.equal(merge(e, e, '2026-11-25').length, e.length);
+  assert.equal(merge(e, [], '2027-03-01').length, 0, 'eldre enn 60 dager fjernes');
+});

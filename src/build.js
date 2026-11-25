@@ -8,6 +8,7 @@ import * as reg from './register.js';
 import * as br from './brreg.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
+import { diff, merge } from './changes.js';
 import { fetchPolls, fetchLeaders, mergeLeaders, buildNow, attachPromiseNews } from './auto.js';
 
 const log = (...a) => console.log(new Date().toISOString(), '[build]', ...a);
@@ -160,6 +161,7 @@ export async function buildData() {
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
     trades, cos, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
+  pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);
   await writeJsonAtomic(files.public(), pub);
   log(`ferdig på ${pub.byggetid}s`, warnings.length ? `(${warnings.length} advarsler)` : '');

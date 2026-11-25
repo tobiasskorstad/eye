@@ -148,3 +148,19 @@ footer{max-width:1100px;margin:0 auto;padding:16px 16px 32px;color:var(--mute);f
 .glossary dt{font-weight:700;margin-top:8px}
 .glossary dd{margin:2px 0 0}
 @media (max-width:600px){.du .two{grid-template-columns:1fr}.res .row2{grid-template-columns:7em 1fr 3em}.scale{font-size:12px}}
+
+/* konto */
+.konto{flex:none;margin-left:12px;font-weight:600;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;white-space:nowrap}
+.follow{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;margin-left:auto;min-height:36px;white-space:nowrap}
+.follow[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.login{display:grid;gap:10px;max-width:360px;margin:16px 0}
+.login button{font:inherit;font-size:16px;font-weight:600;border:1px solid var(--ink);border-radius:10px;padding:12px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.login button.apple{background:var(--ink);color:var(--bg)}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.card h2{margin-top:0}
+.new{font-weight:700}
+.danger{font:inherit;color:#b3261e;border:1px solid #b3261e;background:none;border-radius:8px;padding:8px 12px;cursor:pointer}
+@media (max-width:600px){.konto{padding:6px 10px;margin-left:8px}}
+.bar .search{flex:1;min-width:0}
+@media (max-width:600px){.bar .search{order:3;flex-basis:100%}.konto{margin-left:auto}}
