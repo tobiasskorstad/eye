@@ -38,15 +38,23 @@ export async function fetchVotes(sessions, max = 150) {
   }
   // Fikk vi ingen saker (kvote/feil), bruk sakene vi allerede har i cachen.
   if (!saker.length) saker = Object.values(cache.saker || {});
+  saker = [...new Map(saker.map(x => [x.id, x])).values()]; // samme sak kan komme i flere sesjoner
   cache.saker = Object.fromEntries([...Object.values(cache.saker || {}), ...saker].map(x => [x.id, { id: x.id, status: 1, korttittel: x.korttittel, tittel: x.tittel, sist_oppdatert_dato: x.sist_oppdatert_dato }]));
   diag.saker = saker.length;
   const newest = saker.sort((a, b) => (parseMsDate(b.sist_oppdatert_dato) || 0) - (parseMsDate(a.sist_oppdatert_dato) || 0)).slice(0, 250);
   const votes = [];
   for (const s of newest) {
-    const v = cache[`sak:${s.id}`] || (await slowGet(api(`voteringer?sakid=${s.id}`)))?.sak_votering_liste || [];
-    cache[`sak:${s.id}`] = v.filter(x => x.personlig_votering).map(x => ({ id: x.votering_id, tid: x.votering_tid, tema: x.votering_tema, vedtatt: x.vedtatt, for: x.antall_for, mot: x.antall_mot, borte: x.antall_ikke_tilstede }));
-    for (const x of cache[`sak:${s.id}`]) votes.push({ ...x, sak: s.id, tittel: s.korttittel || s.tittel });
+    // Cachen holder ferdig forenklede voteringer (nøkkel sak2:). Feilede kall caches ikke, så de prøves igjen neste natt.
+    let list = cache[`sak2:${s.id}`];
+    if (!list) {
+      const d = await slowGet(api(`voteringer?sakid=${s.id}`));
+      if (!d) continue;
+      list = (d.sak_votering_liste || []).filter(x => x.personlig_votering).map(x => ({ id: x.votering_id, tid: x.votering_tid, tema: x.votering_tema, vedtatt: x.vedtatt, for: x.antall_for, mot: x.antall_mot, borte: x.antall_ikke_tilstede }));
+      cache[`sak2:${s.id}`] = list;
+    }
+    for (const x of list) votes.push({ ...x, sak: s.id, tittel: s.korttittel || s.tittel });
   }
+  for (const k of Object.keys(cache)) if (k.startsWith('sak:')) delete cache[k]; // gammelt, ødelagt format
   diag.voteringer = votes.length;
   votes.sort((a, b) => (parseMsDate(b.tid) || 0) - (parseMsDate(a.tid) || 0));
   let fetched = 0;

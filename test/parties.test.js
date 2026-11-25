@@ -86,3 +86,25 @@ test('automatikk: Poll of polls tolkes, ugyldig tabell avvises', async () => {
   const n = buildNow({ A: [{ tittel: 'x', url: 'https://a/1', dato: '2026-11-25', kilde: 'NRK' }, { tittel: 'gammel', url: 'https://a/2', dato: '2026-10-01', kilde: 'NRK' }], H: [{ tittel: 'x', url: 'https://a/1', dato: '2026-11-25', kilde: 'NRK' }] }, { voteringer: [{ d: '2026-11-24', sak: 1, tittel: 'S', vedtatt: true }, { d: '2026-11-24', sak: 1, tittel: 'S', vedtatt: true }] }, 3, now);
   assert.equal(n.nyheter.length, 1); assert.deepEqual(n.nyheter[0].ps, ['A', 'H']); assert.equal(n.vedtak.length, 1);
 });
+
+test('voteringscache: andre kjøring gir samme resultat (cache ødelegges ikke)', async () => {
+  const os = await import('node:os'), path = await import('node:path'), http = await import('node:http');
+  const dir = fsx.mkdtempSync(path.join(os.tmpdir(), 'votes-'));
+  const srv = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x'); res.setHeader('content-type', 'application/json');
+    if (u.pathname.endsWith('/saker')) return res.end(JSON.stringify({ saker_liste: [{ id: 1, status: 1, korttittel: 'Sak', sist_oppdatert_dato: '/Date(1763640000000+0100)/' }] }));
+    if (u.pathname.endsWith('/voteringer')) return res.end(JSON.stringify({ sak_votering_liste: [{ votering_id: 7, personlig_votering: true, votering_tid: '/Date(1763640000000+0100)/', votering_tema: 'T', vedtatt: true, antall_for: 1, antall_mot: 1, antall_ikke_tilstede: 0 }] }));
+    if (u.pathname.endsWith('/voteringsresultat')) return res.end(JSON.stringify({ voteringsresultat_liste: [{ representant: { id: 'a', parti: { id: 'A' } }, votering: 2 }, { representant: { id: 'b', parti: { id: 'H' } }, votering: 3 }] }));
+    res.statusCode = 404; res.end('{}');
+  }).listen(0);
+  const base = `http://127.0.0.1:${srv.address().port}/st`;
+  process.env.DATA_DIR = dir; process.env.STORTINGET_API = base; process.env.STORTINGET_DELAY_MS = '0';
+  const { config } = await import('../src/config.js');
+  Object.assign(config, { dataDir: dir, stortingetApi: base, stortingetDelayMs: 0 });
+  const { allowHosts } = await import('../src/http.js'); allowHosts([base]);
+  const { fetchVotes } = await import('../src/votes.js');
+  try {
+    const a = await fetchVotes(['2025-2026']), b = await fetchVotes(['2025-2026']);
+    assert.equal(a.antall, 1); assert.equal(b.antall, 1, 'cachet kjøring skal gi samme antall');
+  } finally { srv.close(); }
+});
