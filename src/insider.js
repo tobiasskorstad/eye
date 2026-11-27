@@ -5,7 +5,7 @@ import path from 'node:path';
 import { config } from './config.js';
 import { getJson, allowHosts } from './http.js';
 
-const API = 'https://api3.oslo.oslobors.no/v1/newsreader';
+const API = config.osloBorsApi;
 allowHosts([API]);
 const PARSER_V = 2;
 const sleep = ms => new Promise(r => setTimeout(r, ms));

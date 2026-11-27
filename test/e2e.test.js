@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_UPLOAD: `${base}/wiki/upload/`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -53,7 +53,12 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.match(P['gov:JGS'].wiki.tekst, /norsk politiker/);
   assert.ok(!/1960|25\. august|født/.test(JSON.stringify(P)), 'fødselsdatoer fra Wikipedia publiseres ikke');
   const img = await fs.readdir(path.join(dataDir, 'img'));
-  assert.ok(img.some(f => f.startsWith('gov-jgs-')) && img.length === 3, img.join(','));
+  assert.ok(img.some(f => f.startsWith('gov-jgs-')) && img.length === 4, img.join(','));
+  // innsidere: bilde og omtale fra Wikipedia når artikkelen nevner yrke og selskap
+  assert.equal(pub.innside[0].navn, 'Anders Opedal');
+  assert.equal(P['ins:anders-opedal'].fotoKilde, 'Wikimedia Commons');
+  assert.match(P['ins:anders-opedal'].wiki.tekst, /konsernsjef i Equinor/);
+  assert.equal(pub.flagging.length, 1);
 });
 
 test('offentlige data: alt fra registrene, men ingen fødselsdatoer', async () => {
