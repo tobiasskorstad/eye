@@ -265,26 +265,36 @@ async function personBrreg(x) {
 const insiderLink = n => n && insiders.has(slug(n)) ? `<a href="#person-${slug(n)}">${esc(n)}</a>` : esc(n || '–');
 
 /* ---------- oversikt (forsiden) ---------- */
+const cut = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n).replace(/\s\S*$/, '') + ' …' : t; };
 function homeView() {
   const L = D.innside || [], fk = D.faktasjekk?.sjekker || [];
   $('homeLede').textContent = `EYE samler det som står i offentlige registre om Stortinget, regjeringen og de største pengene på Oslo Børs, og lenker alltid til kilden. Oppdatert ${date(D.hentet, true)}.`;
-  $('homeKpis').innerHTML = `<a href="#stortinget"><b>${reps.length}</b><span>stortingsrepresentanter</span></a><a href="#regjeringen"><b>${govs.length}</b><span>statsråder</span></a><a href="#handler"><b>${trades.length}</b><span>aksjehandler fra politikere</span></a><a href="#innside"><b>${L.length}</b><span>innsidehandler siste 60 dager</span></a><a href="#faktasjekk"><b>${fk.length}</b><span>faktasjekker</span></a>`;
+  $('homeKpis').innerHTML = `<a href="#stortinget"><b>${reps.length}</b><span>stortingsrepresentanter</span></a><a href="#regjeringen"><b>${govs.length}</b><span>statsråder</span></a><a href="#handler"><b>${trades.length}</b><span>aksjehandler fra politikere</span></a><a href="#aksjeposter"><b>${holdings.length}</b><span>aksjeposter hos politisk eksponerte</span></a><a href="#innside"><b>${L.length}</b><span>innsidehandler siste 60 dager</span></a>`;
   const gl = [...govs].sort((a, b) => govRank(a.tittel) - govRank(b.tittel) || a.tittel.localeCompare(b.tittel, 'nb'));
   $('homeGov').innerHTML = gl.length ? sec('h-gov', 'Regjeringen', `<div class="strip">${gl.slice(0, 8).map(g => `<a href="#statsrad-${hid(g.id)}" title="${esc(g.navn)}, ${esc(g.tittel)}">${avatar(govKeys(g), g.navn, g.parti, 'm')}<b>${esc(g.navn)}</b><span>${esc(g.tittel)}</span></a>`).join('')}</div>`, `<a href="#regjeringen">Alle ${gl.length} →</a>`) : '';
   const card = (title, link, body) => `<section class="block"><div class="bh"><h2>${title}</h2>${link}</div>${body}</section>`;
   const row = (av, main, meta, right = '') => `<li>${av}<div class="grow">${main}<div class="meta">${meta}</div></div>${right ? `<b class="n">${right}</b>` : ''}</li>`;
-  const ch = (D.endringer || []).slice(0, 6);
   const tr = trades.slice(0, 6);
-  const big = L.filter(x => x.ver && (x.k === 'K' || x.k === 'S')).sort((a, b) => b.ver - a.ver).slice(0, 6);
+  // Største innsidehandler: samme person, selskap og retning slås sammen (f.eks. fem kjøp på rad blir én linje)
+  const grp = new Map();
+  for (const x of L) if (x.ver && (x.k === 'K' || x.k === 'S')) {
+    const k = `${x.navn || ''}|${x.sel}|${x.k}`, g = grp.get(k) || { ...x, sum: 0, n: 0, d: x.d };
+    g.sum += x.ver; g.n++; if (x.d > g.d) g.d = x.d; grp.set(k, g);
+  }
+  const big = [...grp.values()].sort((a, b) => b.sum - a.sum).slice(0, 6);
+  // Siste spørsmål til regjeringen (nyeste per representant)
+  const qs = reps.filter(r => r.siste?.d).sort((a, b) => b.siste.d.localeCompare(a.siste.d)).slice(0, 6);
+  const qUrl = q => `https://www.stortinget.no/no/Saker-og-publikasjoner/Sporsmal/${q.t === 'I' ? 'Interpellasjoner/Interpellasjon/' : 'Skriftlige-sporsmal-og-svar/Skriftlig-sporsmal/'}?qnid=${encodeURIComponent(q.id)}`;
   const A = P?.naaAuto?.nyheter || [];
   const order = P ? partyOrder() : [];
+  const fkNew = fk.filter(x => x.d).slice(0, 5), stille = D.faktasjekk?.nyeste && (Date.now() - Date.parse(D.faktasjekk.nyeste)) / 864e5 > 30;
   $('homeDash').innerHTML = [
     tr.length && card('Siste aksjehandler fra politikere', '<a href="#handler">Alle →</a>', `<ul class="feed">${tr.map(t => row(avatar(t.r.h ? ['rep:' + t.rep] : ['gov:' + t.pep], t.r.navn, t.r.parti), `${t.r.h ? `<a href="#rep-${t.r.h}">${esc(t.r.navn)}</a>` : t.pep && govById[t.pep] ? `<a href="#statsrad-${hid(t.pep)}">${esc(t.r.navn)}</a>` : esc(t.r.navn)} ${trade(t.k).toLowerCase()} ${esc(t.sel)}`, `${sdate(t.d)} · ${esc(t.r.parti)}`, kr(t.ver))).join('')}</ul>`),
-    big.length && card('Største innsidehandler på børsen', '<a href="#eiere">Toppliste →</a>', `<ul class="feed">${big.map(x => row(avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || x.sel), `${x.navn ? insiderLink(x.navn) : esc(x.sel)} <span class="meta">${ITYPE[x.k]}</span>`, `${esc(x.rolle ? x.rolle + ', ' : '')}${esc(x.sel)} · ${sdate(x.d)}`, kr(x.ver))).join('')}</ul>`),
-    ch.length && card('Siste endringer', D.endringer.length > 6 ? '<span class="meta">Siste 60 dager</span>' : '', `<ul class="feed">${ch.map(e => row('', `<a href="${e.lenke?.startsWith('#') ? hashLink(e.lenke) : url(e.lenke)}">${esc(e.tekst)}</a>`, date(e.d))).join('')}</ul>`),
+    big.length && card('Største innsidehandler på børsen', '<a href="#eiere">Toppliste →</a>', `<ul class="feed">${big.map(x => row(avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || x.sel), `${x.navn ? insiderLink(x.navn) : esc(x.sel)} <span class="meta">${x.n > 1 ? `${x.n} ${x.k === 'K' ? 'kjøp' : 'salg'}` : ITYPE[x.k]}</span>`, `${esc(x.rolle ? x.rolle + ', ' : '')}${esc(x.sel)} · ${x.n > 1 ? 'siste ' : ''}${sdate(x.d)}`, kr(x.sum))).join('')}</ul><p class="meta">Siste 60 dager. Flere handler fra samme person i samme selskap er slått sammen.</p>`),
+    qs.length && card('Siste spørsmål til regjeringen', '<a href="#stortinget">Alle representanter →</a>', `<ul class="feed">${qs.map(r => row(avatar(['rep:' + r.id], r.navn, r.parti), `<a href="${url(qUrl(r.siste))}" rel="noopener">${esc(cut(r.siste.tit, 110))}</a>`, `<a href="#rep-${r.h}">${esc(r.navn)}</a> · ${esc(r.parti)} · ${date(r.siste.d)}`)).join('')}</ul>`),
     A.length && card('Akkurat nå i nyhetene', '<a href="#nyheter">Alle nyheter →</a>', `<ul class="feed">${A.slice(0, 5).map(n => row('', `<a href="${url(n.url)}" rel="noopener">${esc(n.tittel)}</a>`, `${esc(n.kilde)} · ${n.ps.map(x => dot(x) + esc(short(x))).join(' ')}`)).join('')}</ul>`),
     order.length && card('Partiene', '<a href="#partier">Mer →</a>', `<ul class="feed">${order.map(p => { const x = P.partier[p], lk = leaderKeys(p), seats = reps.filter(r => r.parti === p).length, poll = P.maling?.snitt[p]; return row(avatar(lk, x.leder, p), `<a href="#parti-${p}">${esc(pname(p))}</a>`, `${esc(x.leder)} · ${seats} mandater`, poll != null ? poll.toFixed(1).replace('.', ',') + ' %' : ''); }).join('')}</ul>${P.maling ? `<p class="meta">Til høyre: snitt på målingene (${esc(P.maling.kilde)}).</p>` : ''}`),
-    fk.length && card('Nyeste faktasjekker', '<a href="#faktasjekk">Alle →</a>', `<ul class="feed">${fk.slice(0, 5).map(x => row('', `<a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a>`, `Faktisk.no · ${date(x.d)}${(x.p || []).length ? ' · ' + x.p.map(y => dot(y) + esc(short(y))).join(' ') : ''}`)).join('')}</ul>`),
+    fkNew.length && card('Nytt fra Faktisk.no', '<a href="#faktasjekk">Alle →</a>', `<ul class="feed">${fkNew.map(x => row('', `<a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a>`, `${x.type === 'artikkel' ? 'Artikkel' : 'Faktasjekk'} · ${date(x.d)}${(x.p || []).length ? ' · ' + x.p.map(y => dot(y) + esc(short(y))).join(' ') : ''}`)).join('')}</ul>${stille ? `<p class="meta">Faktisk.no har ikke publisert noe nytt siden ${date(D.faktasjekk.nyeste)}.</p>` : ''}`),
   ].filter(Boolean).join('');
 }
 /** Profilnøkler for en partileder: representant, statsråd eller egen partileder-profil. */

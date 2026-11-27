@@ -187,7 +187,8 @@ export async function buildData() {
       const leaders = partier ? Object.fromEntries(Object.entries(partier.partier).map(([k, v]) => [k, v.leder])) : {};
       const auto = tagParties(await fetchFactchecks(), leaders);
       const known = new Set(faktasjekk.sjekker.map(s => s.u));
-      faktasjekk.sjekker = [...faktasjekk.sjekker, ...auto.filter(a => !known.has(a.u))].sort((a, b) => (b.d || '').localeCompare(a.d || ''));
+      faktasjekk.sjekker = [...faktasjekk.sjekker.map(s => ({ type: 'faktasjekk', ...s })), ...auto.filter(a => !known.has(a.u))].sort((a, b) => (b.d || '').localeCompare(a.d || ''));
+      faktasjekk.nyeste = faktasjekk.sjekker.find(s => s.d)?.d || null; // så siden kan si fra når kilden er stille
     } catch (e) { warnings.push('Faktasjekker feilet: ' + e.message); }
   }
 
