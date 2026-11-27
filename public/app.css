@@ -251,3 +251,5 @@ details.more{margin-top:8px}details.more>summary{cursor:pointer;font-weight:600;
 }
 .tick{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;background:var(--soft);padding:1px 6px;border-radius:5px;text-transform:none}
 .block h3{font-size:15px;margin:12px 0 4px}
+
+#v-party h2[id]{scroll-margin-top:130px}
