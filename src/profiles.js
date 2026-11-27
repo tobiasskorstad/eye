@@ -126,8 +126,11 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   }
 
   // 1b. Wikidata for næringslivsfolk uten artikkel: krever at arbeidsgiver, verv eller beskrivelse nevner selskapet
+  let wdFail = 0;
   for (const p of list.filter(p => p.kind === 'biz' && cache.p[p.key]?.tw === now && !cache.p[p.key].wiki)) {
-    try { const w = await wikidata(p); if (w) cache.p[p.key].wiki = w; } catch (e) { warnings.push(`Wikidata svarte ikke: ${e.message}`); break; }
+    try { const w = await wikidata(p); if (w) cache.p[p.key].wiki = w; }
+    catch (e) { cache.p[p.key].tw = 0; if (++wdFail >= 3) { warnings.push(`Wikidata svarte ikke: ${e.message} – prøver resten neste gang`); break; } }
+    await new Promise(r => setTimeout(r, config.wikidataDelayMs));
   }
 
   // 2. Bilder: Stortinget for dem som har person-ID der, ellers bildet fra en godkjent Wikipedia-artikkel

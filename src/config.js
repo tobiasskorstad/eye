@@ -16,6 +16,7 @@ export const config = {
   faktiskUrl: env.FAKTISK_URL || 'https://www.faktisk.no/tag/faktasjekk',
   wikiNo: env.WIKI_NO || 'https://no.wikipedia.org/w/api.php',
   wikiEn: env.WIKI_EN || 'https://en.wikipedia.org/w/api.php',
+  wikidataDelayMs: Number(env.WIKIDATA_DELAY_MS ?? 1000),
   wikiSv: env.WIKI_SV || 'https://sv.wikipedia.org/w/api.php',
   wikiDa: env.WIKI_DA || 'https://da.wikipedia.org/w/api.php',
   wikidataApi: env.WIKIDATA_API || 'https://www.wikidata.org/w/api.php',
@@ -37,5 +38,5 @@ export const config = {
   // Stortingets API har kvote; voteringer hentes sakte
   stortingetDelayMs: Number(env.STORTINGET_DELAY_MS ?? 700),
   maxNewVotes: Number(env.MAX_NEW_VOTES || 150),
-  userAgent: env.USER_AGENT || 'EYE/0.1 (+https://github.com/; åpen innsyntjeneste)',
+  userAgent: env.USER_AGENT || 'EYE/0.2 (https://tobiasskorstad.github.io/eye/; https://github.com/tobiasskorstad/eye/issues) node-fetch',
 };
