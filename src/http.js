@@ -6,7 +6,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // bare omdirigeringer til de samme kildene.
 const ALLOWED = new Map(); // host -> fast opprinnelse; URL-en som hentes bygges på denne, ikke på inndata
 export function allowHosts(urls) { for (const u of urls) { try { const x = new URL(u); ALLOWED.set(x.host, x.origin); } catch { } } }
-allowHosts([config.stortingetApi, config.registerPage, config.brregApi, config.faktiskUrl, 'https://www.stortinget.no/', 'https://stortinget.no/']);
+allowHosts([config.stortingetApi, config.registerPage, config.brregApi, config.faktiskUrl, config.faktiskFront, 'https://www.stortinget.no/', 'https://stortinget.no/']);
 export function checkUrl(url) {
   const u = new URL(url);
   const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(u.host);

@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -41,7 +41,10 @@ test('bygg data fra alle kilder', { timeout: 120_000 }, async () => {
   assert.ok(Object.values(pub.stemmer.oppmote).every(a => Array.isArray(a) && a.length === 2));
   // løfter og faktasjekk
   assert.ok(pub.lofter.regjering.lofter.length >= 5);
-  assert.ok(pub.faktasjekk.sjekker.some(s => s.u.endsWith('/123') && s.p.includes('FrP')), 'automatisk faktasjekk hentes og knyttes til parti');
+  assert.ok(pub.faktasjekk.sjekker.some(s => s.u.endsWith('/123') && s.p.includes('FrP') && s.d === '2026-11-20'), 'automatisk faktasjekk hentes med dato og knyttes til parti');
+  assert.equal(pub.faktasjekk.sjekker[0].type, 'artikkel', 'nyeste først, også verifiseringsartikler fra forsiden');
+  assert.equal(pub.faktasjekk.nyeste, '2026-11-25');
+  assert.ok(!pub.faktasjekk.sjekker.some(s => /Kommentar/.test(s.t)), 'kommentarer tas ikke med');
 });
 
 test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdato', async () => {

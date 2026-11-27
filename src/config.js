@@ -14,6 +14,7 @@ export const config = {
   trustProxy: env.TRUST_PROXY === '1',
   globalPerMinute: Number(env.GLOBAL_PER_MINUTE || 600),
   faktiskUrl: env.FAKTISK_URL || 'https://www.faktisk.no/tag/faktasjekk',
+  faktiskFront: env.FAKTISK_FRONT || 'https://www.faktisk.no/',
   wikiNo: env.WIKI_NO || 'https://no.wikipedia.org/w/api.php',
   wikiEn: env.WIKI_EN || 'https://en.wikipedia.org/w/api.php',
   wikidataDelayMs: Number(env.WIKIDATA_DELAY_MS ?? 1000),

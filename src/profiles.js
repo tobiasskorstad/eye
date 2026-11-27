@@ -110,6 +110,8 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   await fs.mkdir(dir, { recursive: true });
   const cache = (await readJson(cacheFile))?.v === CACHE_V ? await readJson(cacheFile) : { v: CACHE_V, p: {} };
   // Ny regel for næringslivsfolk (navnevask + sjekk av hele artikkelen): slå dem opp på nytt én gang
+  // Bilder fra thumb.wikimedia.org ble avvist før 27.11.2026: prøv alle uten bilde på nytt én gang
+  if (cache.foto !== 2) { for (const c of Object.values(cache.p)) if (!c.foto) { c.tw = 0; c.t = 0; } cache.foto = 2; }
   if (cache.biz !== 5) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 5; }
   const now = Date.now(), fresh = k => cache.p[k] && now - cache.p[k].t < WEEK, wfresh = k => cache.p[k] && now - (cache.p[k].tw || 0) < WEEK;
   const list = people.filter(p => p.key && p.navn && p.navn.split(/\s+/).length >= 2).slice(0, max);

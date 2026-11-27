@@ -75,19 +75,29 @@ export async function fetchNews(leaders, days = 30, perParty = 12) {
   return Object.fromEntries(Object.entries(byParty).map(([p, list]) => [p, list.slice(0, perParty).map(({ sammendrag, ...i }) => i)]));
 }
 
-/** Faktasjekker fra Faktisk.no (har ikke RSS – leser listesiden). Best effort. */
-export async function fetchFactchecks() {
-  const html = await getText(config.faktiskUrl).catch(() => null);
-  if (!html) return [];
+/**
+ * Faktasjekker og verifiseringsartikler fra Faktisk.no (har ikke RSS – leser tag-siden og forsiden). Best effort.
+ * Hver sak står i sin egen <article>-blokk med lenke, overskrift og <time datetime>. Faktisk.no publiserer i 2026
+ * mest «artikkel» (avsløringer av desinformasjon) og sjelden «faktasjekk», så begge tas med og merkes med type.
+ */
+export function parseFaktisk(html = '') {
   const out = new Map();
-  for (const m of html.matchAll(/<a[^>]+href="((?:https:\/\/www\.faktisk\.no)?\/faktasjekk\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g)) {
+  for (const seg of String(html).split(/<article\b/).slice(1)) {
+    const m = seg.match(/href="((?:https:\/\/www\.faktisk\.no)?\/(faktasjekk|artikkel)\/[a-z0-9-]+\/\d+)"/);
+    if (!m) continue;
     const u = m[1].startsWith('http') ? m[1] : 'https://www.faktisk.no' + m[1];
-    const t = decode(m[2]).replace(/^faktasjekk[:\s]*/i, '').replace(/\s+/g, ' ').trim();
-    if (t.length > 15 && !out.has(u)) out.set(u, { t, u, d: '' });
+    const raw = (seg.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/) || seg.match(/<a[^>]+href="[^"]*\/\d+"[^>]*>([\s\S]*?)<\/a>/) || [])[1] || '';
+    const t = decode(raw.replace(/<[^>]+>/g, ' ')).replace(/^\s*faktasjekk[:\s]*/i, '').replace(/\s+/g, ' ').trim();
+    const d = (seg.match(/datetime="(\d{4}-\d{2}-\d{2})/) || [])[1] || '';
+    if (t.length > 15 && !out.has(u)) out.set(u, { t, u, d, type: m[2] });
   }
-  const near = [...html.matchAll(/\/faktasjekk\/[^"]+\/(\d+)"[\s\S]{0,800}?datetime="([^"]+)"/g)];
-  for (const [, id, dt] of near) for (const v of out.values()) if (v.u.endsWith('/' + id) && !v.d) v.d = dt.slice(0, 10);
   return [...out.values()];
+}
+export async function fetchFactchecks() {
+  const pages = await Promise.all([config.faktiskUrl, config.faktiskFront].map(u => getText(u).catch(() => '')));
+  const all = new Map();
+  for (const x of pages.flatMap(parseFaktisk)) if (!all.has(x.u) || (!all.get(x.u).d && x.d)) all.set(x.u, x);
+  return [...all.values()];
 }
 
 export function tagParties(items, leaders = {}, field = 't') {
