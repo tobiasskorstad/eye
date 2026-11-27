@@ -12,8 +12,10 @@ import { config } from './config.js';
 import { getJson, getBuffer, allowHosts } from './http.js';
 
 const WIKI = { no: config.wikiNo, sv: config.wikiSv, da: config.wikiDa, en: config.wikiEn };
-const UPLOAD = config.wikiUpload, WD = config.wikidataApi, COMMONS = config.commonsFile;
-allowHosts([...Object.values(WIKI), UPLOAD, WD, COMMONS]);
+const UPLOAD = config.wikiUpload, THUMB = config.wikiThumb, WD = config.wikidataApi, COMMONS = config.commonsFile;
+// Wikimedia leverer bilder fra både upload.wikimedia.org og thumb.wikimedia.org (Commons omdirigerer dit)
+allowHosts([...Object.values(WIKI), UPLOAD, THUMB, WD, COMMONS]);
+const wmImg = u => typeof u === 'string' && (u.startsWith(UPLOAD) || u.startsWith(THUMB));
 const CACHE_V = 1, WEEK = 7 * 864e5, MAX_IMG = 400_000;
 
 export const slug = s => String(s || '').toLowerCase().normalize('NFKD').replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a')
@@ -38,15 +40,23 @@ const BIZ = { no: /næringslivs|direktør|konsernsjef|styreleder|styremedlem|inv
   da: /erhvervs|direktør|administrerende|bestyrelse|investor|stifter|forretnings|skibsreder|topchef/i,
   en: /business(?:man|woman|person|\s+executive)|executive|chief|ceo|cfo|chair(?:man|woman|person)?|investor|entrepreneur|founder|banker|director|shipowner/i };
 const firstWord = s => String(s || '').replace(/\b(ASA|AS|AB|Ltd|Limited|plc|SE|Holding|Group|Inc)\b\.?/gi, '').trim().split(/\s+/)[0]?.toLowerCase() || '';
+// Selskapsnavn i en tekst: hele navnet (uten selskapsform), eller første ord som ikke er generelt («Norwegian», «Nordic» …)
+const GENERIC = /^(norwegian|norsk|norske|nordic|norway|norge|the|first|global|international|scandinavian|european|american|new|north|south|west|east|group|holding|holdings|bank|capital|energy|ocean|sea|public|property|invest|ab|asa|as)$/;
+const coName = s => String(s || '').toLowerCase().replace(/\((publ)\)|\b(asa|as|ab|ltd|limited|plc|se|inc|holdings?|group)\b\.?/g, '').replace(/[^a-z0-9æøåäö ]/g, ' ').replace(/\s+/g, ' ').trim();
+export function mentions(text, sel) {
+  const t = ' ' + String(text || '').toLowerCase().replace(/[^a-z0-9æøåäö ]/g, ' ').replace(/\s+/g, ' ') + ' ', full = coName(sel);
+  if (full.length >= 3 && t.includes(' ' + full + ' ')) return true;
+  const w = full.split(' ').find(x => x.length >= 4 && !GENERIC.test(x));
+  return !!w && t.includes(' ' + w);
+}
 
 /** Vurderer om en Wikipedia-side gjelder personen vi leter etter. */
 export function accept(page, want, lang) {
   if (!page || page.missing !== undefined || page.pageprops?.disambiguation !== undefined || !page.extract) return false;
   const text = `${page.description || ''} ${page.extract}`;
   if (want.kind === 'pol') return POL.test(text) && (!want.parti || new RegExp(want.parti, 'i').test(text) || /storting|regjering/i.test(text));
-  const co = firstWord(want.sel);
-  if (!BIZ[lang].test(text) || co.length < 3) return false;
-  return text.toLowerCase().includes(co) ? true : 'sjekk'; // selskapet står kanskje lenger ned i artikkelen
+  if (!BIZ[lang].test(text) || coName(want.sel).length < 3) return false;
+  return mentions(text, want.sel) ? true : 'sjekk'; // selskapet står kanskje lenger ned i artikkelen
 }
 /** Hele artikkelteksten (for å se om selskapet er nevnt et sted). */
 async function fullText(lang, title) {
@@ -66,10 +76,10 @@ export async function wikidata(p) {
   if (!people.length) return null;
   const rel = [...new Set(people.flatMap(e => ['P108', 'P39', 'P463', 'P1830', 'P127'].flatMap(k => claimIds(e, k))))].slice(0, 50);
   const lab = rel.length ? await getJson(`${WD}?action=wbgetentities&format=json&props=labels&languages=nb|sv|da|en&ids=${rel.join('|')}`) : null;
-  const label = id => Object.values(lab?.entities?.[id]?.labels || {}).map(l => l.value.toLowerCase()).join(' ');
-  const co = firstWord(p.sel); if (co.length < 3) return null;
+  const labels = id => Object.values(lab?.entities?.[id]?.labels || {}).map(l => l.value);
+  if (coName(p.sel).length < 3) return null;
   const desc = e => { const D = e.descriptions || {}; return (D.nb || D.nn || D.sv || D.da || D.en)?.value || ''; };
-  const hit = people.filter(e => ['P108', 'P39', 'P463', 'P1830', 'P127'].some(k => claimIds(e, k).some(id => label(id).includes(co))) || desc(e).toLowerCase().includes(co));
+  const hit = people.filter(e => ['P108', 'P39', 'P463', 'P1830', 'P127'].some(k => claimIds(e, k).some(id => labels(id).some(l => mentions(l, p.sel)))) || mentions(desc(e), p.sel));
   if (hit.length !== 1) return null; // aldri gjett mellom flere med samme navn
   const e = hit[0], img = e.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
   const link = ['nowiki', 'svwiki', 'dawiki', 'enwiki'].map(k => e.sitelinks?.[k]?.url).find(Boolean) || `https://www.wikidata.org/wiki/${e.id}`;
@@ -100,7 +110,7 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   await fs.mkdir(dir, { recursive: true });
   const cache = (await readJson(cacheFile))?.v === CACHE_V ? await readJson(cacheFile) : { v: CACHE_V, p: {} };
   // Ny regel for næringslivsfolk (navnevask + sjekk av hele artikkelen): slå dem opp på nytt én gang
-  if (cache.biz !== 4) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 4; }
+  if (cache.biz !== 5) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 5; }
   const now = Date.now(), fresh = k => cache.p[k] && now - cache.p[k].t < WEEK, wfresh = k => cache.p[k] && now - (cache.p[k].tw || 0) < WEEK;
   const list = people.filter(p => p.key && p.navn && p.navn.split(/\s+/).length >= 2).slice(0, max);
   const out = {};
@@ -116,11 +126,11 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
         const pg = pages[p.navn], c = cache.p[p.key] ||= { t: 0 };
         if (lang === 'no') { c.wiki = null; c.tw = now; }
         let ok = accept(pg, p, lang);
-        if (ok === 'sjekk') ok = (await fullText(lang, pg.title).catch(() => '')).toLowerCase().includes(firstWord(p.sel));
+        if (ok === 'sjekk') ok = mentions(await fullText(lang, pg.title).catch(() => ''), p.sel);
         if (!ok) continue;
         c.wiki = { tekst: cut(stripBirth(pg.extract), 600), beskrivelse: stripBirth(pg.description || ''), lang, kilde: 'Wikipedia',
           url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(pg.title.replace(/ /g, '_'))}`,
-          bilde: pg.thumbnail?.source?.startsWith(UPLOAD) ? pg.thumbnail.source : null, fil: pg.pageimage || null };
+          bilde: wmImg(pg.thumbnail?.source) ? pg.thumbnail.source : null, fil: pg.pageimage || null };
       }
     }
   }

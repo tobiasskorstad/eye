@@ -21,6 +21,7 @@ export const config = {
   wikiDa: env.WIKI_DA || 'https://da.wikipedia.org/w/api.php',
   wikidataApi: env.WIKIDATA_API || 'https://www.wikidata.org/w/api.php',
   commonsFile: env.COMMONS_FILE || 'https://commons.wikimedia.org/wiki/Special:FilePath/',
+  wikiThumb: env.WIKI_THUMB || 'https://thumb.wikimedia.org/',
   wikiUpload: env.WIKI_UPLOAD || 'https://upload.wikimedia.org/',
   osloBorsApi: env.OSLOBORS_API || 'https://api3.oslo.oslobors.no/v1/newsreader',
   pollUrl: env.POLL_URL || 'https://www.pollofpolls.no/?cmd=Stortinget',
