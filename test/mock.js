@@ -110,6 +110,18 @@ function roller(c) {
   return { rollegrupper: [{ type: { beskrivelse: 'Styre' }, roller: persons }] };
 }
 
+/* ---------- bilder og Wikipedia ---------- */
+export const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(900, 7), Buffer.from([0xff, 0xd9])]);
+export const WIKI_TEXT = 'Jonas Gahr Støre (født 25. august 1960 i Oslo) er en norsk politiker fra Arbeiderpartiet og statsminister.';
+function wiki(lang, titles) {
+  const base = `http://${'127.0.0.1'}`; // erstattes ikke: bildeadressen settes av testen via WIKI_UPLOAD
+  const pages = titles.map(t => t === 'Jonas Gahr Støre' && lang === 'no' ? { title: t, extract: WIKI_TEXT, description: 'norsk politiker', thumbnail: { source: (process.env.WIKI_UPLOAD || base) + 'x.jpg' }, pageimage: 'Støre.jpg' }
+    : t === 'Anders Opedal' && lang === 'no' ? { title: t, extract: 'Anders Opedal (født 1968) er en norsk ingeniør og konsernsjef i Equinor.', description: 'norsk næringslivsleder', thumbnail: { source: (process.env.WIKI_UPLOAD || base) + 'x.jpg' }, pageimage: 'Opedal.jpg' }
+    : t === 'Haagen Poppe' ? { title: t, extract: 'Haagen Poppe kan vise til flere personer.', pageprops: { disambiguation: '' } }
+    : { title: t, missing: true });
+  return { query: { pages } };
+}
+
 /* ---------- server ---------- */
 export function startMock(port = 0) {
   const srv = http.createServer(async (req, res) => {
@@ -125,6 +137,15 @@ export function startMock(port = 0) {
     if (p === '/st/voteringer') return send(200, { sak_votering_liste: [{ votering_id: 9001, personlig_votering: true, votering_tid: msDate(2026, 11, 20), votering_tema: 'Forslag nr. 1', vedtatt: true, antall_for: 2, antall_mot: 1, antall_ikke_tilstede: 0 }, { votering_id: 9002, personlig_votering: false }] });
     if (p === '/st/voteringsresultat') return send(200, { voteringsresultat_liste: reps.slice(0, 4).map((r, i) => ({ representant: { id: r.id, parti: { id: r.parti } }, votering: [2, 3, 2, 1][i] })) });
     if (p === '/faktisk') return send(200, '<html><a href="/faktasjekk/stemmer-pastand-om-skatt/123"><h3>Faktasjekk Stemmer påstanden om skatt fra Frp?</h3></a><time datetime="2026-11-20T10:00:00Z"></time></html>', 'text/html');
+    if (p === '/ob/list') return send(200, { data: { messages: u.searchParams.get('category') === '1102'
+      ? [{ messageId: 7001, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-25T08:00:00Z' }]
+      : [{ messageId: 7002, title: 'Disclosure of large shareholding', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-24T08:00:00Z' }] } });
+    if (p === '/ob/message') return send(200, { data: { message: { body: u.searchParams.get('messageId') === '7001'
+      ? 'Anders Opedal, CEO of Equinor ASA, has today bought 10 000 shares at NOK 250 per share in the company.'
+      : 'Folketrygdfondet AS has increased its holding and now owns 6,1 % of the shares in Equinor ASA, above the 5 % threshold.' } } });
+    if (p === '/st/personbilde') return ['JGS', 'MARNIL', 'HSP'].includes(u.searchParams.get('personid')) ? send(200, JPEG, 'image/jpeg') : send(404, 'ikke funnet', 'text/plain');
+    if (p === '/wiki/no' || p === '/wiki/en') return send(200, wiki(p.slice(6), (u.searchParams.get('titles') || '').split('|')));
+    if (p === '/wiki/upload/x.jpg') return send(200, JPEG, 'image/jpeg');
     if (p === '/st/kodetbiografi') { const b = bio(u.searchParams.get('personid')); return b ? send(200, b) : send(404, {}); }
     if (p === '/web/register/') return send(200, `<html><body><a href="${PDF_PATH}">Se register (pdf)</a><a href="/globalassets/pdf/verv-og-okonomiske-interesser/skjema.pdf">skjema</a></body></html>`, 'text/html');
     if (p === PDF_PATH) return send(200, await registerPdf(), 'application/pdf');

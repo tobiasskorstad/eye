@@ -33,6 +33,8 @@ jobs:
             data/varslet.json
             data/insider-cache.json
             data/flagging-cache.json
+            data/profiles-cache.json
+            data/img
           key: eye-data-${{ github.run_id }}
           restore-keys: eye-data-
       - run: node src/build.js
@@ -56,6 +58,8 @@ jobs:
             data/varslet.json
             data/insider-cache.json
             data/flagging-cache.json
+            data/profiles-cache.json
+            data/img
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site
         env:

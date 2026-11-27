@@ -1,8 +1,9 @@
 // Automatisk oppdatering av det som før var håndskrevet: målinger, partiledere, «akkurat nå» og siste nytt om løftene.
 import { getText, getJson, allowHosts } from './http.js';
+import { config } from './config.js';
 
-const POLL_URL = 'https://www.pollofpolls.no/?cmd=Stortinget';
-const WIKIDATA = 'https://query.wikidata.org/sparql';
+const POLL_URL = config.pollUrl;
+const WIKIDATA = config.wikidataUrl;
 allowHosts([POLL_URL, WIKIDATA]);
 
 const POLL_CODE = { Ap: 'A', H: 'H', Frp: 'FrP', SV: 'SV', Sp: 'Sp', KrF: 'KrF', V: 'V', MDG: 'MDG', R: 'R' };

@@ -167,6 +167,12 @@ export function createServer() {
         return e ? json(res, 200, e, { 'cache-control': 'public, max-age=3600' }) : json(res, 404, { feil: 'Fant ikke enheten' });
       }
       if (p.startsWith('/api/')) return json(res, 404, { feil: 'ukjent endepunkt' });
+      const im = p.match(/^\/img\/([a-z0-9-]{1,80}\.jpg)$/);
+      if (im) {
+        const b = await fs.readFile(path.join(config.dataDir, 'img', im[1])).catch(() => null);
+        if (!b) return json(res, 404, { feil: 'fant ikke bildet' });
+        res.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'public, max-age=86400', ...BASE_HEADERS }); return res.end(b);
+      }
       return serveStatic(req, res, p);
     } catch (e) {
       log('feil', p, e.message);
