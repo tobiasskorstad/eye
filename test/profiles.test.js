@@ -1,7 +1,7 @@
 // Bilder og Wikipedia-omtale: riktig person, ingen fødselsdatoer.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { accept, stripBirth, slug, profilePeople } from '../src/profiles.js';
+import { accept, stripBirth, slug, profilePeople, mentions } from '../src/profiles.js';
 
 test('fødselsdatoer fjernes fra Wikipedia-tekst', () => {
   assert.equal(stripBirth('Jonas Gahr Støre (født 25. august 1960 i Oslo) er en norsk politiker.'), 'Jonas Gahr Støre er en norsk politiker.');
@@ -34,4 +34,14 @@ test('innsidernavn uten titler', async () => {
   assert.equal(cleanName('Primary Insider Vegard Wollan'), 'Vegard Wollan');
   assert.equal(cleanName('Mr. Artem Volynets'), 'Artem Volynets');
   assert.equal(who('Mr. Artem Volynets, Chairman of the Board, has bought shares').navn, 'Artem Volynets');
+});
+
+test('selskapsnavn: hele navnet eller et særpreget ord, aldri bare «Norwegian»', () => {
+  assert.ok(!mentions('Norwegian Minister of Health and Care Services', 'Norwegian Block Exchange AS'));
+  assert.ok(mentions('styremedlem i Norwegian Block Exchange', 'Norwegian Block Exchange AS'));
+  assert.ok(mentions('Equinor', 'Equinor ASA'));
+  assert.ok(mentions('konsernsjef i Equinor siden 2020', 'Equinor ASA'));
+  assert.ok(mentions('chairperson of Arendals Fossekompani', 'Arendals Fossekompani ASA'));
+  assert.ok(!mentions('Nordic Mining', 'Nordic Semiconductor ASA'));
+  assert.ok(!mentions('Equinoxe Holding', 'Equinor ASA'), 'hele ord, ikke delstrenger');
 });
