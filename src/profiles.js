@@ -1,7 +1,8 @@
 // Bilder og kort omtale av makthavere: politikere, statsråder, partiledere og innsidere i børsselskaper.
 // - Portretter av stortingsrepresentanter og statsråder: Stortingets åpne data (offisielle bilder, kreditering «Stortinget»).
-// - Omtale og bilder av andre (f.eks. konsernsjefer): Wikipedia, men bare når artikkelen beviselig gjelder riktig person
-//   (riktig yrke og, for innsidere, at selskapet er nevnt). Alltid med lenke og lisens.
+// - Omtale og bilder av andre (f.eks. konsernsjefer): Wikipedia (norsk, svensk, dansk, engelsk) og Wikidata, men bare når
+//   kilden beviselig gjelder riktig person (riktig yrke og, for innsidere, at selskapet er nevnt eller er arbeidsgiver/verv
+//   i Wikidata). Alltid med lenke og lisens.
 // Bildene lastes ned i bygget og publiseres sammen med nettstedet: de besøkende henter ingenting fra tredjeparter.
 // Fødselsdatoer fjernes fra Wikipedia-teksten (samme prinsipp som resten av EYE).
 import fs from 'node:fs/promises';
@@ -10,9 +11,9 @@ import crypto from 'node:crypto';
 import { config } from './config.js';
 import { getJson, getBuffer, allowHosts } from './http.js';
 
-const WIKI = { no: config.wikiNo, en: config.wikiEn };
-const UPLOAD = config.wikiUpload;
-allowHosts([WIKI.no, WIKI.en, UPLOAD]);
+const WIKI = { no: config.wikiNo, sv: config.wikiSv, da: config.wikiDa, en: config.wikiEn };
+const UPLOAD = config.wikiUpload, WD = config.wikidataApi, COMMONS = config.commonsFile;
+allowHosts([...Object.values(WIKI), UPLOAD, WD, COMMONS]);
 const CACHE_V = 1, WEEK = 7 * 864e5, MAX_IMG = 400_000;
 
 export const slug = s => String(s || '').toLowerCase().normalize('NFKD').replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a')
@@ -33,6 +34,8 @@ const cut = (s, n) => (s.length > n ? s.slice(0, n).replace(/\s\S*$/, '') + ' �
 
 const POL = /politiker|stortingsrepresentant|statsråd|minister|statssekretær|partileder|politician/i;
 const BIZ = { no: /næringslivs|direktør|konsernsjef|styreleder|styremedlem|investor|forretnings|gründer|grunnlegger|finansmann|skipsreder|administrerende|sjef|eier av|leder (?:av|i)/i,
+  sv: /företagsledare|näringslivs|verkställande direktör|\bvd\b|styrelseordförande|styrelseledamot|affärs|investerare|grundare|finansman|direktör|chef/i,
+  da: /erhvervs|direktør|administrerende|bestyrelse|investor|stifter|forretnings|skibsreder|topchef/i,
   en: /business(?:man|woman|person|\s+executive)|executive|chief|ceo|cfo|chair(?:man|woman|person)?|investor|entrepreneur|founder|banker|director|shipowner/i };
 const firstWord = s => String(s || '').replace(/\b(ASA|AS|AB|Ltd|Limited|plc|SE|Holding|Group|Inc)\b\.?/gi, '').trim().split(/\s+/)[0]?.toLowerCase() || '';
 
@@ -49,6 +52,31 @@ export function accept(page, want, lang) {
 async function fullText(lang, title) {
   const d = await getJson(`${WIKI[lang]}?action=query&format=json&formatversion=2&prop=extracts&explaintext=1&exlimit=1&titles=${encodeURIComponent(title)}`);
   return d?.query?.pages?.[0]?.extract || '';
+}
+
+const normName = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9æøå ]/g, '').replace(/\s+/g, ' ').trim();
+const claimIds = (e, prop) => (e.claims?.[prop] || []).map(c => c.mainsnak?.datavalue?.value?.id).filter(Boolean);
+/** Wikidata: person (Q5) med samme navn, der arbeidsgiver/stilling/verv eller beskrivelsen nevner selskapet. */
+export async function wikidata(p) {
+  const s = await getJson(`${WD}?action=wbsearchentities&format=json&language=en&uselang=en&type=item&limit=5&search=${encodeURIComponent(p.navn)}`);
+  const ids = (s?.search || []).filter(x => normName(x.label) === normName(p.navn)).map(x => x.id).filter(id => /^Q\d+$/.test(id));
+  if (!ids.length) return null;
+  const d = await getJson(`${WD}?action=wbgetentities&format=json&props=claims|descriptions|sitelinks/urls&languages=nb|nn|sv|da|en&ids=${ids.join('|')}`);
+  const people = Object.values(d?.entities || {}).filter(e => claimIds(e, 'P31').includes('Q5'));
+  if (!people.length) return null;
+  const rel = [...new Set(people.flatMap(e => ['P108', 'P39', 'P463', 'P1830', 'P127'].flatMap(k => claimIds(e, k))))].slice(0, 50);
+  const lab = rel.length ? await getJson(`${WD}?action=wbgetentities&format=json&props=labels&languages=nb|sv|da|en&ids=${rel.join('|')}`) : null;
+  const label = id => Object.values(lab?.entities?.[id]?.labels || {}).map(l => l.value.toLowerCase()).join(' ');
+  const co = firstWord(p.sel); if (co.length < 3) return null;
+  const desc = e => { const D = e.descriptions || {}; return (D.nb || D.nn || D.sv || D.da || D.en)?.value || ''; };
+  const hit = people.filter(e => ['P108', 'P39', 'P463', 'P1830', 'P127'].some(k => claimIds(e, k).some(id => label(id).includes(co))) || desc(e).toLowerCase().includes(co));
+  if (hit.length !== 1) return null; // aldri gjett mellom flere med samme navn
+  const e = hit[0], img = e.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
+  const link = ['nowiki', 'svwiki', 'dawiki', 'enwiki'].map(k => e.sitelinks?.[k]?.url).find(Boolean) || `https://www.wikidata.org/wiki/${e.id}`;
+  const rolle = [...new Set(['P39', 'P108'].flatMap(k => claimIds(e, k)).map(id => Object.values(lab?.entities?.[id]?.labels || {})[0]?.value).filter(Boolean))].slice(0, 4);
+  const d0 = stripBirth(desc(e));
+  return { tekst: cut([d0 && d0[0].toUpperCase() + d0.slice(1), rolle.length ? `Stillinger og arbeidsgivere: ${rolle.join(', ')}.` : ''].filter(Boolean).join('. ').replace(/\.\./g, '.'), 400),
+    beskrivelse: d0, lang: 'wd', kilde: 'Wikidata', url: link, bilde: typeof img === 'string' ? `${COMMONS}${encodeURIComponent(img)}?width=320` : null, fil: typeof img === 'string' ? img : null };
 }
 
 async function wikiBatch(lang, titles) {
@@ -72,13 +100,13 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   await fs.mkdir(dir, { recursive: true });
   const cache = (await readJson(cacheFile))?.v === CACHE_V ? await readJson(cacheFile) : { v: CACHE_V, p: {} };
   // Ny regel for næringslivsfolk (navnevask + sjekk av hele artikkelen): slå dem opp på nytt én gang
-  if (cache.biz !== 2) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 2; }
+  if (cache.biz !== 3) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 3; }
   const now = Date.now(), fresh = k => cache.p[k] && now - cache.p[k].t < WEEK, wfresh = k => cache.p[k] && now - (cache.p[k].tw || 0) < WEEK;
   const list = people.filter(p => p.key && p.navn && p.navn.split(/\s+/).length >= 2).slice(0, max);
   const out = {};
 
-  // 1. Wikipedia (norsk først, så engelsk for næringslivsfolk), i puljer på 20
-  for (const lang of ['no', 'en']) {
+  // 1. Wikipedia (norsk først, så svensk, dansk og engelsk for næringslivsfolk), i puljer på 20
+  for (const lang of ['no', 'sv', 'da', 'en']) {
     const todo = list.filter(p => (lang === 'no' ? !wfresh(p.key) : cache.p[p.key]?.tw === now && !cache.p[p.key].wiki && p.kind === 'biz'));
     for (let i = 0; i < todo.length; i += 20) {
       const chunk = todo.slice(i, i + 20);
@@ -90,11 +118,16 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
         let ok = accept(pg, p, lang);
         if (ok === 'sjekk') ok = (await fullText(lang, pg.title).catch(() => '')).toLowerCase().includes(firstWord(p.sel));
         if (!ok) continue;
-        c.wiki = { tekst: cut(stripBirth(pg.extract), 600), beskrivelse: stripBirth(pg.description || ''), lang,
+        c.wiki = { tekst: cut(stripBirth(pg.extract), 600), beskrivelse: stripBirth(pg.description || ''), lang, kilde: 'Wikipedia',
           url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(pg.title.replace(/ /g, '_'))}`,
           bilde: pg.thumbnail?.source?.startsWith(UPLOAD) ? pg.thumbnail.source : null, fil: pg.pageimage || null };
       }
     }
+  }
+
+  // 1b. Wikidata for næringslivsfolk uten artikkel: krever at arbeidsgiver, verv eller beskrivelse nevner selskapet
+  for (const p of list.filter(p => p.kind === 'biz' && cache.p[p.key]?.tw === now && !cache.p[p.key].wiki)) {
+    try { const w = await wikidata(p); if (w) cache.p[p.key].wiki = w; } catch (e) { warnings.push(`Wikidata svarte ikke: ${e.message}`); break; }
   }
 
   // 2. Bilder: Stortinget for dem som har person-ID der, ellers bildet fra en godkjent Wikipedia-artikkel
@@ -111,7 +144,7 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
     }
     out[p.key] = {
       ...(c.foto ? { foto: `img/${file}`, fotoKilde: c.foto.kilde, fotoLenke: c.foto.lenke } : {}),
-      ...(c.wiki ? { wiki: { tekst: c.wiki.tekst, beskrivelse: c.wiki.beskrivelse, url: c.wiki.url, lang: c.wiki.lang } } : {}),
+      ...(c.wiki ? { wiki: { tekst: c.wiki.tekst, beskrivelse: c.wiki.beskrivelse, url: c.wiki.url, lang: c.wiki.lang, kilde: c.wiki.kilde || 'Wikipedia' } } : {}),
     };
     if (!Object.keys(out[p.key]).length) delete out[p.key];
   }

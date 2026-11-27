@@ -230,3 +230,4 @@ a.kpis,.kpis a{display:block;border:1px solid var(--line);border-radius:10px;pad
   .dash{grid-template-columns:1fr}
   .block{padding:12px}
 }
+.brl li{display:block}
