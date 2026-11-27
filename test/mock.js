@@ -138,14 +138,26 @@ export function startMock(port = 0) {
     if (p === '/st/voteringsresultat') return send(200, { voteringsresultat_liste: reps.slice(0, 4).map((r, i) => ({ representant: { id: r.id, parti: { id: r.parti } }, votering: [2, 3, 2, 1][i] })) });
     if (p === '/faktisk') return send(200, '<html><a href="/faktasjekk/stemmer-pastand-om-skatt/123"><h3>Faktasjekk Stemmer påstanden om skatt fra Frp?</h3></a><time datetime="2026-11-20T10:00:00Z"></time></html>', 'text/html');
     if (p === '/ob/list') return send(200, { data: { messages: u.searchParams.get('category') === '1102'
-      ? [{ messageId: 7001, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-25T08:00:00Z' }]
+      ? [{ messageId: 7001, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-25T08:00:00Z' },
+        { messageId: 7003, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-23T08:00:00Z' }]
       : [{ messageId: 7002, title: 'Disclosure of large shareholding', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-24T08:00:00Z' }] } });
+    if (p === '/ob/message' && u.searchParams.get('messageId') === '7003') return send(200, { data: { message: { body: 'Primary Insider Kari Testesen, Chair of the Board, has today sold 5 000 shares at NOK 260 per share in Equinor ASA.' } } });
+    if (p === '/wd') {
+      const a = u.searchParams.get('action'), ids = (u.searchParams.get('ids') || '').split('|');
+      if (a === 'wbsearchentities') return send(200, { search: u.searchParams.get('search') === 'Kari Testesen' ? [{ id: 'Q901', label: 'Kari Testesen' }, { id: 'Q902', label: 'Kari Testesen' }] : [] });
+      if (ids.includes('Q901')) return send(200, { entities: {
+        Q901: { id: 'Q901', descriptions: { nb: { value: 'norsk næringslivsleder (født 1970)' } }, claims: { P31: [{ mainsnak: { datavalue: { value: { id: 'Q5' } } } }], P108: [{ mainsnak: { datavalue: { value: { id: 'Q903' } } } }], P18: [{ mainsnak: { datavalue: { value: 'Kari Testesen.jpg' } } }] }, sitelinks: {} },
+        Q902: { id: 'Q902', descriptions: { en: { value: 'Norwegian footballer' } }, claims: { P31: [{ mainsnak: { datavalue: { value: { id: 'Q5' } } } }] }, sitelinks: {} } } });
+      if (ids.includes('Q903')) return send(200, { entities: { Q903: { labels: { nb: { value: 'Equinor' } } } } });
+      return send(200, { entities: {} });
+    }
+    if (p.startsWith('/commons/')) { res.writeHead(302, { location: '/wiki/upload/x.jpg' }); return res.end(); }
     if (p === '/ob/message') return send(200, { data: { message: { body: u.searchParams.get('messageId') === '7001'
       ? 'Anders Opedal, CEO of Equinor ASA, has today bought 10 000 shares at NOK 250 per share in the company.'
       : 'Folketrygdfondet AS has increased its holding and now owns 6,1 % of the shares in Equinor ASA, above the 5 % threshold.' } } });
     if (p === '/st/personbilde') return ['JGS', 'MARNIL', 'HSP'].includes(u.searchParams.get('personid')) ? send(200, JPEG, 'image/jpeg') : send(404, 'ikke funnet', 'text/plain');
     if ((p === '/wiki/no') && !u.searchParams.get('exintro')) return send(200, { query: { pages: [{ title: u.searchParams.get('titles'), extract: 'Anders Opedal er norsk næringslivsleder. Han har vært konsernsjef i Equinor siden 2020.' }] } });
-    if (p === '/wiki/no' || p === '/wiki/en') return send(200, wiki(p.slice(6), (u.searchParams.get('titles') || '').split('|')));
+    if (/^\/wiki\/(no|sv|da|en)$/.test(p)) return send(200, wiki(p.slice(6), (u.searchParams.get('titles') || '').split('|')));
     if (p === '/wiki/upload/x.jpg') return send(200, JPEG, 'image/jpeg');
     if (p === '/st/kodetbiografi') { const b = bio(u.searchParams.get('personid')); return b ? send(200, b) : send(404, {}); }
     if (p === '/web/register/') return send(200, `<html><body><a href="${PDF_PATH}">Se register (pdf)</a><a href="/globalassets/pdf/verv-og-okonomiske-interesser/skjema.pdf">skjema</a></body></html>`, 'text/html');

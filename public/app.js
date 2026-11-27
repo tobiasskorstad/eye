@@ -161,7 +161,9 @@ function avatar(keys, navn, parti, size = 's') {
   return `<span class="av ${sz} av-i" style="background:${parti ? col(parti) : '#5b6675'}" aria-hidden="true">${esc(initials(navn))}</span>`;
 }
 const credit = p => p.foto && IMG ? `<div class="credit">Foto: <a href="${url(p.fotoLenke)}" rel="noopener">${esc(p.fotoKilde)}</a></div>` : '';
-const wikiBox = p => p.wiki ? `<div class="wiki"><p>${esc(p.wiki.tekst)}</p><div class="meta">Fra <a href="${url(p.wiki.url)}" rel="noopener">Wikipedia</a>${p.wiki.lang === 'en' ? ' (engelsk)' : ''}, lisens CC BY-SA 4.0</div></div>` : '';
+const LANGN = { en: ' (engelsk)', sv: ' (svensk)', da: ' (dansk)' };
+const wikiSrc = w => `Fra <a href="${url(w.url)}" rel="noopener">${w.kilde === 'Wikidata' ? 'Wikidata' : 'Wikipedia'}</a>${LANGN[w.lang] || ''}, lisens ${w.kilde === 'Wikidata' ? 'CC0' : 'CC BY-SA 4.0'}`;
+const wikiBox = p => p.wiki ? `<div class="wiki"><p>${esc(p.wiki.tekst)}</p><div class="meta">${wikiSrc(p.wiki)}</div></div>` : '';
 /** Toppen av en personside: bilde, navn, rolle, omtale. */
 function profileHead({ keys, navn, parti, kicker, sub, follow = '' }) {
   const p = prof(keys);
@@ -238,9 +240,27 @@ function renderPerson(x) {
   ${profileHead({ keys, navn: x.navn, kicker: 'Primærinnsider på Oslo Børs', sub: roles.map(i => `${esc(i.rolle || 'Innsider')} i ${esc(i.sel)}`).join(' · ') })}
   ${x.pol ? `<p class="card">Navnet er også en politiker: ${x.pol.map(p => esc(p.navn) + ' (' + esc(p.gruppe) + ')').join(', ')}. Sjekk meldingen for å se om det er samme person.</p>` : ''}
   <div class="kpis"><div><b>${x.list.length}</b><span>meldte handler, 60 dager</span></div><div><b>${buy ? kr(buy) : '–'}</b><span>kjøpt for, kr</span></div><div><b>${sell ? kr(sell) : '–'}</b><span>solgt for, kr</span></div><div><b>${new Set(x.list.map(i => i.sel)).size}</b><span>selskaper</span></div></div>
+  <div id="pBrreg"></div>
   ${sec('s-tr', 'Meldte handler', `<div class="tw"><table><thead><tr><th>Dato</th><th>Selskap</th><th>Melding</th><th class="n">Verdi, kr</th></tr></thead><tbody>${x.list.map(i => `<tr><td class="n">${sdate(i.d)}</td><td><b>${esc(i.sel)}</b><div class="meta">${ITYPE[i.k] || '–'}</div></td><td>${esc(i.tekst || i.tittel)} <a href="${url(i.u)}" rel="noopener">Les meldingen</a></td><td class="n">${i.ver ? kr(i.ver) : '–'}</td></tr>`).join('')}</tbody></table></div>
   <p class="meta">Handler gjort av nærstående eller selskaper personen kontrollerer, står på personen som meldingen gjelder. Navn og beløp leses automatisk ut av meldingen og kan være feil – sjekk alltid meldingen.</p>`)}`;
   document.title = `${x.navn} – EYE`;
+  personBrreg(x);
+}
+/** Selskapene personen er innsider i, slått opp live i Enhetsregisteret: fakta + om rollen er registrert der. */
+async function personBrreg(x) {
+  const box = $('pBrreg'), sels = [...new Set(x.list.map(i => i.sel))].slice(0, 3), nn = s => String(s || '').toLowerCase().replace(/\b(asa|as|ab|ltd|limited|plc|\(publ\))\b|[^a-zæøå0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+  box.innerHTML = sec('s-br', 'Selskapene i Brønnøysundregistrene', '<p class="loading">Henter fra Brønnøysund …</p>');
+  const words = nn(x.navn).split(' ').filter(w => w.length > 1), out = [];
+  for (const sel of sels) {
+    try {
+      const hits = await brSearch(sel), h = hits.find(c => nn(c.navn) === nn(sel)) || null;
+      if (!h) { out.push(`<li><b>${esc(sel)}</b><div class="meta">Ikke registrert i Norge (utenlandsk selskap) eller ikke funnet entydig.</div></li>`); continue; }
+      const e = await brEnhet(h.nr), me = (e?.personer || []).filter(p => words.every(w => nn(p.navn).split(' ').includes(w)));
+      out.push(`<li><a href="#org-${h.nr}"><b>${esc(h.navn)}</b></a> <span class="meta">org.nr. ${org(h.nr)}</span><div class="meta">${esc(h.nar || h.formNavn)} · ${esc(h.kommune || '–')} · ${h.ans > 0 ? nf(h.ans) + ' ansatte' : 'ansatte ikke registrert'}</div>
+        <div>${me.length ? me.map(p => `<span class="chip ok">Registrert: ${esc(p.rolle)}</span>`).join('') : '<span class="meta">Ikke blant de registrerte rollene. Det er vanlig for ledere som ikke er daglig leder, og for styreverv i morselskap.</span>'}</div></li>`);
+    } catch { out.push(`<li><b>${esc(sel)}</b><div class="meta">Brønnøysund svarte ikke.</div></li>`); }
+  }
+  if (location.hash.slice(1) === 'person-' + x.s) box.innerHTML = sec('s-br', 'Selskapene i Brønnøysundregistrene', `<ul class="feed brl">${out.join('')}</ul><p class="meta">Slått opp live i Enhetsregisteret. Roller vises bare når navnet stemmer helt.</p>`);
 }
 const insiderLink = n => n && insiders.has(slug(n)) ? `<a href="#person-${slug(n)}">${esc(n)}</a>` : esc(n || '–');
 
@@ -299,7 +319,7 @@ function partiesView() {
 function leaderCard(p) {
   const x = P.partier[p], keys = leaderKeys(p), pr = prof(keys), r = keys[0]?.startsWith('rep:') && byId[keys[0].slice(4)], g = keys.find(k => k.startsWith('gov:'));
   const href = g ? `#statsrad-${hid(g.slice(4))}` : r ? `#rep-${r.h}` : '';
-  return `${avatar(keys, x.leder, p, 'm')}<div><div class="kicker">Partileder</div><b>${href ? `<a href="${hashLink(href)}">${esc(x.leder)}</a>` : esc(x.leder)}</b>${pr.wiki ? `<p>${esc(pr.wiki.tekst)}</p><div class="meta">Fra <a href="${url(pr.wiki.url)}" rel="noopener">Wikipedia</a>, CC BY-SA 4.0</div>` : ''}${credit(pr)}</div>`;
+  return `${avatar(keys, x.leder, p, 'm')}<div><div class="kicker">Partileder</div><b>${href ? `<a href="${hashLink(href)}">${esc(x.leder)}</a>` : esc(x.leder)}</b>${pr.wiki ? `<p>${esc(pr.wiki.tekst)}</p><div class="meta">${wikiSrc(pr.wiki)}</div>` : ''}${credit(pr)}</div>`;
 }
 function partyVotes(p) {
   if (!S()) return '';

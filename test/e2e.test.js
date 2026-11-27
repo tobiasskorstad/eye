@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -53,9 +53,14 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.match(P['gov:JGS'].wiki.tekst, /norsk politiker/);
   assert.ok(!/1960|25\. august|født/.test(JSON.stringify(P)), 'fødselsdatoer fra Wikipedia publiseres ikke');
   const img = await fs.readdir(path.join(dataDir, 'img'));
-  assert.ok(img.some(f => f.startsWith('gov-jgs-')) && img.length === 4, img.join(','));
+  assert.ok(img.some(f => f.startsWith('gov-jgs-')) && img.length === 5, img.join(','));
+  // Wikidata: riktig person valgt (arbeidsgiver Equinor), ikke fotballspilleren med samme navn; bilde via Commons-omdirigering
+  const kari = P['ins:kari-testesen'];
+  assert.equal(kari.wiki.kilde, 'Wikidata'); assert.match(kari.wiki.tekst, /næringslivsleder.*Equinor/s);
+  assert.equal(kari.fotoKilde, 'Wikimedia Commons');
+  assert.ok(!/1970/.test(kari.wiki.tekst), 'fødselsår i parentes fjernes');
   // innsidere: bilde og omtale fra Wikipedia når artikkelen nevner yrke og selskap
-  assert.equal(pub.innside[0].navn, 'Anders Opedal');
+  assert.deepEqual(pub.innside.map(i => i.navn), ['Anders Opedal', 'Kari Testesen'], 'titler som «Primary Insider» vaskes bort');
   assert.equal(P['ins:anders-opedal'].fotoKilde, 'Wikimedia Commons');
   assert.match(P['ins:anders-opedal'].wiki.tekst, /næringslivsleder/, 'godtatt fordi hele artikkelen nevner selskapet');
   assert.equal(pub.flagging.length, 1);
