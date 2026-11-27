@@ -174,11 +174,55 @@ function profileHead({ keys, navn, parti, kicker, sub, follow = '' }) {
 const toc = items => `<nav class="toc" aria-label="På denne siden">${items.filter(Boolean).map(([id, l]) => `<button type="button" data-jump="${esc(id)}">${l}</button>`).join('')}</nav>`;
 const sec = (id, title, body, extra = '') => `<section class="block" id="${esc(id)}"><div class="bh"><h2>${title}</h2>${extra}</div>${body}</section>`;
 
+/**
+ * Hvor mye representanten eier i et selskap, lest fra fritekst i § 9 i interesseregisteret.
+ * Finner selskapsnavnet og leser antall aksjer/andeler eller prosent rett etter («Lildog AS: 50 000 aksjer»,
+ * «Smite AS 100%») eller rett før («132 aksjer i Telenor ASA», «8 % av aksjene i dansekompaniet Kartellet AS»).
+ */
+function holdingFor(text, coName) {
+  const t = String(text || ''), base = String(coName || '').replace(/\s+\b(ASA|AS|SA|AB|LTD|PLC)\b\.?$/i, '').trim();
+  if (base.length < 3) return null;
+  const m = new RegExp(base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*'), 'i').exec(t);
+  if (!m) return null;
+  const after = t.slice(m.index + m[0].length, m.index + m[0].length + 90), before = t.slice(Math.max(0, m.index - 70), m.index);
+  const num = '(?<![\\d,])(\\d{1,3}(?:[\\u00a0 .]\\d{3})+|\\d+(?:,\\d+)?)', unit = '(aksjer|aksje|andeler|andel|egenkapitalbevis|grunnfondsbevis)';
+  const cut = after.split(/(?<=aksjer|aksje|andeler|andel|bevis|%\)?)\s*[.,;]|\n/)[0];
+  const fmt = (n, u) => {
+    const v = Number(n.replace(/[\s .]/g, '').replace(',', '.')), l = u.toLowerCase();
+    if (u === '%') return `${v.toLocaleString('nb-NO')} %`;
+    return `${v.toLocaleString('nb-NO')} ${l.startsWith('andel') ? (v === 1 ? 'andel' : 'andeler') : l.startsWith('aksje') ? (v === 1 ? 'aksje' : 'aksjer') : l}`;
+  };
+  let x;
+  if ((x = new RegExp(num + '\\s*%').exec(cut))) return fmt(x[1], '%');
+  if ((x = new RegExp(num + '\\s*' + unit, 'i').exec(cut))) return fmt(x[1], x[2]);
+  if ((x = new RegExp('antall\\s+aksjer:?\\s*' + num, 'i').exec(cut))) return fmt(x[1], 'aksjer');
+  if ((x = new RegExp(num + '\\s*' + unit + '\\s+i\\s+(?:\\S+\\s+){0,3}$', 'i').exec(before))) return fmt(x[1], x[2]);
+  if ((x = new RegExp(num + '\\s*%\\s*(?:av\\s+aksjene\\s+)?i\\s+(?:\\S+\\s+){0,3}$', 'i').exec(before))) return fmt(x[1], '%');
+  return null;
+}
+/** Aksjehandler oppsummert per selskap: kjøpt, solgt, netto antall, sum. */
+function tradeSummary(list) {
+  const m = new Map();
+  for (const t of list) {
+    const g = m.get(t.sel) || { sel: t.sel, kjop: 0, salg: 0, kr: 0, n: 0, d: t.d };
+    if (t.k === 'K') g.kjop += t.ant || 0; else if (t.k === 'S') g.salg += t.ant || 0;
+    g.kr += t.ver || 0; g.n++; if (t.d > g.d) g.d = t.d; m.set(t.sel, g);
+  }
+  return [...m.values()].sort((a, b) => b.d.localeCompare(a.d));
+}
+const tradeBlock = list => {
+  const sum = tradeSummary(list);
+  return `<div class="tw"><table><thead><tr><th>Selskap</th><th class="n">Handler</th><th class="n hide-s">Kjøpt</th><th class="n hide-s">Solgt</th><th class="n">Netto aksjer</th><th class="n hide-s">Sist</th></tr></thead><tbody>${sum.map(g => { const net = g.kjop - g.salg; return `<tr><td><b>${esc(g.sel)}</b></td><td class="n">${g.n}</td><td class="n hide-s">${g.kjop ? nf(g.kjop) : '–'}</td><td class="n hide-s">${g.salg ? nf(g.salg) : '–'}</td><td class="n"><b class="${net > 0 ? 'pos' : net < 0 ? 'neg' : ''}">${net > 0 ? '+' : ''}${nf(net)}</b></td><td class="n hide-s">${sdate(g.d)}</td></tr>`; }).join('')}</tbody></table></div>
+  <p class="meta">Netto = kjøpt minus solgt i perioden EYE har data for. Det er ikke nødvendigvis hele beholdningen; den står i interesseregisteret.</p>
+  ${list.length > 5 ? `<details class="more"><summary>Vis alle ${list.length} handler</summary>${tradeTable(list)}</details>` : tradeTable(list)}`;
+};
+
 function renderRep(r) {
   const rg = r.reg, paras = PARA_ORDER.filter(k => rg[k]), g = govs.find(x => x.id === r.id);
   const coRows = [...r.cos].sort((a, b) => (b.roles?.[r.id] ? 1 : 0) - (a.roles?.[r.id] ? 1 : 0) || b.ans - a.ans).map(c => {
     const ro = c.roles?.[r.id], nr = org(c.nr).replace(/ /g, '');
-    return `<tr data-go="org-${nr}"><td><a href="#org-${nr}">${esc(c.navn)}</a><div class="meta">${esc(c.kommune || '–')}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}</div></td><td>${ro ? ro.map(x => `<span class="chip ok">${esc(x)}</span>`).join('') : '<span class="chip">Oppgitt</span>'}</td><td class="n">${c.ans > 0 ? nf(c.ans) : '–'}</td></tr>`;
+    const sh = holdingFor(rg['9'], c.navn);
+    return `<tr data-go="org-${nr}"><td><a href="#org-${nr}">${esc(c.navn)}</a><div class="meta">${esc(c.kommune || '–')}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}</div></td><td>${ro ? ro.map(x => `<span class="chip ok">${esc(x)}</span>`).join('') : '<span class="meta">Ingen rolle registrert</span>'}</td><td class="n">${sh ? esc(sh) : '–'}</td><td class="n hide-s">${c.ans > 0 ? nf(c.ans) : '–'}</td></tr>`;
   }).join('');
   const sum = r.trades.reduce((a, t) => a + t.ver, 0), om = S()?.oppmote[r.id];
   const partyLink = P?.partier[r.parti] ? `<a href="#parti-${r.parti}">${esc(D.parti[r.parti] || r.parti)}</a>` : esc(D.parti[r.parti] || r.parti);
@@ -200,14 +244,15 @@ function renderRep(r) {
   ${sec('s-q', 'Spørsmål til regjeringen', `${r.q ? `<p>${num(r.q)} spørsmål denne perioden. Mest til ${r.top.map(t => `${esc(t.til)} (${num(t.n)})`).join(', ')}.</p>` : '<p class="empty">Ingen spørsmål denne perioden.</p>'}
   ${r.siste ? `<p><span class="meta">Siste, ${date(r.siste.d)} (${QTYPE[r.siste.t] || ''}):</span><br>«${esc(r.siste.tit)}» <a href="https://www.stortinget.no/no/Saker-og-publikasjoner/Sporsmal/${r.siste.t === 'I' ? 'Interpellasjoner/Interpellasjon/' : 'Skriftlige-sporsmal-og-svar/Skriftlig-sporsmal/'}?qnid=${encodeURIComponent(r.siste.id)}">Les svaret</a></p>` : ''}`)}
   </div>
-  ${r.cos.length ? sec('s-cos', 'Selskaper', `<div class="tw"><table class="list"><thead><tr><th>Selskap</th><th>Rolle i Brønnøysund</th><th class="n">Ansatte</th></tr></thead><tbody>${coRows}</tbody></table></div>`) : ''}
-  ${r.trades.length ? sec('s-tr', 'Aksjehandler', tradeTable(r.trades)) : ''}
+  ${r.cos.length ? sec('s-cos', 'Selskaper', `<div class="tw"><table class="list"><thead><tr><th>Selskap</th><th>Rolle i Brønnøysund</th><th class="n">Eier (fra registeret)</th><th class="n hide-s">Ansatte</th></tr></thead><tbody>${coRows}</tbody></table></div>
+  <p class="meta">Selskapene representanten har oppgitt i interesseregisteret. Rolle hentes fra Brønnøysundregistrene. Eierandel leses automatisk fra § 9 i interesseregisteret – sjekk teksten nederst på siden.</p>`) : ''}
+  ${r.trades.length ? sec('s-tr', 'Aksjehandler', tradeBlock(r.trades)) : ''}
   ${sec('s-reg', 'Interesseregisteret', `${rg.ingen ? '<p>Har ingen registreringspliktige interesser.</p>' : paras.length ? `<dl class="facts reg">${paras.map(k => `<dt>§ ${k} ${PARA[k] || ''}</dt><dd>${esc(rg[k])}</dd>`).join('')}</dl>` : `<p class="empty">Ingen oppføringer.</p>`}
   <p class="meta">Ordrett fra Stortingets register, ajourført ${date(D.regDato, true)}.</p>`)}
   ${sec('s-lenker', 'Kilder', `<div class="links"><a href="https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representant/?perid=${encodeURIComponent(r.id)}">Stortingets side</a>${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}${prof(['rep:' + r.id]).wiki ? `<a href="${url(prof(['rep:' + r.id]).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
   document.title = `${r.navn} – EYE`;
 }
-const tradeTable = list => `<div class="tw"><table><thead><tr><th>Dato</th><th>Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead><tbody>${list.map(t => `<tr><td class="n">${sdate(t.d)}</td><td>${trade(t.k)}</td><td>${esc(t.sel)}</td><td class="n hide-s">${nf(t.ant)}</td><td class="n">${nf(t.ver)}</td></tr>`).join('')}</tbody></table></div>`;
+const tradeTable = list => `<div class="tw"><table class="trades"><thead><tr><th>Dato</th><th>Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead><tbody>${list.map(t => `<tr><td class="d">${sdate(t.d)}</td><td>${trade(t.k)}</td><td>${esc(t.sel)}</td><td class="n hide-s">${nf(t.ant)}</td><td class="n">${nf(t.ver)}</td></tr>`).join('')}</tbody></table></div>`;
 
 /* ---------- regjeringen ---------- */
 const govRank = t => /^statsminister/i.test(t) ? 0 : /finans/i.test(t) ? 1 : /utenriks/i.test(t) ? 2 : 3;
@@ -226,7 +271,7 @@ function renderMinister(g) {
   $('v-minister').innerHTML = `<a class="back" href="#regjeringen">← Hele regjeringen</a>
   ${profileHead({ keys: govKeys(g), navn: g.navn, parti: g.parti, kicker: `${dot(g.parti)}${esc(g.tittel)}`, sub: `${g.dep ? esc(g.dep) + ' · ' : ''}${P?.partier[g.parti] ? `<a href="#parti-${g.parti}">${esc(pname(g.parti))}</a>` : esc(pname(g.parti))}${r ? ` · <a href="#rep-${r.h}">Også på Stortinget</a>` : ''}` })}
   <div class="kpis"><div><b>${g.trades.length}</b><span>aksjehandler meldt</span></div><div><b>${paras.length}</b><span>registrerte interesser</span></div></div>
-  ${g.trades.length ? sec('s-tr', 'Aksjehandler', tradeTable(g.trades)) : ''}
+  ${g.trades.length ? sec('s-tr', 'Aksjehandler', tradeBlock(g.trades)) : ''}
   ${sec('s-reg', 'Interesseregisteret', !reg ? '<p class="empty">Står ikke i registeret ennå.</p>' : reg.ingen ? '<p>Har ingen registreringspliktige interesser.</p>' : paras.length ? `<dl class="facts reg">${paras.map(k => `<dt>§ ${k} ${PARA[k] || ''}</dt><dd>${esc(reg[k])}</dd>`).join('')}</dl><p class="meta">Ordrett fra regjeringsdelen av Stortingets register, ajourført ${date(D.regDato, true)}.</p>` : '<p class="empty">Ingen oppføringer.</p>')}
   ${sec('s-lenker', 'Kilder', `<div class="links">${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}<a href="https://www.regjeringen.no/no/om-regjeringa/" rel="noopener">Regjeringen.no</a>${prof(govKeys(g)).wiki ? `<a href="${url(prof(govKeys(g)).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
   document.title = `${g.navn} – EYE`;

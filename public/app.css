@@ -237,3 +237,15 @@ a.kpis,.kpis a{display:block;border:1px solid var(--line);border-radius:10px;pad
   .block{padding:12px}
 }
 .brl li{display:block}
+
+/* representantside: aksjer og kompakt topp på mobil */
+td.d{white-space:nowrap;font-variant-numeric:tabular-nums}
+b.pos{color:#167a3e}b.neg{color:#b42318}
+details.more{margin-top:8px}details.more>summary{cursor:pointer;font-weight:600;color:var(--acc);padding:6px 0}
+@media(max-width:720px){
+  .profile{grid-template-columns:92px 1fr;justify-items:stretch;gap:12px;align-items:start}
+  .profile .av-l{width:92px;height:115px;font-size:28px;border-radius:10px}
+  .profile .hrow h1{font-size:24px;line-height:1.15}
+  .profile .wiki{margin-left:-104px;font-size:15px}
+  .credit{font-size:10px}
+}
