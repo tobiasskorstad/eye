@@ -40,6 +40,7 @@ export async function fetchRaw(url, { retries = 3, accept = 'application/json', 
     try {
       const res = await safeFetch(url, { method: method === 'POST' ? 'POST' : 'GET', headers: { accept, 'user-agent': config.userAgent } });
       if (res.status === 404 || res.status === 410) return null;
+      if (res.status === 429 && i < retries) { const ra = Number(res.headers.get('retry-after')); await sleep(Math.min(60, Number.isFinite(ra) && ra > 0 ? ra : 5 * 2 ** i) * 1000); continue; } // høflig ved kvote
       if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status} ${url}`);
       if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status} ${url}`), { fatal: true });
       return res;

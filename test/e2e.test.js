@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
