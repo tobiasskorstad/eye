@@ -100,11 +100,15 @@ export function parseFlagging(body = '', title = '', issuer = '') {
   const pcts = [...first.matchAll(new RegExp(P, 'gi'))].map(m => Number(m[1].replace(',', '.'))).filter(n => n > 0 && n <= 100);
   const pst = after ? Number(after[1].replace(',', '.')) : pcts.length ? pcts[pcts.length - 1] : null;
   const norm = x => x.toLowerCase().replace(/[^\p{L}\d]/gu, '');
-  const FORM = '(?:AS|ASA|AB|ApS|A\\/S|Ltd\\.?|Limited|LLC|LLP|LP|L\\.P\\.|Inc\\.?|plc|PLC|GmbH|SE|AG|N\\.V\\.|S\\.A\\.|SA|S\\.à r\\.l\\.|Sàrl|KS|Oyj|Holding|Holdings|Fund|Fondet|Folketrygdfondet)';
-  const cands = [...first.matchAll(new RegExp(`((?:[${U}0-9][\\p{L}&.'\\-0-9]*\\s){0,6}${FORM})(?=[\\s,.)"'(]|$)`, 'gu'))].map(m => m[1].trim())
-    .filter(c => (!issuer || norm(c) !== norm(issuer)) && !/^(The|Notification|Disclosure|Reference|Oslo)\b/.test(c));
+  const FORM = '(?:Corporation|Corp\\.?|AS|ASA|AB|ApS|A\\/S|Ltd\\.?|Limited|LLC|LLP|LP|L\\.P\\.|Inc\\.?|plc|PLC|GmbH|SE|AG|N\\.V\\.|S\\.A\\.|SA|S\\.à r\\.l\\.|Sàrl|KS|Oyj|Holding|Holdings|Fund|Fondet|Folketrygdfondet)';
+  const cands = [...first.matchAll(new RegExp(`((?:[${U}0-9][\\p{L}&.'\\-0-9]*\\s){0,6}${FORM})(?=[\\s,.)"'(]|$)`, 'gu'))].map(m => m[1].trim().replace(/^.*[.:]\s+/, ''))
+    .filter(c => c.split(/\s+/).length >= 2 && !/^\d/.test(c) && (!issuer || norm(c) !== norm(issuer)) && !/^(The|Notification|Disclosure|Reference|Oslo|Please)\b/.test(c));
   // Personer som flagger: «Kjell Inge Røkke has …» (navn før verb)
   const person = first.match(new RegExp(`(${NAME})(?:,| has| have| through| via| and)`, 'u'))?.[1];
-  const holder = cands.find(c => !norm(issuer).includes(norm(c))) || (person && okName(cleanName(person)) ? cleanName(person) : null);
+  // Eier i tittelen («The Goldman Sachs Group, Inc. Disclosure in BLUENORD ASA») eller «on behalf of Bank of America Corporation»
+  const tm = (String(title).match(/^(.{3,80}?)[,:]?\s+(?:-\s+)?(?:disclosure|notification|melding)\s+(?:in|of|i)\b/i) || String(title).match(/^(.{3,60}?)\s*:\s*(?:shareholding\s+)?disclosures?\s+(?:on|in)\b/i))?.[1]?.trim();
+  const fromTitle = tm && !/(mandatory|major|shareholding|holdings?\b|notification|disclosure|flagging|melding|the company|:)/i.test(tm) && !norm(issuer).includes(norm(tm)) ? tm : null;
+  const ob = first.match(/on behalf of\s+(?:the\s+)?([A-Z].{2,80}?)(?=\s+(?:in respect|regarding|relating|in|for|concerning|with)\b|[,(]|\.\s|$)/)?.[1]?.trim();
+  const holder = fromTitle || ob || cands.find(c => !norm(issuer).includes(norm(c))) || (person && okName(cleanName(person)) ? cleanName(person) : null);
   return { retning, pst: pst && pst <= 100 ? pst : null, eier: holder || null, tekst: first.slice(0, 450), om: about(body) };
 }

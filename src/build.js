@@ -151,6 +151,15 @@ export async function buildData() {
     } catch (e) { warnings.push('Nyhetsfeeds feilet: ' + e.message); partier.auto = previous?.partier?.auto || {}; }
   } else warnings.push('Fant ikke content/partier.json');
 
+  // 4a. Børsnoterte selskaper: navn, ticker og selskapets egen beskrivelse («About …») fra nyeste melding som har den
+  const aksjer = {};
+  for (const x of [...innside, ...flagging].sort((a, b) => b.d.localeCompare(a.d))) {
+    const key = x.tick || x.sel; if (!key) continue;
+    const a = aksjer[key] ||= { tick: x.tick || null, navn: x.sel, om: null };
+    if (!a.om && x.om) Object.assign(a, { om: x.om, omDato: x.d, omU: x.u });
+  }
+  for (const x of [...innside, ...flagging]) delete x.om;
+
   // 4b. Bilder og kort omtale av politikere, statsråder, partiledere og innsidere
   let profiler = previous?.profiler || {};
   try {
@@ -197,7 +206,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, profiler, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, aksjer, profiler, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

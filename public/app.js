@@ -48,7 +48,7 @@ async function brEnhet(nr) {
   return { ...brSum(e), personer: [...m.values()].map(p => ({ ...p, rep: known?.ids.find(id => byId[id].navn.toLowerCase() === p.navn.toLowerCase()) })), politikere: (known?.ids || []).map(id => ({ id })) };
 }
 
-let D, reps, byId, byH, cos, byNr, trades, P, holdings = [], govs = [], govById = {}, govByH = {}, insiders = new Map();
+let D, reps, byId, byH, cos, byNr, trades, P, holdings = [], govs = [], govById = {}, govByH = {}, insiders = new Map(), stocks = new Map(), owners = new Map();
 
 /* ---------- data ---------- */
 async function load() {
@@ -82,7 +82,14 @@ function prepare(d) {
   trades.forEach(t => t.r.trades.push(t));
   govs = (D.pep?.regjering || []).map(g => ({ ...g, parti: pp(g.parti), trades: gov[g.id].trades }));
   govById = Object.fromEntries(govs.map(g => [g.id, g])); govByH = Object.fromEntries(govs.map(g => [hid(g.id), g]));
-  insiders = new Map();
+  insiders = new Map(); stocks = new Map(); owners = new Map();
+  // Aksjer: alle selskaper med innsidehandel eller flaggemeldinger, pluss beskrivelsen fra byggeren
+  const stockOf = x => { const k = slug(x.tick || x.sel); if (!k) return null; let st = stocks.get(k);
+    if (!st) { const a = D.aksjer?.[x.tick || x.sel] || {}; st = { k, tick: x.tick || null, navn: x.sel, om: a.om || null, omDato: a.omDato, omU: a.omU, ins: [], flag: [], pol: [] }; stocks.set(k, st); }
+    return st; };
+  for (const x of D.innside || []) stockOf(x)?.ins.push(x);
+  for (const f of D.flagging || []) { stockOf(f)?.flag.push(f); if (f.eier) { const k = slug(f.eier); const o = owners.get(k) || { s: k, navn: f.eier, list: [] }; o.list.push(f); owners.set(k, o); } }
+  for (const t of trades) { const st = stockByName(t.sel); if (st) st.pol.push(t); }
   for (const x of D.innside || []) if (x.navn) { const k = slug(x.navn); if (!k) continue; const e = insiders.get(k) || { s: k, navn: x.navn, list: [], pol: x.pol }; e.list.push(x); insiders.set(k, e); }
   cos = D.cos.map(c => ({ ...c, ids: [...new Set([...(c.decl || []), ...Object.keys(c.roles || {})])].filter(i => byId[i]) }));
   cos.forEach(c => c.ids.forEach(i => byId[i].cos.push(c)));
@@ -93,7 +100,7 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['home', 'gov', 'minister', 'person', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['home', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
@@ -115,6 +122,8 @@ function route() {
   else if ((m = h.match(/^org-(\d{9})$/))) { renderOrg(m[1]); show('org', 'pe', 'selskaper'); }
   else if ((m = h.match(/^statsrad-(\w+)$/)) && govByH[m[1]]) { renderMinister(govByH[m[1]]); show('minister', 'rg', 'regjeringen'); }
   else if ((m = h.match(/^person-([a-z0-9-]+)$/)) && insiders.has(m[1])) { renderPerson(insiders.get(m[1])); show('person', 'ei', 'eiere'); }
+  else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'eiere'); }
+  else if ((m = h.match(/^eier-([a-z0-9-]+)$/)) && owners.has(m[1])) { renderOwner(owners.get(m[1])); show('owner', 'ei', 'storeeiere'); }
   else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'EYE – Stortinget, penger og makt'; }
   scrollTo(0, 0);
 }
@@ -212,7 +221,7 @@ function tradeSummary(list) {
 }
 const tradeBlock = list => {
   const sum = tradeSummary(list);
-  return `<div class="tw"><table><thead><tr><th>Selskap</th><th class="n">Handler</th><th class="n hide-s">Kjøpt</th><th class="n hide-s">Solgt</th><th class="n">Netto aksjer</th><th class="n hide-s">Sist</th></tr></thead><tbody>${sum.map(g => { const net = g.kjop - g.salg; return `<tr><td><b>${esc(g.sel)}</b></td><td class="n">${g.n}</td><td class="n hide-s">${g.kjop ? nf(g.kjop) : '–'}</td><td class="n hide-s">${g.salg ? nf(g.salg) : '–'}</td><td class="n"><b class="${net > 0 ? 'pos' : net < 0 ? 'neg' : ''}">${net > 0 ? '+' : ''}${nf(net)}</b></td><td class="n hide-s">${sdate(g.d)}</td></tr>`; }).join('')}</tbody></table></div>
+  return `<div class="tw"><table><thead><tr><th>Selskap</th><th class="n">Handler</th><th class="n hide-s">Kjøpt</th><th class="n hide-s">Solgt</th><th class="n">Netto aksjer</th><th class="n hide-s">Sist</th></tr></thead><tbody>${sum.map(g => { const net = g.kjop - g.salg; return `<tr><td><b>${stockLink(g.sel)}</b></td><td class="n">${g.n}</td><td class="n hide-s">${g.kjop ? nf(g.kjop) : '–'}</td><td class="n hide-s">${g.salg ? nf(g.salg) : '–'}</td><td class="n"><b class="${net > 0 ? 'pos' : net < 0 ? 'neg' : ''}">${net > 0 ? '+' : ''}${nf(net)}</b></td><td class="n hide-s">${sdate(g.d)}</td></tr>`; }).join('')}</tbody></table></div>
   <p class="meta">Netto = kjøpt minus solgt i perioden EYE har data for. Det er ikke nødvendigvis hele beholdningen; den står i interesseregisteret.</p>
   ${list.length > 5 ? `<details class="more"><summary>Vis alle ${list.length} handler</summary>${tradeTable(list)}</details>` : tradeTable(list)}`;
 };
@@ -252,7 +261,7 @@ function renderRep(r) {
   ${sec('s-lenker', 'Kilder', `<div class="links"><a href="https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representant/?perid=${encodeURIComponent(r.id)}">Stortingets side</a>${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}${prof(['rep:' + r.id]).wiki ? `<a href="${url(prof(['rep:' + r.id]).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
   document.title = `${r.navn} – EYE`;
 }
-const tradeTable = list => `<div class="tw"><table class="trades"><thead><tr><th>Dato</th><th>Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead><tbody>${list.map(t => `<tr><td class="d">${sdate(t.d)}</td><td>${trade(t.k)}</td><td>${esc(t.sel)}</td><td class="n hide-s">${nf(t.ant)}</td><td class="n">${nf(t.ver)}</td></tr>`).join('')}</tbody></table></div>`;
+const tradeTable = list => `<div class="tw"><table class="trades"><thead><tr><th>Dato</th><th>Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead><tbody>${list.map(t => `<tr><td class="d">${sdate(t.d)}</td><td>${trade(t.k)}</td><td>${stockLink(t.sel)}</td><td class="n hide-s">${nf(t.ant)}</td><td class="n">${nf(t.ver)}</td></tr>`).join('')}</tbody></table></div>`;
 
 /* ---------- regjeringen ---------- */
 const govRank = t => /^statsminister/i.test(t) ? 0 : /finans/i.test(t) ? 1 : /utenriks/i.test(t) ? 2 : 3;
@@ -286,7 +295,7 @@ function renderPerson(x) {
   ${x.pol ? `<p class="card">Navnet er også en politiker: ${x.pol.map(p => esc(p.navn) + ' (' + esc(p.gruppe) + ')').join(', ')}. Sjekk meldingen for å se om det er samme person.</p>` : ''}
   <div class="kpis"><div><b>${x.list.length}</b><span>meldte handler, 60 dager</span></div><div><b>${buy ? kr(buy) : '–'}</b><span>kjøpt for, kr</span></div><div><b>${sell ? kr(sell) : '–'}</b><span>solgt for, kr</span></div><div><b>${new Set(x.list.map(i => i.sel)).size}</b><span>selskaper</span></div></div>
   <div id="pBrreg"></div>
-  ${sec('s-tr', 'Meldte handler', `<div class="tw"><table><thead><tr><th>Dato</th><th>Selskap</th><th>Melding</th><th class="n">Verdi, kr</th></tr></thead><tbody>${x.list.map(i => `<tr><td class="n">${sdate(i.d)}</td><td><b>${esc(i.sel)}</b><div class="meta">${ITYPE[i.k] || '–'}</div></td><td>${esc(i.tekst || i.tittel)} <a href="${url(i.u)}" rel="noopener">Les meldingen</a></td><td class="n">${i.ver ? kr(i.ver) : '–'}</td></tr>`).join('')}</tbody></table></div>
+  ${sec('s-tr', 'Meldte handler', `<div class="tw"><table><thead><tr><th>Dato</th><th>Selskap</th><th>Melding</th><th class="n">Verdi, kr</th></tr></thead><tbody>${x.list.map(i => `<tr><td class="d">${sdate(i.d)}</td><td><b>${stocks.has(slug(i.tick || i.sel)) ? `<a href="#aksje-${slug(i.tick || i.sel)}">${esc(i.sel)}</a>` : esc(i.sel)}</b><div class="meta">${ITYPE[i.k] || '–'}</div></td><td>${esc(i.tekst || i.tittel)} <a href="${url(i.u)}" rel="noopener">Les meldingen</a></td><td class="n">${money(i)}</td></tr>`).join('')}</tbody></table></div>
   <p class="meta">Handler gjort av nærstående eller selskaper personen kontrollerer, står på personen som meldingen gjelder. Navn og beløp leses automatisk ut av meldingen og kan være feil – sjekk alltid meldingen.</p>`)}`;
   document.title = `${x.navn} – EYE`;
   personBrreg(x);
@@ -307,6 +316,74 @@ async function personBrreg(x) {
   }
   if (location.hash.slice(1) === 'person-' + x.s) box.innerHTML = sec('s-br', 'Selskapene i Brønnøysundregistrene', `<ul class="feed brl">${out.join('')}</ul><p class="meta">Slått opp live i Enhetsregisteret. Roller vises bare når navnet stemmer helt.</p>`);
 }
+/* ---------- aksjer og eiere (Oslo Børs) ---------- */
+const coKey = s => String(s || '').toLowerCase().replace(/\((publ)\)|\b(asa|as|ab|ltd|limited|plc|sa|se|n\.v\.|inc|corp|holdings?|group)\b\.?/g, '').replace(/[^a-zæøåäö0-9]/g, '');
+/** Finn aksjesiden til et selskapsnavn fra interesseregisteret («Nordic Semiconductor» → Nordic Semiconductor ASA). */
+function stockByName(n) {
+  const k = coKey(n); if (k.length < 3) return null;
+  for (const st of stocks.values()) { const s2 = coKey(st.navn); if (s2 === k || (Math.min(s2.length, k.length) >= 5 && (s2.startsWith(k) || k.startsWith(s2)))) return st; }
+  return null;
+}
+const stockLink = n => { const st = stockByName(n); return st ? `<a href="#aksje-${st.k}">${esc(n)}</a>` : esc(n); };
+const ownerLink = n => n && owners.has(slug(n)) ? `<a href="#eier-${slug(n)}">${esc(n)}</a>` : esc(n || '–');
+const money = x => x.ver ? kr(x.ver) : x.bel ? `${nf(x.bel)} ${esc(x.cur)}` : '–';
+const pct = v => v != null ? String(v).replace('.', ',') + ' %' : '–';
+const arrow = r => r === 'opp' ? '<span class="k">▲ økte</span>' : r === 'ned' ? '<span class="s">▼ reduserte</span>' : '';
+
+function renderStock(st) {
+  const L = [...st.ins].sort((a, b) => b.d.localeCompare(a.d)), F = [...st.flag].sort((a, b) => b.d.localeCompare(a.d)), PT = [...st.pol].sort((a, b) => b.d.localeCompare(a.d));
+  const buy = L.filter(x => x.k === 'K').reduce((a, x) => a + (x.ver || 0), 0), sell = L.filter(x => x.k === 'S').reduce((a, x) => a + (x.ver || 0), 0);
+  // Innsidere i selskapet, oppsummert per person
+  const per = new Map();
+  for (const x of L) { const k = x.navn || '–'; const p = per.get(k) || { navn: x.navn, rolle: x.rolle, n: 0, k: 0, s: 0, ant: 0, d: x.d }; p.n++; if (x.k === 'K') { p.k += x.ver || 0; p.ant += x.ant || 0; } if (x.k === 'S') { p.s += x.ver || 0; p.ant -= x.ant || 0; } if (!p.rolle && x.rolle) p.rolle = x.rolle; per.set(k, p); }
+  // Største eiere som har flagget: nyeste melding per eier
+  const latest = [...new Map(F.filter(f => f.eier).map(f => [f.eier, f])).values()];
+  const lastPrice = L.find(x => x.kurs && (!x.cur || x.cur === 'NOK'));
+  $('v-stock').innerHTML = `<a class="back" href="#eiere">← Børs og eiere</a>
+  <div class="hrow"><div><div class="kicker">Børsnotert${st.tick ? ` · <span class="tick">${esc(st.tick)}</span>` : ''}</div><h1>${esc(st.navn)}</h1></div></div>
+  ${st.om ? `<div class="wiki"><p>${esc(st.om)}</p><div class="meta">Selskapets egen beskrivelse, fra <a href="${url(st.omU)}" rel="noopener">børsmelding ${date(st.omDato)}</a></div></div>` : '<p class="meta">Selskapet har ikke tatt med en beskrivelse av seg selv i børsmeldingene vi har lest.</p>'}
+  <div class="kpis"><div><b>${L.length}</b><span>innsidehandler, 60 dager</span></div><div><b>${buy ? kr(buy) : '–'}</b><span>kjøpt av innsidere, kr</span></div><div><b>${sell ? kr(sell) : '–'}</b><span>solgt av innsidere, kr</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>${PT.length ? `<div><b>${new Set(PT.map(t => t.r.navn)).size}</b><span>politikere har handlet aksjen</span></div>` : ''}${lastPrice ? `<div><b>${lastPrice.kurs.toLocaleString('nb-NO')} kr</b><span>kurs i siste innsidehandel (${sdate(lastPrice.d)})</span></div>` : ''}</div>
+  ${toc([L.length && ['a-ins', `Innsidere (${per.size})`], latest.length && ['a-eiere', `Store eiere (${latest.length})`], PT.length && ['a-pol', `Politikere (${PT.length})`], ['a-br', 'Brønnøysund'], ['a-kilder', 'Kilder']])}
+  ${L.length ? sec('a-ins', 'Innsidere som har handlet', `<div class="tw"><table><thead><tr><th>Person</th><th class="n">Handler</th><th class="n">Netto aksjer</th><th class="n hide-s">Kjøpt, kr</th><th class="n hide-s">Solgt, kr</th></tr></thead><tbody>${[...per.values()].sort((a, b) => (b.k + b.s) - (a.k + a.s)).map(p => `<tr${p.navn && insiders.has(slug(p.navn)) ? ` data-go="person-${slug(p.navn)}"` : ''}><td><div class="who">${avatar(p.navn ? ['ins:' + slug(p.navn)] : [], p.navn || '?')}<div>${p.navn ? insiderLink(p.navn) : '<span class="meta">Navn ikke lest ut</span>'}<div class="meta">${esc(p.rolle || '')}</div></div></div></td><td class="n">${p.n}</td><td class="n">${p.ant ? `<b class="${p.ant > 0 ? 'pos' : 'neg'}">${p.ant > 0 ? '+' : ''}${nf(p.ant)}</b>` : '–'}</td><td class="n hide-s">${p.k ? kr(p.k) : '–'}</td><td class="n hide-s">${p.s ? kr(p.s) : '–'}</td></tr>`).join('')}</tbody></table></div>
+  <details class="more"><summary>Vis alle ${L.length} meldinger</summary><div class="tw"><table><thead><tr><th>Dato</th><th>Melding</th><th class="n">Verdi</th></tr></thead><tbody>${L.map(x => `<tr><td class="d">${sdate(x.d)}</td><td><b>${ITYPE[x.k] || '–'}</b>${x.navn ? ' · ' + insiderLink(x.navn) : ''}<div class="meta">${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a></div></td><td class="n">${money(x)}</td></tr>`).join('')}</tbody></table></div></details>`) : ''}
+  ${latest.length ? sec('a-eiere', 'Store eiere som har flagget', `<div class="tw"><table><thead><tr><th>Eier</th><th class="n">Andel</th><th>Endring</th><th class="n hide-s">Dato</th></tr></thead><tbody>${latest.map(f => `<tr><td>${ownerLink(f.eier)}</td><td class="n"><b>${pct(f.pst)}</b></td><td>${arrow(f.retning) || '–'} <a href="${url(f.u)}" rel="noopener" class="meta">melding</a></td><td class="n hide-s">${sdate(f.d)}</td></tr>`).join('')}</tbody></table></div>
+  <p class="meta">Eiere må melde fra når de passerer 5, 10, 15, 20, 25, 1/3, 50, 2/3 og 90 % av aksjene. Listen viser bare dem som har flagget de siste 90 dagene, ikke hele eierlisten.</p>`) : ''}
+  ${PT.length ? sec('a-pol', 'Politikere som har handlet aksjen', (() => {
+    const pp = new Map();
+    for (const t of PT) { const k = t.rep || t.pep; const g = pp.get(k) || { t, n: 0, net: 0, kr: 0, d: t.d }; g.n++; g.net += (t.k === 'K' ? 1 : t.k === 'S' ? -1 : 0) * (t.ant || 0); g.kr += t.ver || 0; if (t.d > g.d) g.d = t.d; pp.set(k, g); }
+    const who = t => t.r.h ? `<a href="#rep-${t.r.h}">${esc(t.r.navn)}</a>` : t.pep && govById[t.pep] ? `<a href="#statsrad-${hid(t.pep)}">${esc(t.r.navn)}</a>` : esc(t.r.navn);
+    return `<ul class="feed">${[...pp.values()].sort((a, b) => b.d.localeCompare(a.d)).map(g => `<li>${avatar(g.t.r.h ? ['rep:' + g.t.rep] : ['gov:' + g.t.pep], g.t.r.navn, g.t.r.parti)}<div class="grow">${who(g.t)} <span class="meta">${g.n} ${g.n === 1 ? 'handel' : 'handler'}</span><div class="meta">${esc(g.t.r.parti)} · siste ${sdate(g.d)}</div></div><b class="n ${g.net > 0 ? 'pos' : g.net < 0 ? 'neg' : ''}">${g.net > 0 ? '+' : ''}${nf(g.net)} aksjer</b></li>`).join('')}</ul>
+    ${PT.length > 3 ? `<details class="more"><summary>Vis alle ${PT.length} handler</summary><ul class="feed">${PT.map(t => `<li><div class="grow">${who(t)} ${trade(t.k).toLowerCase()} ${nf(t.ant)} aksjer<div class="meta">${sdate(t.d)}</div></div><b class="n">${kr(t.ver)}</b></li>`).join('')}</ul></details>` : ''}
+    <p class="meta">Fra Stortingets og regjeringens register over aksjehandler. Netto = kjøpt minus solgt.</p>`; })()) : ''}
+  <div id="aBrreg"></div>
+  ${sec('a-kilder', 'Kilder', `<div class="links">${[...L, ...F].slice(0, 1).map(x => `<a href="${url(x.u)}" rel="noopener">Siste børsmelding (NewsWeb)</a>`).join('')}</div><p class="meta">Innsidehandler og flaggemeldinger fra Oslo Børs NewsWeb. Navn, beløp og andeler leses automatisk ut av meldingsteksten og kan være feil – sjekk alltid meldingen.</p>`)}`;
+  document.title = `${st.navn} – EYE`;
+  stockBrreg(st);
+}
+/** Norske selskaper: slå opp i Enhetsregisteret live (bransje, ansatte, kommune, styre og ledelse). */
+async function stockBrreg(st) {
+  const box = $('aBrreg'), nn = s => String(s || '').toLowerCase().replace(/\b(asa|as|ab|ltd|limited|plc|\(publ\))\b|[^a-zæøå0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+  if (!/\b(ASA|AS)\b/.test(st.navn)) { box.innerHTML = sec('a-br', 'Brønnøysundregistrene', '<p class="meta">Selskapet er registrert utenfor Norge, så det finnes ikke i Enhetsregisteret.</p>'); return; }
+  box.innerHTML = sec('a-br', 'Brønnøysundregistrene', '<p class="loading">Henter fra Brønnøysund …</p>');
+  try {
+    const h = (await brSearch(st.navn)).find(c => nn(c.navn) === nn(st.navn));
+    if (!h) throw 0;
+    const e = await brEnhet(h.nr), roles = (e?.personer || []).filter(p => /leder|styre|daglig/i.test(p.rolle)).slice(0, 12);
+    if (location.hash.slice(1) !== 'aksje-' + st.k) return;
+    box.innerHTML = sec('a-br', 'Brønnøysundregistrene', `<dl class="facts"><dt>Org.nr.</dt><dd><a href="#org-${h.nr}">${org(h.nr)}</a></dd><dt>Bransje</dt><dd>${esc(h.nar || '–')}</dd><dt>Kommune</dt><dd>${esc(h.kommune || '–')}</dd><dt>Ansatte</dt><dd>${h.ans > 0 ? nf(h.ans) : 'ikke registrert'}</dd></dl>
+      ${roles.length ? `<h3>Styre og ledelse</h3><ul class="feed">${roles.map(p => `<li><div class="grow">${insiders.has(slug(p.navn)) ? `<a href="#person-${slug(p.navn)}">${esc(p.navn)}</a>` : esc(p.navn)}<div class="meta">${esc(p.rolle)}</div></div></li>`).join('')}</ul>` : ''}<p class="meta">Slått opp live i Enhetsregisteret.</p>`);
+  } catch { if (location.hash.slice(1) === 'aksje-' + st.k) box.innerHTML = sec('a-br', 'Brønnøysundregistrene', '<p class="meta">Fant ikke selskapet entydig i Enhetsregisteret.</p>'); }
+}
+function renderOwner(o) {
+  const list = [...o.list].sort((a, b) => b.d.localeCompare(a.d)), latest = [...new Map(list.map(f => [f.sel, f])).values()];
+  $('v-owner').innerHTML = `<a class="back" href="#storeeiere">← Store eiere</a>
+  <div class="kicker">Eier som har flagget på Oslo Børs</div><h1>${esc(o.navn)}</h1>
+  <div class="kpis"><div><b>${latest.length}</b><span>selskaper</span></div><div><b>${list.length}</b><span>flaggemeldinger, 90 dager</span></div><div><b>${list.filter(f => f.retning === 'opp').length} / ${list.filter(f => f.retning === 'ned').length}</b><span>økte / reduserte</span></div></div>
+  ${sec('o-sel', 'Eierandeler', `<div class="tw"><table><thead><tr><th>Selskap</th><th class="n">Siste andel</th><th>Endring</th><th class="n">Dato</th></tr></thead><tbody>${latest.map(f => { const st = stocks.get(slug(f.tick || f.sel)); return `<tr${st ? ` data-go="aksje-${st.k}"` : ''}><td>${st ? `<a href="#aksje-${st.k}">${esc(f.sel)}</a>` : esc(f.sel)}</td><td class="n"><b>${pct(f.pst)}</b></td><td>${arrow(f.retning) || '–'}</td><td class="n">${sdate(f.d)}</td></tr>`; }).join('')}</tbody></table></div>`)}
+  ${sec('o-all', 'Alle meldinger', `<ul class="feed">${list.map(f => `<li><div class="grow">${esc(f.tekst || f.tittel)} <a href="${url(f.u)}" rel="noopener">Les meldingen</a><div class="meta">${esc(f.sel)} · ${sdate(f.d)}</div></div></li>`).join('')}</ul><p class="meta">Store banker som Goldman Sachs og J.P. Morgan flagger ofte fordi de holder aksjer for kunder eller i forbindelse med utlån, ikke nødvendigvis som langsiktige eiere.</p>`)}`;
+  document.title = `${o.navn} – EYE`;
+}
+
 const insiderLink = n => n && insiders.has(slug(n)) ? `<a href="#person-${slug(n)}">${esc(n)}</a>` : esc(n || '–');
 
 /* ---------- oversikt (forsiden) ---------- */
@@ -335,7 +412,7 @@ function homeView() {
   const fkNew = fk.filter(x => x.d).slice(0, 5), stille = D.faktasjekk?.nyeste && (Date.now() - Date.parse(D.faktasjekk.nyeste)) / 864e5 > 30;
   $('homeDash').innerHTML = [
     tr.length && card('Siste aksjehandler fra politikere', '<a href="#handler">Alle →</a>', `<ul class="feed">${tr.map(t => row(avatar(t.r.h ? ['rep:' + t.rep] : ['gov:' + t.pep], t.r.navn, t.r.parti), `${t.r.h ? `<a href="#rep-${t.r.h}">${esc(t.r.navn)}</a>` : t.pep && govById[t.pep] ? `<a href="#statsrad-${hid(t.pep)}">${esc(t.r.navn)}</a>` : esc(t.r.navn)} ${trade(t.k).toLowerCase()} ${esc(t.sel)}`, `${sdate(t.d)} · ${esc(t.r.parti)}`, kr(t.ver))).join('')}</ul>`),
-    big.length && card('Største innsidehandler på børsen', '<a href="#eiere">Toppliste →</a>', `<ul class="feed">${big.map(x => row(avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || x.sel), `${x.navn ? insiderLink(x.navn) : esc(x.sel)} <span class="meta">${x.n > 1 ? `${x.n} ${x.k === 'K' ? 'kjøp' : 'salg'}` : ITYPE[x.k]}</span>`, `${esc(x.rolle ? x.rolle + ', ' : '')}${esc(x.sel)} · ${x.n > 1 ? 'siste ' : ''}${sdate(x.d)}`, kr(x.sum))).join('')}</ul><p class="meta">Siste 60 dager. Flere handler fra samme person i samme selskap er slått sammen.</p>`),
+    big.length && card('Største innsidehandler på børsen', '<a href="#eiere">Toppliste →</a>', `<ul class="feed">${big.map(x => row(avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || x.sel), `${x.navn ? insiderLink(x.navn) : esc(x.sel)} <span class="meta">${x.n > 1 ? `${x.n} ${x.k === 'K' ? 'kjøp' : 'salg'}` : ITYPE[x.k]}</span>`, `${esc(x.rolle ? x.rolle + ', ' : '')}${stocks.has(slug(x.tick || x.sel)) ? `<a href="#aksje-${slug(x.tick || x.sel)}">${esc(x.sel)}</a>` : esc(x.sel)} · ${x.n > 1 ? 'siste ' : ''}${sdate(x.d)}`, kr(x.sum))).join('')}</ul><p class="meta">Siste 60 dager. Flere handler fra samme person i samme selskap er slått sammen.</p>`),
     qs.length && card('Siste spørsmål til regjeringen', '<a href="#stortinget">Alle representanter →</a>', `<ul class="feed">${qs.map(r => row(avatar(['rep:' + r.id], r.navn, r.parti), `<a href="${url(qUrl(r.siste))}" rel="noopener">${esc(cut(r.siste.tit, 110))}</a>`, `<a href="#rep-${r.h}">${esc(r.navn)}</a> · ${esc(r.parti)} · ${date(r.siste.d)}`)).join('')}</ul>`),
     A.length && card('Akkurat nå i nyhetene', '<a href="#nyheter">Alle nyheter →</a>', `<ul class="feed">${A.slice(0, 5).map(n => row('', `<a href="${url(n.url)}" rel="noopener">${esc(n.tittel)}</a>`, `${esc(n.kilde)} · ${n.ps.map(x => dot(x) + esc(short(x))).join(' ')}`)).join('')}</ul>`),
     order.length && card('Partiene', '<a href="#partier">Mer →</a>', `<ul class="feed">${order.map(p => { const x = P.partier[p], lk = leaderKeys(p), seats = reps.filter(r => r.parti === p).length, poll = P.maling?.snitt[p]; return row(avatar(lk, x.leder, p), `<a href="#parti-${p}">${esc(pname(p))}</a>`, `${esc(x.leder)} · ${seats} mandater`, poll != null ? poll.toFixed(1).replace('.', ',') + ' %' : ''); }).join('')}</ul>${P.maling ? `<p class="meta">Til høyre: snitt på målingene (${esc(P.maling.kilde)}).</p>` : ''}`),
@@ -672,7 +749,7 @@ function tradesView() {
   const big = [...trades].sort((a, b) => b.ver - a.ver)[0];
   $('tk').innerHTML = `<div><b>${trades.length}</b><span>handler</span></div><div><b>${n}</b><span>personer</span></div><div><b>${nf(Math.round(sum / 1e5) / 10)} mill. kr</b><span>samlet verdi</span></div>${big ? `<div><b>${nf(big.ver)} kr</b><span>største: ${esc(big.r.navn)}, ${esc(big.sel)}</span></div>` : ''}`;
   const t = $('tt').value;
-  $('tradeTable').tBodies[0].innerHTML = trades.filter(x => !t || x.k === t).map(x => `<tr${x.r.h ? ` data-go="rep-${x.r.h}"` : x.pep && govById[x.pep] ? ` data-go="statsrad-${hid(x.pep)}"` : ''}><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.r.h ? ['rep:' + x.rep] : ['gov:' + x.pep], x.r.navn, x.r.parti)}<div>${x.r.h ? `<a href="#rep-${x.r.h}">${esc(x.r.navn)}</a>` : x.pep && govById[x.pep] ? `<a href="#statsrad-${hid(x.pep)}">${esc(x.r.navn)}</a>` : esc(x.r.navn)}<div class="meta">${dot(x.r.parti)}${esc(x.r.parti)}${x.r.rolle ? ' · ' + esc(x.r.rolle) : ''}</div></div></div></td><td class="hide-s">${trade(x.k)}</td><td><span class="show-s">${trade(x.k)} </span>${esc(x.sel)}</td><td class="n hide-s">${nf(x.ant)}</td><td class="n">${nf(x.ver)}</td></tr>`).join('')
+  $('tradeTable').tBodies[0].innerHTML = trades.filter(x => !t || x.k === t).map(x => `<tr${x.r.h ? ` data-go="rep-${x.r.h}"` : x.pep && govById[x.pep] ? ` data-go="statsrad-${hid(x.pep)}"` : ''}><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.r.h ? ['rep:' + x.rep] : ['gov:' + x.pep], x.r.navn, x.r.parti)}<div>${x.r.h ? `<a href="#rep-${x.r.h}">${esc(x.r.navn)}</a>` : x.pep && govById[x.pep] ? `<a href="#statsrad-${hid(x.pep)}">${esc(x.r.navn)}</a>` : esc(x.r.navn)}<div class="meta">${dot(x.r.parti)}${esc(x.r.parti)}${x.r.rolle ? ' · ' + esc(x.r.rolle) : ''}</div></div></div></td><td class="hide-s">${trade(x.k)}</td><td><span class="show-s">${trade(x.k)} </span>${stockLink(x.sel)}</td><td class="n hide-s">${nf(x.ant)}</td><td class="n">${nf(x.ver)}</td></tr>`).join('')
     || '<tr><td colspan="6" class="empty">Ingen handler.</td></tr>';
 }
 
@@ -683,7 +760,7 @@ function insiderView() {
   const k = L.filter(x => x.k === 'K'), s = L.filter(x => x.k === 'S');
   $('ik').innerHTML = `<div><b>${L.length}</b><span>meldinger siste 60 dager</span></div><div><b>${k.length}</b><span>kjøp</span></div><div><b>${s.length}</b><span>salg</span></div><div><b>${L.filter(x => x.pol).length}</b><span>nevner en politiker</span></div>`;
   const list = L.filter(x => (!t || x.k === t) && (!pol || x.pol) && (!q || (x.sel + ' ' + x.tekst + ' ' + x.tittel).toLowerCase().includes(q)));
-  $('insTable').tBodies[0].innerHTML = list.slice(0, 300).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><b>${esc(x.sel)}</b><div class="meta">${ITYPE[x.k] || '–'}${x.navn ? ' · ' + insiderLink(x.navn) : ''}${x.rolle ? ', ' + esc(x.rolle) : ''}</div></td><td>${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a>${x.pol ? `<div>${x.pol.map(p => `<span class="chip ok">${esc(p.navn)} · ${esc(p.gruppe)}</span>`).join(' ')}</div>` : ''}</td><td class="n hide-s">${x.ver ? nf(x.ver) : '–'}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen meldinger.</td></tr>';
+  $('insTable').tBodies[0].innerHTML = list.slice(0, 300).map(x => `<tr><td class="d">${sdate(x.d)}</td><td><b>${stocks.has(slug(x.tick || x.sel)) ? `<a href="#aksje-${slug(x.tick || x.sel)}">${esc(x.sel)}</a>` : esc(x.sel)}</b><div class="meta">${ITYPE[x.k] || '–'}${x.navn ? ' · ' + insiderLink(x.navn) : ''}${x.rolle ? ', ' + esc(x.rolle) : ''}</div></td><td>${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a>${x.pol ? `<div>${x.pol.map(p => `<span class="chip ok">${esc(p.navn)} · ${esc(p.gruppe)}</span>`).join(' ')}</div>` : ''}</td><td class="n hide-s">${money(x)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen meldinger.</td></tr>';
 }
 
 /* ---------- eiere og innsidere ---------- */
@@ -692,7 +769,7 @@ function ownersView() {
   const L = D.innside || [], F = D.flagging || [];
   const sum = l => l.reduce((a, x) => a + (x.ver || 0), 0);
   $('ok').innerHTML = `<div><b>${kr(sum(L.filter(x => x.k === 'K')))}</b><span>kjøpt av innsidere, 60 dager</span></div><div><b>${kr(sum(L.filter(x => x.k === 'S')))}</b><span>solgt av innsidere</span></div><div><b>${new Set(L.map(x => x.sel)).size}</b><span>selskaper med innsidehandel</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>`;
-  $('topTrades').tBodies[0].innerHTML = L.filter(x => x.ver && (x.k === 'K' || x.k === 'S')).sort((a, b) => b.ver - a.ver).slice(0, 25).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || '?')}<div>${insiderLink(x.navn)}<div class="meta">${ITYPE[x.k]}${x.rolle ? ' · ' + esc(x.rolle) : ''}</div></div></div></td><td>${esc(x.sel)} <a href="${url(x.u)}" rel="noopener" class="meta">melding</a></td><td class="n">${kr(x.ver)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen data.</td></tr>';
+  $('topTrades').tBodies[0].innerHTML = L.filter(x => x.ver && (x.k === 'K' || x.k === 'S')).sort((a, b) => b.ver - a.ver).slice(0, 25).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || '?')}<div>${insiderLink(x.navn)}<div class="meta">${ITYPE[x.k]}${x.rolle ? ' · ' + esc(x.rolle) : ''}</div></div></div></td><td>${stocks.has(slug(x.tick || x.sel)) ? `<a href="#aksje-${slug(x.tick || x.sel)}">${esc(x.sel)}</a>` : esc(x.sel)} <a href="${url(x.u)}" rel="noopener" class="meta">melding</a></td><td class="n">${kr(x.ver)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen data.</td></tr>';
   const people = new Map();
   for (const x of L.filter(x => x.navn)) {
     const p = people.get(x.navn) || { navn: x.navn, roller: new Set(), n: 0, k: 0, s: 0, pol: x.pol };
@@ -701,12 +778,12 @@ function ownersView() {
   $('topPeople').tBodies[0].innerHTML = [...people.values()].sort((a, b) => (b.k + b.s) - (a.k + a.s) || b.n - a.n).slice(0, 30).map(p => `<tr data-go="person-${slug(p.navn)}"><td><div class="who">${avatar(['ins:' + slug(p.navn)], p.navn)}<div><b>${insiderLink(p.navn)}</b>${p.pol ? ' <span class="chip ok">politiker</span>' : ''}</div></div></td><td>${esc([...p.roller].join(' · '))}</td><td class="n">${p.n}</td><td class="n">${p.k ? kr(p.k) : '–'}</td><td class="n hide-s">${p.s ? kr(p.s) : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen data.</td></tr>';
   const owners = new Map();
   for (const f of F.filter(f => f.eier)) { const o = owners.get(f.eier) || { eier: f.eier, sel: new Map() }; o.sel.set(f.sel, f); owners.set(f.eier, o); }
-  $('topOwners').tBodies[0].innerHTML = [...owners.values()].sort((a, b) => b.sel.size - a.sel.size).slice(0, 20).map(o => `<tr><td><b>${esc(o.eier)}</b></td><td>${[...o.sel.values()].map(f => `${esc(f.sel)}${f.pst != null ? ` (${String(f.pst).replace('.', ',')} %${f.retning === 'opp' ? ' ▲' : f.retning === 'ned' ? ' ▼' : ''})` : ''}`).join(', ')}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Ingen data.</td></tr>';
+  $('topOwners').tBodies[0].innerHTML = [...owners.values()].sort((a, b) => b.sel.size - a.sel.size).slice(0, 20).map(o => `<tr><td><b>${ownerLink(o.eier)}</b></td><td>${[...o.sel.values()].map(f => `${stocks.has(slug(f.tick || f.sel)) ? `<a href="#aksje-${slug(f.tick || f.sel)}">${esc(f.sel)}</a>` : esc(f.sel)}${f.pst != null ? ` (${String(f.pst).replace('.', ',')} %${f.retning === 'opp' ? ' ▲' : f.retning === 'ned' ? ' ▼' : ''})` : ''}`).join(', ')}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Ingen data.</td></tr>';
 }
 function flaggingView() {
   const r = $('fr').value, q = $('fq').value.trim().toLowerCase();
   const list = (D.flagging || []).filter(f => (!r || f.retning === r) && (!q || (f.sel + ' ' + (f.eier || '') + ' ' + f.tekst).toLowerCase().includes(q)));
-  $('flagTable').tBodies[0].innerHTML = list.slice(0, 300).map(f => `<tr><td class="n">${sdate(f.d)}</td><td><b>${esc(f.sel)}</b></td><td>${esc(f.eier || '–')}${f.retning ? `<div class="meta">${f.retning === 'opp' ? '<span class="k">▲ økte</span>' : '<span class="s">▼ reduserte</span>'}</div>` : ''}</td><td class="n">${f.pst != null ? String(f.pst).replace('.', ',') + ' %' : '–'}</td><td class="hide-s">${esc(f.tekst || f.tittel)} <a href="${url(f.u)}" rel="noopener">Les meldingen</a></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen meldinger.</td></tr>';
+  $('flagTable').tBodies[0].innerHTML = list.slice(0, 300).map(f => `<tr><td class="d">${sdate(f.d)}</td><td><b>${stocks.has(slug(f.tick || f.sel)) ? `<a href="#aksje-${slug(f.tick || f.sel)}">${esc(f.sel)}</a>` : esc(f.sel)}</b></td><td>${ownerLink(f.eier)}${f.retning ? `<div class="meta">${f.retning === 'opp' ? '<span class="k">▲ økte</span>' : '<span class="s">▼ reduserte</span>'}</div>` : ''}</td><td class="n">${f.pst != null ? String(f.pst).replace('.', ',') + ' %' : '–'}</td><td class="hide-s">${esc(f.tekst || f.tittel)} <a href="${url(f.u)}" rel="noopener">Les meldingen</a></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen meldinger.</td></tr>';
 }
 
 /* ---------- aksjeposter (alle PEP) ---------- */
@@ -774,8 +851,10 @@ function globalSearch() {
   const cs = cos.filter(c => words.every(w => c.key.includes(w))).slice(0, 5);
   const gs = govs.filter(g => words.every(w => (g.navn + ' ' + g.tittel + ' ' + g.dep).toLowerCase().includes(w))).slice(0, 5);
   const is = [...insiders.values()].filter(x => words.every(w => (x.navn + ' ' + x.list.map(i => i.sel).join(' ')).toLowerCase().includes(w))).slice(0, 5);
+  const ss = [...stocks.values()].filter(st => words.every(w => (st.navn + ' ' + (st.tick || '')).toLowerCase().includes(w))).slice(0, 5);
   const ps = P ? Object.keys(P.partier).filter(p => words.every(w => (pname(p) + ' ' + short(p) + ' ' + P.partier[p].leder).toLowerCase().includes(w))) : [];
   box.innerHTML = (ps.length ? '<div class="h">Partier</div>' + ps.map(p => `<a href="#parti-${p}"><span>${dot(p)}${esc(pname(p))}</span><span class="meta">${esc(P.partier[p].leder)}</span></a>`).join('') : '') + (gs.length ? '<div class="h">Regjeringen</div>' + gs.map(g => `<a href="#statsrad-${hid(g.id)}"><span class="who">${avatar(govKeys(g), g.navn, g.parti)}${esc(g.navn)}</span><span class="meta">${esc(g.tittel)}</span></a>`).join('') : '') + (rs.length ? '<div class="h">Representanter</div>' + rs.map(r => `<a href="#rep-${r.h}"><span class="who">${avatar(['rep:' + r.id], r.navn, r.parti)}${esc(r.navn)}</span><span class="meta">${esc(r.parti)} · ${esc(r.fylke)}</span></a>`).join('') : '') +
+    (ss.length ? '<div class="h">Aksjer på Oslo Børs</div>' + ss.map(st => `<a href="#aksje-${st.k}"><span>${esc(st.navn)}</span><span class="meta">${esc(st.tick || '')} · ${st.ins.length} innsidehandler</span></a>`).join('') : '') +
     (is.length ? '<div class="h">Innsidere på Oslo Børs</div>' + is.map(x => `<a href="#person-${x.s}"><span class="who">${avatar(['ins:' + x.s], x.navn)}${esc(x.navn)}</span><span class="meta">${esc([...new Set(x.list.map(i => i.sel))].slice(0, 2).join(', '))}</span></a>`).join('') : '') +
     (cs.length ? '<div class="h">Selskaper koblet til politikere</div>' + cs.map(c => `<a href="#org-${org(c.nr).replace(/ /g, '')}"><span>${esc(c.navn)}</span><span class="meta">${org(c.nr)}</span></a>`).join('') : '') +
     `<div class="h">Hele Enhetsregisteret</div><button type="button" data-live><span>Søk «${esc($('gq').value.trim())}» i Brønnøysund</span><span class="meta">→</span></button>`;

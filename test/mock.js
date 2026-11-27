@@ -154,7 +154,7 @@ export function startMock(port = 0) {
     }
     if (p.startsWith('/commons/')) { res.writeHead(302, { location: '/wiki/upload/x.jpg' }); return res.end(); }
     if (p === '/ob/message') return send(200, { data: { message: { body: u.searchParams.get('messageId') === '7001'
-      ? 'Anders Opedal, CEO of Equinor ASA, has today bought 10 000 shares at NOK 250 per share in the company.'
+      ? 'Anders Opedal, CEO of Equinor ASA, has today bought 10 000 shares at NOK 250 per share in the company.\n\nAbout Equinor\n\nEquinor is an international energy company with operations in more than 30 countries.\n\nContacts\n\nIR'
       : 'Folketrygdfondet AS has increased its holding and now owns 6,1 % of the shares in Equinor ASA, above the 5 % threshold.' } } });
     if (p === '/st/personbilde') return ['JGS', 'MARNIL', 'HSP'].includes(u.searchParams.get('personid')) ? send(200, JPEG, 'image/jpeg') : send(404, 'ikke funnet', 'text/plain');
     if ((p === '/wiki/no') && !u.searchParams.get('exintro')) return send(200, { query: { pages: [{ title: u.searchParams.get('titles'), extract: 'Anders Opedal er norsk næringslivsleder. Han har vært konsernsjef i Equinor siden 2020.' }] } });

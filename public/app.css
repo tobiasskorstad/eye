@@ -249,3 +249,5 @@ details.more{margin-top:8px}details.more>summary{cursor:pointer;font-weight:600;
   .profile .wiki{margin-left:-104px;font-size:15px}
   .credit{font-size:10px}
 }
+.tick{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;background:var(--soft);padding:1px 6px;border-radius:5px;text-transform:none}
+.block h3{font-size:15px;margin:12px 0 4px}
