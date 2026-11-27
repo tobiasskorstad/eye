@@ -18,9 +18,11 @@ const NAME = "[A-ZÆØÅÉ][\\p{L}'\\-]+\\.?(?:\\s+[A-ZÆØÅÉ][\\p{L}'\\-]*\\.
 const ROLE = "(?:(?:Deputy|Vice|Executive|Chief|Group|Senior|Acting|Interim)\\s+)*(?:Chair(?:man|person|woman)?(?: of the [Bb]oard)?|CEO|CFO|COO|CTO|CCO|CIO|EVP|SVP|President|Managing Director|Director|[Bb]oard [Mm]ember|member of the [Bb]oard(?: of [Dd]irectors)?|[A-Z][\\w ]{0,25}Officer(?: \\(\\w+\\))?|employee representative[\\w ]{0,20}|[Ss]tyreleder|[Ss]tyremedlem|[Nn]estleder|[Kk]onsernsjef|[Dd]aglig leder|[Ff]inansdirektør|[Aa]dministrerende direktør|[Aa]nsatterepresentant)";
 const WHO1 = new RegExp(`(${NAME}),\\s+(?:a |an |the )?(${ROLE})`, 'u');
 const WHO2 = new RegExp(`(${ROLE})[,]?\\s+(${NAME})\\s+(?:in|of|i|has|have|bought|sold|har|kjøpte|solgte)\\b`, 'u');
+// Titler og etiketter som ikke er en del av navnet («Primary Insider Vegard Wollan», «Mr. Artem Volynets»)
+export const cleanName = n => String(n || '').replace(/^(?:(?:Mr|Mrs|Ms|Miss|Dr|Sir|Herr|Fru)\.?\s+|(?:Primary\s+)?Insider\s+|PDMR\s+|Primærinnsider\s+)+/i, '').trim();
 export function who(t = '') {
-  let m = t.match(WHO1); if (m) return { navn: m[1].trim(), rolle: m[2].trim() };
-  m = t.match(WHO2); if (m) return { navn: m[2].trim(), rolle: m[1].trim() };
+  let m = t.match(WHO1); if (m) return { navn: cleanName(m[1]), rolle: m[2].trim() };
+  m = t.match(WHO2); if (m) return { navn: cleanName(m[2]), rolle: m[1].trim() };
   return null;
 }
 
@@ -72,6 +74,7 @@ async function fetchCategory(cat, cacheName, parser, days, maxNew) {
   await fs.writeFile(cacheFile, JSON.stringify(cache));
   return msgs.filter(m => cache[m.messageId] && !m.correctedByMessageId).map(m => {
     const { v, ...p } = cache[m.messageId];
+    if (p.navn) p.navn = cleanName(p.navn); // også for meldinger tolket før navnevasken
     return { id: m.messageId, d: m.publishedTime.slice(0, 10), sel: m.issuerName, tick: m.issuerSign, tittel: m.title, ...p,
       ver: p.ant && p.kurs ? Math.round(p.ant * p.kurs) : undefined, u: `https://newsweb.oslobors.no/message/${m.messageId}` };
   });
