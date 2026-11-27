@@ -42,7 +42,8 @@ export async function pdfToText(bytes) {
   return pages.join('\n');
 }
 
-const HEAD = /^([^\n,§]{2,40}), ([^\n(§]{2,60}) \(([A-Za-zæøåÆØÅ]+), ([^)\n]+)\)\s*$/gm;
+// «Etternavn, Fornavn (Parti, Fylke)» for representanter; «Stoltenberg, Jens (A)» for statsråder som ikke sitter på Stortinget
+const HEAD = /^([^\n,§]{2,40}), ([^\n(§]{2,60}) \((?:([A-Za-zæøåÆØÅ]+), ([^)\n]+)|(A|Ap|H|FrP|Frp|SV|Sp|KrF|V|MDG|R|PF|INP|Uav))\)\s*$/gm;
 const LABEL = /^(Styreverv mv\.|Selvstendig næring|Lønnet stilling m\.?v\.|Tidligere arbeidsgiver|Framtidig arbeidsgiver|Fremtidig arbeidsgiver|Økonomisk støtte[^ ]*|Eiendom i næring|Selskapsinteresser|Gjeld[^ ]*|Utenlandsreiser|Gaver|Andre forhold)\s*/;
 
 /** Deler registerteksten i personer med paragrafer. */
@@ -81,7 +82,7 @@ export function parseRegister(raw) {
       const k = mm[1].replace(/\s/g, '');
       secs[k] = (secs[k] ? secs[k] + ' ' : '') + text.replace(LABEL, '').trim();
     }
-    return { etternavn: m[1].trim(), fornavn: m[2].trim(), parti: m[3], fylke: m[4].trim(), secs };
+    return { etternavn: m[1].trim(), fornavn: m[2].trim(), parti: m[3] || m[5], fylke: (m[4] || '').trim(), secs };
   });
 }
 
@@ -102,7 +103,7 @@ export function publicEntry(p) {
   if (!p) return {};
   const out = {};
   for (const [k, v] of Object.entries(p.secs)) {
-    if (k === 'x') { if (/ingen registreringspliktige/i.test(v)) out.ingen = 1; continue; }
+    if (k === 'x') { if (/ingen registreringspliktige|ingen registrerte opplysninger/i.test(v)) out.ingen = 1; continue; }
     const t = (k === '9' ? v.split(/\s*(Enkelttransaksjoner|Dato Kjøp\/Salg)/)[0] : v).trim();
     if (t) out[k] = t;
   }

@@ -106,3 +106,14 @@ test('PEP: registerets regjeringsdel skilles fra representantene', async () => {
   const pep = buildPep(gov, e, [], {});
   assert.match(pep.regjering[0].reg['9'], /Femstø AS/);
 });
+
+test('statsråder som ikke sitter på Stortinget: «Stoltenberg, Jens (A)» uten fylke', async () => {
+  const { parseRegisterSections, publicEntry } = await import('../src/register.js');
+  const reps = Array.from({ length: 100 }, (_, i) => `Nordmann${i}, Ola (H, Oslo)\nHar ingen registreringspliktige interesser`).join('\n');
+  const raw = `Representanter\n${reps}\nRegjeringsmedlemmer\nStoltenberg, Jens (A)\n§2 Styreverv mv. Medlem av Sikkerhetskonferansen i Münchens Foundation Council\nFugelsnes, Eileen (A)\nIngen registrerte opplysninger\nEide, Espen Barth (A)\nHar ingen registreringspliktige interesser\n`;
+  const g = parseRegisterSections(raw).filter(e => e.seksjon === 'regjering');
+  assert.deepEqual(g.map(e => `${e.fornavn} ${e.etternavn} ${e.parti}`), ['Jens Stoltenberg A', 'Eileen Fugelsnes A', 'Espen Barth Eide A']);
+  assert.match(publicEntry(g[0])['2'], /Sikkerhetskonferansen/);
+  assert.equal(publicEntry(g[1]).ingen, 1, '«Ingen registrerte opplysninger» = ingen interesser');
+  assert.equal(parseRegisterSections('Representanter\nEquinor, aksjer (ASA)\n').length, 0, 'tilfeldige linjer med parentes er ikke personer');
+});

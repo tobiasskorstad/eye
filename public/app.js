@@ -48,6 +48,7 @@ async function brEnhet(nr) {
   return { ...brSum(e), personer: [...m.values()].map(p => ({ ...p, rep: known?.ids.find(id => byId[id].navn.toLowerCase() === p.navn.toLowerCase()) })), politikere: (known?.ids || []).map(id => ({ id })) };
 }
 
+const PFIX = { Ap: 'A', Frp: 'FrP', Høyre: 'H' }, pp = p => PFIX[p] || p;
 let D, reps, byId, byH, cos, byNr, trades, P, holdings = [], govs = [], govById = {}, govByH = {}, insiders = new Map(), stocks = new Map(), owners = new Map();
 
 /* ---------- data ---------- */
@@ -70,7 +71,6 @@ function prepare(d) {
   reps = D.reps.map(r => ({ ...r, parti: String(r.parti).replace(/[^\wÅØÆåøæ]/g, ''), h: hid(r.id), reg: r.reg || {}, cos: [], trades: [] }));
   byId = Object.fromEntries(reps.map(r => [r.id, r]));
   byH = Object.fromEntries(reps.map(r => [r.h, r]));
-  const PFIX = { Ap: 'A', Frp: 'FrP', Høyre: 'H' }, pp = p => PFIX[p] || p;
   const gov = Object.fromEntries((D.pep?.regjering || []).map(g => [g.id, { navn: g.navn, parti: pp(g.parti), rolle: g.tittel, trades: [] }]));
   trades = [...D.trades.map(t => ({ ...t, r: byId[t.rep] })), ...(D.pep?.trades || []).map(t => ({ ...t, r: gov[t.pep] }))].filter(t => t.r).sort((a, b) => b.d.localeCompare(a.d));
   const NONE = /^(nei|ingen|har ingen|jeg har ingen|-|x)\b/i;
@@ -271,6 +271,10 @@ function govView() {
   const ps = [...new Set(list.map(g => g.parti))].filter(Boolean);
   $('govLede').textContent = list.length ? `${list.length} statsråder fra ${ps.map(pname).join(', ')}. Klikk på en statsråd for å se verv, aksjer og aksjehandler.` : 'Fant ingen regjeringsmedlemmer i dataene.';
   $('govGrid').innerHTML = list.map(g => personCard({ href: `#statsrad-${hid(g.id)}`, keys: govKeys(g), navn: g.navn, parti: g.parti, rolle: g.tittel, meta: g.dep && g.dep !== g.tittel ? g.dep : '', badge: g.trades.length ? `${g.trades.length} aksjehandler` : '' })).join('');
+  const SS = [...(D.pep?.statssek || [])].sort((a, b) => a.etternavn.localeCompare(b.etternavn, 'nb'));
+  $('govSS').innerHTML = SS.length ? sec('g-ss', `Statssekretærer og politiske rådgivere (${SS.length})`, `<p class="meta">Fra regjeringens eget register over verv og økonomiske interesser${D.pep.kilder?.statssekDato ? `, versjon ${date(D.pep.kilder.statssekDato)}` : ''}. ${SS.filter(x => x.har).length} av ${SS.length} har registrert verv eller interesser. Registeret oppgir ikke stilling eller departement.</p>
+  <div class="tw"><table class="list"><thead><tr><th>Navn</th><th>Registrert</th><th>Aksjer og eierandeler (ordrett)</th></tr></thead><tbody>${SS.map(x => `<tr><td><b>${esc(x.navn)}</b><div class="meta">${dot(pp(x.parti))}${esc(pname(pp(x.parti)))}</div></td><td>${x.har ? '<span class="chip ok">Har interesser</span>' : '<span class="meta">Ingen</span>'}</td><td>${x.felt?.aksjer && !/^nei\.?$/i.test(x.felt.aksjer.trim()) ? esc(x.felt.aksjer) : '<span class="meta">–</span>'}</td></tr>`).join('')}</tbody></table></div>
+  ${D.pep.kilder?.statssek ? `<div class="links"><a href="${url(D.pep.kilder.statssek)}" rel="noopener">Regjeringens register (PDF)</a></div>` : ''}`) : '';
 }
 function personCard({ href, keys, navn, parti, rolle, meta = '', badge = '' }) {
   return `<a class="person" href="${hashLink(href)}">${avatar(keys, navn, parti, 'm')}<span class="pc"><b>${esc(navn)}</b><span>${esc(rolle)}</span>${meta ? `<span class="meta">${esc(meta)}</span>` : ''}<span class="meta">${parti ? dot(parti) + esc(pname(parti)) : ''}${badge ? ` · ${esc(badge)}` : ''}</span></span></a>`;
@@ -458,15 +462,16 @@ function partyVotes(p) {
   const vs = S().voteringer.filter(v => v.pos[p]).slice(0, 12);
   const won = S().voteringer.filter(v => v.pos[p] === 'F' && v.vedtatt || v.pos[p] === 'M' && !v.vedtatt).length, n = S().voteringer.filter(v => v.pos[p] === 'F' || v.pos[p] === 'M').length;
   const most = PORDER().filter(q => q !== p && S().enighet[p]?.[q] != null).sort((a, b) => S().enighet[p][b] - S().enighet[p][a]);
-  return `<h2>Slik stemmer partiet</h2><p>På vinnende side i ${n ? Math.round(100 * won / n) : 0} % av ${n} voteringer. Stemmer oftest likt med ${most.slice(0, 2).map(q => `${esc(pname(q))} (${num(S().enighet[p][q])} %)`).join(' og ')}, sjeldnest med ${esc(pname(most.at(-1)))} (${num(S().enighet[p][most.at(-1)])} %).</p>
-  <div class="tw"><table><thead><tr><th>Dato</th><th>Sak</th><th>Stemte</th><th>Utfall</th></tr></thead><tbody>${vs.map(v => `<tr><td class="n">${sdate(v.d)}</td><td>${esc(v.tittel)}<div class="meta">${esc(v.tema)}</div></td><td>${posCell(p, v.pos[p])}</td><td class="${v.vedtatt ? 'k' : 's'}">${v.vedtatt ? 'Vedtatt' : 'Forkastet'}</td></tr>`).join('')}</tbody></table></div><p class="meta"><a href="#voteringer">Alle voteringer</a></p>`;
+  return `<h2 id="p-stem">Slik stemmer partiet</h2><p>På vinnende side i ${n ? Math.round(100 * won / n) : 0} % av ${n} voteringer. Stemmer oftest likt med ${most.slice(0, 2).map(q => `${esc(pname(q))} (${num(S().enighet[p][q])} %)`).join(' og ')}, sjeldnest med ${esc(pname(most.at(-1)))} (${num(S().enighet[p][most.at(-1)])} %).</p>
+  ${(() => { const rowf = v => `<tr><td class="n">${sdate(v.d)}</td><td>${esc(v.tittel)}<div class="meta">${esc(v.tema)}</div></td><td>${posCell(p, v.pos[p])}</td><td class="${v.vedtatt ? 'k' : 's'}">${v.vedtatt ? 'Vedtatt' : 'Forkastet'}</td></tr>`; const tbl = l => `<div class="tw"><table><thead><tr><th>Dato</th><th>Sak</th><th>Stemte</th><th>Utfall</th></tr></thead><tbody>${l.map(rowf).join('')}</tbody></table></div>`; return tbl(vs.slice(0, 6)) + (vs.length > 6 ? `<details class="more"><summary>Vis ${vs.length - 6} til</summary>${tbl(vs.slice(6))}</details>` : ''); })()}<p class="meta"><a href="#voteringer">Alle voteringer</a></p>`;
 }
 function partyPromises(p) {
   const L = D.lofter; if (!L) return '';
-  const own = L.regjering.parti === p ? `<h2>Løfter fra valget 2025</h2>${L.regjering.lofter.map(x => `<div class="prom"><h3>${stPill(x.status)} ${esc(x.lofte)}</h3><p>${esc(x.hva)}</p><div class="meta">${srcLinks(x.kilder)}</div></div>`).join('')}` : '';
-  const gj = L.gjennomslag.partier[p] ? `<h2>Gjennomslag</h2><ul>${L.gjennomslag.partier[p].map(g => `<li>${g.tap ? '✗ ' : '✓ '}<a href="${url(g.u)}" rel="noopener">${esc(g.sak)}</a></li>`).join('')}</ul>` : '';
+  const own = L.regjering.parti === p ? `<h2 id="p-lofter">Løfter fra valget 2025</h2>${L.regjering.lofter.map(x => `<div class="prom"><h3>${stPill(x.status)} ${esc(x.lofte)}</h3><p>${esc(x.hva)}</p><div class="meta">${srcLinks(x.kilder)}</div></div>`).join('')}` : '';
+  const gj = L.gjennomslag.partier[p] ? `<h2 id="p-gj">Gjennomslag</h2><ul>${L.gjennomslag.partier[p].map(g => `<li>${g.tap ? '✗ ' : '✓ '}<a href="${url(g.u)}" rel="noopener">${esc(g.sak)}</a></li>`).join('')}</ul>` : '';
   const fk = (D.faktasjekk?.sjekker || []).filter(x => (x.p || []).includes(p));
-  return own + gj + (fk.length ? `<h2>Faktasjekker</h2>${newsList(fk.map(x => ({ tittel: x.t, url: x.u, kilde: 'Faktisk.no', dato: x.d })))}` : '');
+  const fl = fk.map(x => ({ tittel: x.t, url: x.u, kilde: 'Faktisk.no', dato: x.d }));
+  return own + gj + (fk.length ? `<h2 id="p-fakta">Faktasjekker</h2>${newsList(fl.slice(0, 5))}${fl.length > 5 ? `<details class="more"><summary>Vis alle ${fl.length}</summary>${newsList(fl.slice(5))}</details>` : ''}` : '');
 }
 function renderParty(p) {
   const x = P.partier[p], mine = reps.filter(r => r.parti === p);
@@ -477,13 +482,14 @@ function renderParty(p) {
   <p>${esc(x.om)}</p>
   <div class="leader">${leaderCard(p)}</div>
   <div class="kpis"><div><b>${mine.length}</b><span>mandater</span></div><div><b>${P.maling?.snitt[p] != null ? P.maling.snitt[p].toFixed(1).replace('.', ',') + ' %' : '–'}</b><span>snitt på målinger</span></div><div><b>${nf(q)}</b><span>spørsmål til regjeringen</span></div><div><b>${tr}</b><span>aksjehandler, ${co} selskaper</span></div></div>
-  <h2>Partiets saker, veid</h2><p class="meta">${esc(P.metode)}</p>
+  ${toc([['p-saker', 'Saker'], S() && ['p-stem', 'Stemmegivning'], D.lofter?.regjering?.parti === p && ['p-lofter', 'Løfter'], D.lofter?.gjennomslag?.partier?.[p] && ['p-gj', 'Gjennomslag'], (D.faktasjekk?.sjekker || []).some(x => (x.p || []).includes(p)) && ['p-fakta', 'Faktasjekker'], ['p-nyheter', 'Nyheter'], ['p-reps', `Representanter (${mine.length})`]])}
+  <h2 id="p-saker">Partiets saker, veid</h2><p class="meta">${esc(P.metode)}</p>
   ${x.saker.map(s => `<div class="sak"><h3>${esc(s.tittel)}</h3><p>${esc(s.standpunkt)}</p><div class="weigh"><div><h4>Tilhengere sier</h4><ul>${s.for.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div><div><h4>Kritikere sier</h4><ul>${s.mot.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div></div><div class="meta" style="margin-top:8px"><a href="${url(s.kilde)}" rel="noopener">Kilde</a></div></div>`).join('')}
   ${partyVotes(p)}
   ${partyPromises(p)}
-  <h2>Nyheter</h2>${newsList(x.nyheter)}
+  <h2 id="p-nyheter">Nyheter</h2>${newsList(x.nyheter)}
   ${auto.length ? `<h3>Siste fra nyhetsstrømmen</h3>${newsList(auto)}<p class="meta">Hentet automatisk hver natt. Bare overskrift og lenke vises.</p>` : ''}
-  <h2>Representantene</h2><div class="tw"><table class="list"><thead><tr><th>Representant</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead><tbody>${[...mine].sort((a, b) => b.q - a.q).map(r => `<tr data-go="rep-${r.h}"><td><div class="who">${avatar(['rep:' + r.id], r.navn, r.parti)}<div><a href="#rep-${r.h}">${esc(r.navn)}</a><div class="meta">${esc(r.fylke)}</div></div></div></td><td class="n">${num(r.q)}</td><td class="n">${r.cos.length}</td><td class="n">${r.trades.length}</td></tr>`).join('')}</tbody></table></div>`;
+  <h2 id="p-reps">Representantene</h2><div class="tw"><table class="list"><thead><tr><th>Representant</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead><tbody>${[...mine].sort((a, b) => b.q - a.q).map(r => `<tr data-go="rep-${r.h}"><td><div class="who">${avatar(['rep:' + r.id], r.navn, r.parti)}<div><a href="#rep-${r.h}">${esc(r.navn)}</a><div class="meta">${esc(r.fylke)}</div></div></div></td><td class="n">${num(r.q)}</td><td class="n">${r.cos.length}</td><td class="n">${r.trades.length}</td></tr>`).join('')}</tbody></table></div>`;
   document.title = pname(p) + ' – EYE';
 }
 
