@@ -67,6 +67,8 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.equal(P['ins:anders-opedal'].fotoKilde, 'Wikimedia Commons');
   assert.match(P['ins:anders-opedal'].wiki.tekst, /næringslivsleder/, 'godtatt fordi hele artikkelen nevner selskapet');
   assert.equal(pub.flagging.length, 1);
+  assert.match(pub.aksjer.EQNR.om, /^Equinor is an international energy company/, 'selskapets egen beskrivelse samles per aksje');
+  assert.ok(!pub.innside.some(i => 'om' in i), 'beskrivelsen lagres bare én gang per aksje');
 });
 
 test('offentlige data: alt fra registrene, men ingen fødselsdatoer', async () => {
