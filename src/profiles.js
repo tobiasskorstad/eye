@@ -1,0 +1,128 @@
+// Bilder og kort omtale av makthavere: politikere, statsråder, partiledere og innsidere i børsselskaper.
+// - Portretter av stortingsrepresentanter og statsråder: Stortingets åpne data (offisielle bilder, kreditering «Stortinget»).
+// - Omtale og bilder av andre (f.eks. konsernsjefer): Wikipedia, men bare når artikkelen beviselig gjelder riktig person
+//   (riktig yrke og, for innsidere, at selskapet er nevnt). Alltid med lenke og lisens.
+// Bildene lastes ned i bygget og publiseres sammen med nettstedet: de besøkende henter ingenting fra tredjeparter.
+// Fødselsdatoer fjernes fra Wikipedia-teksten (samme prinsipp som resten av EYE).
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { config } from './config.js';
+import { getJson, getBuffer, allowHosts } from './http.js';
+
+const WIKI = { no: config.wikiNo, en: config.wikiEn };
+const UPLOAD = config.wikiUpload;
+allowHosts([WIKI.no, WIKI.en, UPLOAD]);
+const CACHE_V = 1, WEEK = 7 * 864e5, MAX_IMG = 400_000;
+
+export const slug = s => String(s || '').toLowerCase().normalize('NFKD').replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a')
+  .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+const MONTHS = '(?:januar|februar|mars|april|mai|juni|juli|august|september|oktober|november|desember|january|february|march|may|june|july|october|december)';
+/** Fjerner fødselsdatoer og -steder i parentes, og «født 1. mai 1970»-fraser. Behold år for død/periode. */
+export function stripBirth(t = '') {
+  return String(t)
+    .replace(/\s*\((?:[^()]*?\b(?:født|f\.|born|b\.)\b[^()]*|\s*\d{1,2}\.?\s+\w+\s+\d{4}[^()]*)\)/gi, '')
+    .replace(new RegExp(`,?\\s*\\b(?:født|born)\\s+(?:den\\s+)?(?:\\d{1,2}\\.?\\s+${MONTHS}\\s+)?\\d{4}(?:\\s+(?:i|in|på)\\s+[\\p{Lu}][\\p{L}-]+(?:\\s+[\\p{Lu}][\\p{L}-]+)?)?`, 'giu'), '')
+    .replace(new RegExp(`\\b\\d{1,2}\\.?\\s+${MONTHS}\\s+\\d{4}`, 'gi'), m => m.match(/\d{4}/)[0])
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, m => m.slice(0, 4))
+    .replace(/,\s*(?=,|\s(?:er|var|is|was)\b)/g, '').replace(/\s{2,}/g, ' ').replace(/\s+([,.])/g, '$1').trim();
+}
+// Filnavn: lesbart + kort hash av nøkkelen, så «BÅH» og «BAH» aldri kolliderer.
+const fileOf = k => `${slug(k)}-${crypto.createHash('sha1').update(k).digest('hex').slice(0, 6)}.jpg`;
+const cut = (s, n) => (s.length > n ? s.slice(0, n).replace(/\s\S*$/, '') + ' …' : s);
+
+const POL = /politiker|stortingsrepresentant|statsråd|minister|statssekretær|partileder|politician/i;
+const BIZ = { no: /næringslivs|direktør|konsernsjef|styreleder|styremedlem|investor|forretnings|gründer|grunnlegger|finansmann|skipsreder|administrerende|sjef|eier av|leder (?:av|i)/i,
+  en: /business(?:man|woman|person|\s+executive)|executive|chief|ceo|cfo|chair(?:man|woman|person)?|investor|entrepreneur|founder|banker|director|shipowner/i };
+const firstWord = s => String(s || '').replace(/\b(ASA|AS|AB|Ltd|Limited|plc|SE|Holding|Group|Inc)\b\.?/gi, '').trim().split(/\s+/)[0]?.toLowerCase() || '';
+
+/** Vurderer om en Wikipedia-side gjelder personen vi leter etter. */
+export function accept(page, want, lang) {
+  if (!page || page.missing !== undefined || page.pageprops?.disambiguation !== undefined || !page.extract) return false;
+  const text = `${page.description || ''} ${page.extract}`;
+  if (want.kind === 'pol') return POL.test(text) && (!want.parti || new RegExp(want.parti, 'i').test(text) || /storting|regjering/i.test(text));
+  const co = firstWord(want.sel);
+  return BIZ[lang].test(text) && co.length >= 3 && text.toLowerCase().includes(co);
+}
+
+async function wikiBatch(lang, titles) {
+  const u = `${WIKI[lang]}?action=query&format=json&formatversion=2&redirects=1&prop=extracts|pageimages|description|pageprops&exintro=1&explaintext=1&exsentences=3&exlimit=20` +
+    `&piprop=thumbnail|name&pithumbsize=320&ppprop=disambiguation&titles=${encodeURIComponent(titles.join('|'))}`;
+  const d = await getJson(u);
+  const norm = Object.fromEntries([...(d?.query?.normalized || []), ...(d?.query?.redirects || [])].map(x => [x.from, x.to]));
+  const byTitle = Object.fromEntries((d?.query?.pages || []).map(p => [p.title, p]));
+  return Object.fromEntries(titles.map(t => { let k = t; for (let i = 0; i < 3 && norm[k]; i++) k = norm[k]; return [t, byTitle[k] || null]; }));
+}
+
+async function readJson(f) { try { return JSON.parse(await fs.readFile(f, 'utf8')); } catch { return null; } }
+const isJpegOrPng = b => b && b.length > 500 && b.length < MAX_IMG && ((b[0] === 0xff && b[1] === 0xd8) || (b[0] === 0x89 && b[1] === 0x50));
+
+/**
+ * people: [{ key, navn, kind: 'pol'|'biz', stId?, parti?, sel? }]
+ * Returnerer { [key]: { foto?, fotoKilde?, fotoLenke?, wiki?: { tekst, url, lang, beskrivelse } } } og skriver bilder til dataDir/img.
+ */
+export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
+  const dir = path.join(config.dataDir, 'img'), cacheFile = path.join(config.dataDir, 'profiles-cache.json');
+  await fs.mkdir(dir, { recursive: true });
+  const cache = (await readJson(cacheFile))?.v === CACHE_V ? await readJson(cacheFile) : { v: CACHE_V, p: {} };
+  const now = Date.now(), fresh = k => cache.p[k] && now - cache.p[k].t < WEEK, wfresh = k => cache.p[k] && now - (cache.p[k].tw || 0) < WEEK;
+  const list = people.filter(p => p.key && p.navn && p.navn.split(/\s+/).length >= 2).slice(0, max);
+  const out = {};
+
+  // 1. Wikipedia (norsk først, så engelsk for næringslivsfolk), i puljer på 20
+  for (const lang of ['no', 'en']) {
+    const todo = list.filter(p => (lang === 'no' ? !wfresh(p.key) : cache.p[p.key]?.tw === now && !cache.p[p.key].wiki && p.kind === 'biz'));
+    for (let i = 0; i < todo.length; i += 20) {
+      const chunk = todo.slice(i, i + 20);
+      let pages = {};
+      try { pages = await wikiBatch(lang, chunk.map(p => p.navn)); } catch (e) { warnings.push(`Wikipedia (${lang}) svarte ikke: ${e.message}`); break; }
+      for (const p of chunk) {
+        const pg = pages[p.navn], c = cache.p[p.key] ||= { t: 0 };
+        if (lang === 'no') { c.wiki = null; c.tw = now; }
+        if (!accept(pg, p, lang)) continue;
+        c.wiki = { tekst: cut(stripBirth(pg.extract), 600), beskrivelse: stripBirth(pg.description || ''), lang,
+          url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(pg.title.replace(/ /g, '_'))}`,
+          bilde: pg.thumbnail?.source?.startsWith(UPLOAD) ? pg.thumbnail.source : null, fil: pg.pageimage || null };
+      }
+    }
+  }
+
+  // 2. Bilder: Stortinget for dem som har person-ID der, ellers bildet fra en godkjent Wikipedia-artikkel
+  for (const p of list) {
+    const c = cache.p[p.key] ||= { t: 0 }, file = fileOf(p.key), f = path.join(dir, file);
+    if (!fresh(p.key) || (!c.foto && c.wiki?.bilde && c.tw === now) || (c.foto && !(await fs.stat(f).catch(() => null)))) {
+      // 404 = ikke noe bilde; nettverksfeil = behold forrige bilde og prøv igjen neste gang
+      let b = null, kilde = null, lenke = null, failed = false;
+      const get = async u => { try { const x = await getBuffer(u, { accept: 'image/jpeg,image/png' }); return isJpegOrPng(x) ? x : null; } catch { failed = true; return null; } };
+      if (p.stId) { b = await get(`${config.stortingetApi}/personbilde?personid=${encodeURIComponent(p.stId)}&storrelse=middels`); if (b) { kilde = 'Stortinget'; lenke = 'https://www.stortinget.no/'; } }
+      if (!b && c.wiki?.bilde) { b = await get(c.wiki.bilde); if (b) { kilde = 'Wikimedia Commons'; lenke = c.wiki.fil ? `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(c.wiki.fil)}` : c.wiki.url; } }
+      if (b) { await fs.writeFile(f, b); c.foto = { kilde, lenke }; c.t = now; }
+      else if (!failed) { await fs.rm(f, { force: true }); c.foto = null; c.t = now; }
+    }
+    out[p.key] = {
+      ...(c.foto ? { foto: `img/${file}`, fotoKilde: c.foto.kilde, fotoLenke: c.foto.lenke } : {}),
+      ...(c.wiki ? { wiki: { tekst: c.wiki.tekst, beskrivelse: c.wiki.beskrivelse, url: c.wiki.url, lang: c.wiki.lang } } : {}),
+    };
+    if (!Object.keys(out[p.key]).length) delete out[p.key];
+  }
+  // Rydd bort bilder av folk som ikke lenger er med
+  const keep = new Set(list.map(p => fileOf(p.key)));
+  for (const f of await fs.readdir(dir)) if (!keep.has(f)) await fs.rm(path.join(dir, f), { force: true });
+  for (const k of Object.keys(cache.p)) if (!list.some(p => p.key === k)) delete cache.p[k];
+  await fs.writeFile(cacheFile, JSON.stringify(cache));
+  return out;
+}
+
+/** Alle personene EYE viser profiler for. */
+export function profilePeople(reps, pep, innside, partier) {
+  const pp = { Ap: 'Arbeiderpartiet', A: 'Arbeiderpartiet', H: 'Høyre', FrP: 'Fremskrittspartiet', Frp: 'Fremskrittspartiet', SV: 'Sosialistisk', Sp: 'Senterpartiet', KrF: 'Kristelig', V: 'Venstre', MDG: 'Miljøpartiet', R: 'Rødt' };
+  const out = new Map(), add = p => { if (!out.has(p.key)) out.set(p.key, p); };
+  for (const r of reps) add({ key: `rep:${r.id}`, navn: r.navn, kind: 'pol', stId: r.id, parti: pp[r.parti] });
+  for (const g of pep?.regjering || []) add({ key: `gov:${g.id}`, navn: g.navn, kind: 'pol', stId: g.id, parti: pp[g.parti] });
+  for (const [p, x] of Object.entries(partier?.partier || {})) {
+    const navn = String(x.leder || '').replace(/\s*\(.*$/, '').trim();
+    if (navn && ![...out.values()].some(o => o.navn === navn)) add({ key: `leder:${p}`, navn, kind: 'pol', parti: pp[p] });
+  }
+  for (const i of innside || []) if (i.navn) add({ key: `ins:${slug(i.navn)}`, navn: i.navn, kind: 'biz', sel: i.sel });
+  return [...out.values()];
+}

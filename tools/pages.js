@@ -21,6 +21,7 @@ const head = csp => `<meta http-equiv="Content-Security-Policy" content="${csp}"
 const data = JSON.parse(await fs.readFile(dataFile, 'utf8'));
 if (!Array.isArray(data.reps) || data.reps.length < 150) throw new Error('data ser ufullstendige ut – publiserer ikke');
 if (/"f(o|oe)dselsdato"/i.test(JSON.stringify(data)) || data.reps.some(r => r.fodt && !/^\d{4}$/.test(String(r.fodt)))) throw new Error('fødselsdatoer i offentlige data – publiserer ikke');
+if (Object.values(data.profiler || {}).some(p => /\b(født|born)\b[^.]{0,40}\d{4}/i.test(p.wiki?.tekst || ''))) throw new Error('fødselsdato i Wikipedia-omtale – publiserer ikke');
 
 await fs.rm(out, { recursive: true, force: true });
 await fs.mkdir(out, { recursive: true });
@@ -33,6 +34,10 @@ await fs.writeFile(path.join(out, cssName), css);
 await fs.writeFile(path.join(out, jsName), js);
 await fs.writeFile(path.join(out, 'index.html'), html.replace('href="app.css"', `href="${cssName}"`).replace('src="app.js"', `src="${jsName}"`));
 await fs.writeFile(path.join(out, 'data.json'), JSON.stringify(data));
+// Portretter lastet ned i bygget (data/img): publiseres sammen med siden, så de besøkende ikke kontakter tredjeparter.
+const imgDir = path.join(path.dirname(dataFile), 'img'), used = new Set(Object.values(data.profiler || {}).map(p => p.foto).filter(Boolean));
+await fs.mkdir(path.join(out, 'img'), { recursive: true });
+for (const f of await fs.readdir(imgDir).catch(() => [])) if (/^[a-z0-9-]{1,80}\.jpg$/.test(f) && used.has('img/' + f)) await fs.copyFile(path.join(imgDir, f), path.join(out, 'img', f));
 await fs.writeFile(path.join(out, '.nojekyll'), '');
 await fs.writeFile(path.join(out, 'robots.txt'), 'User-agent: *\nAllow: /\n');
 await fs.mkdir(path.join(out, '.well-known'), { recursive: true });

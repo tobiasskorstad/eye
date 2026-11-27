@@ -11,6 +11,7 @@ import { fetchVotes } from './votes.js';
 import { diff, merge } from './changes.js';
 import { fetchInsider, fetchFlagging, tagPoliticians } from './insider.js';
 import { fetchGovernment, fetchStatssekRegister, buildPep } from './pep.js';
+import { buildProfiles, profilePeople } from './profiles.js';
 import { fetchPolls, fetchLeaders, mergeLeaders, buildNow, attachPromiseNews } from './auto.js';
 
 const log = (...a) => console.log(new Date().toISOString(), '[build]', ...a);
@@ -150,6 +151,13 @@ export async function buildData() {
     } catch (e) { warnings.push('Nyhetsfeeds feilet: ' + e.message); partier.auto = previous?.partier?.auto || {}; }
   } else warnings.push('Fant ikke content/partier.json');
 
+  // 4b. Bilder og kort omtale av politikere, statsråder, partiledere og innsidere
+  let profiler = previous?.profiler || {};
+  try {
+    profiler = await buildProfiles(profilePeople(reps, pep, innside, partier), { warnings });
+    log('profiler', Object.keys(profiler).length, 'med bilde:', Object.values(profiler).filter(p => p.foto).length);
+  } catch (e) { warnings.push('Bilder/profiler feilet: ' + e.message + ' – viser forrige'); }
+
   // 5. Voteringer (sakte pga. API-kvote, cache på disk)
   let stemmer = previous?.stemmer?.antall ? previous.stemmer : await readJson(path.join(config.contentDir, 'stemmer-snapshot.json'));
   try {
@@ -188,7 +196,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, profiler, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

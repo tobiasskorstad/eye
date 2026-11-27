@@ -164,3 +164,69 @@ footer{max-width:1100px;margin:0 auto;padding:16px 16px 32px;color:var(--mute);f
 @media (max-width:600px){.konto{padding:6px 10px;margin-left:8px}}
 .bar .search{flex:1;min-width:0}
 @media (max-width:600px){.bar .search{order:3;flex-basis:100%}.konto{margin-left:auto}}
+
+/* ---------- bilder, profiler og oversikt ---------- */
+.av{flex:none;display:inline-grid;place-items:center;border-radius:50%;object-fit:cover;object-position:50% 18%;background:var(--soft);color:#fff;font-weight:800;line-height:1}
+.av-s{width:32px;height:32px;font-size:12px}
+.av-m{width:56px;height:56px;font-size:18px}
+.av-l{width:148px;height:184px;border-radius:14px;font-size:44px}
+.who{display:flex;gap:10px;align-items:center}
+.who>div{min-width:0}
+.gres .who{gap:8px}.gres .av-s{width:26px;height:26px;font-size:11px}
+
+.profile{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start;margin:4px 0 14px}
+.ph{display:grid;gap:4px;justify-items:center}
+.credit{font-size:11px;color:var(--mute)}
+.credit a{color:inherit}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.kicker a{text-transform:none;letter-spacing:0}
+.hrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:4px 0 2px}
+.hrow h1{margin:0}
+.wiki{margin-top:12px;padding:12px 14px;background:var(--soft);border-radius:10px;max-width:72ch}
+.wiki p{margin:0 0 6px}
+
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px;padding:0;position:static;border:0}
+.toc button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;min-height:36px}
+.toc button:hover{border-color:var(--acc);color:var(--acc)}
+.block{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;scroll-margin-top:130px}
+.block>.bh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.block>.bh h2{margin:0;font-size:19px}
+.block>.bh a{font-size:14px;font-weight:600;white-space:nowrap}
+.block dl.facts{margin:6px 0}
+.block table{font-size:14.5px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.cols>.block{margin:14px 0 0}
+
+.hero h1{font-size:clamp(28px,4.4vw,44px);max-width:22ch}
+a.kpis,.kpis a{display:block;border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink)}
+.kpis a:hover{border-color:var(--acc)}
+.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:0 14px;align-items:start}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.feed li:last-child{border-bottom:0}
+.feed .grow{flex:1;min-width:0}
+.feed b.n{font-size:14px}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.strip a{display:grid;justify-items:center;text-align:center;gap:2px;padding:10px 6px;border-radius:10px;text-decoration:none;color:var(--ink)}
+.strip a:hover{background:var(--soft)}
+.strip .av{margin-bottom:6px;width:72px;height:72px}
+.strip b{font-size:14px;line-height:1.2}
+.strip span{font-size:12px;color:var(--mute);line-height:1.25}
+
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin:14px 0}
+.person{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--ink)}
+.person:hover{border-color:var(--acc)}
+.person .pc{display:grid;gap:1px}
+.person .pc>span:first-of-type{font-size:14px}
+.leader{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.leader>div{display:grid;gap:2px}
+.leader p{margin:6px 0 2px}
+.pcard .who{margin-bottom:4px}
+
+@media(max-width:720px){
+  .profile{grid-template-columns:1fr;justify-items:start;gap:12px}
+  .av-l{width:112px;height:140px;font-size:34px}
+  .cols{grid-template-columns:1fr}
+  .dash{grid-template-columns:1fr}
+  .block{padding:12px}
+}

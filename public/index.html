@@ -11,7 +11,7 @@
 <body>
 <header class="top">
   <div class="bar">
-    <a class="brand" href="#stortinget" aria-label="EYE, til forsiden"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="14" ry="9" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="16" cy="16" r="4.5" fill="currentColor"/></svg>EYE</a>
+    <a class="brand" href="#oversikt" aria-label="EYE, til forsiden"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="14" ry="9" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="16" cy="16" r="4.5" fill="currentColor"/></svg>EYE</a>
     <div class="search" role="search">
       <input id="gq" type="search" autocomplete="off" placeholder="Søk etter politiker, selskap eller orgnr" aria-label="Søk" aria-controls="gres" aria-expanded="false">
       <div id="gres" class="gres" hidden></div>
@@ -19,19 +19,41 @@
     <a id="kontoLink" class="konto" href="#konto" hidden>Logg inn</a>
   </div>
   <nav aria-label="Hovedmeny" id="mainnav">
+    <a href="#oversikt" data-s="ov">Oversikt</a>
     <a href="#stortinget" data-s="st">Stortinget</a>
+    <a href="#regjeringen" data-s="rg">Regjeringen</a>
     <a href="#partier" data-s="pa">Partier</a>
-    <a href="#forklart" data-s="du">Politikk for dummies</a>
-    <a href="#handler" data-s="pe">Penger</a>
-    <a href="#eiere" data-s="ei">Eiere og innsidere</a>
+    <a href="#handler" data-s="pe">Politikernes penger</a>
+    <a href="#eiere" data-s="ei">Børs og eiere</a>
     <a href="#faktasjekk" data-s="fa">Faktasjekk</a>
+    <a href="#forklart" data-s="du">Politikk for dummies</a>
     <a href="#om" data-s="om">Kilder</a>
   </nav>
   <nav aria-label="Undermeny" id="subnav" class="sub"></nav>
 </header>
 
 <main>
-  <section id="v-reps" class="view">
+  <section id="v-home" class="view">
+    <div class="hero">
+      <h1>Hvem har makt, og hva eier de?</h1>
+      <p class="lede" id="homeLede">Laster …</p>
+    </div>
+    <div class="kpis" id="homeKpis"></div>
+    <div id="homeGov"></div>
+    <div class="dash" id="homeDash"></div>
+  </section>
+
+  <section id="v-gov" class="view" hidden>
+    <h1>Regjeringen</h1>
+    <p class="lede" id="govLede"></p>
+    <div class="people" id="govGrid"></div>
+    <p class="meta">Portretter: Stortinget. Verv og aksjer: regjeringsdelen av Stortingets interesseregister.</p>
+  </section>
+
+  <section id="v-minister" class="view" hidden></section>
+  <section id="v-person" class="view" hidden></section>
+
+  <section id="v-reps" class="view" hidden>
     <h1>Stortinget</h1>
     <p class="lede" id="repsLede">Laster …</p>
     <div class="chamber"><svg id="sal" viewBox="0 0 400 210" role="group" aria-label="Stortingssalen. Klikk et sete for å åpne representanten."></svg></div>
@@ -44,7 +66,7 @@
       </select>
     </div>
     <div class="tw"><table class="list" id="repTable">
-      <thead><tr><th>Representant</th><th>Parti</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead>
+      <thead><tr><th>Representant</th><th class="hide-s">Parti</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </section>
@@ -252,6 +274,8 @@
       <li><b>Løfter og gjennomslag</b>: partiprogrammer og valgløfter 2025, sammenholdt med budsjetter, vedtak, SSB og nyhetsdekning. Hver status har lenke til kilden.</li>
       <li><b>Faktasjekk</b>: Faktisk.no (hentes hver natt), pluss kritikk av faktasjekkerne og primærkilder du kan sjekke selv.</li>
       <li><b>Meningsmålinger</b>: Poll of polls (gjennomsnitt).</li>
+      <li><b>Bilder</b>: Stortingets offisielle portretter av representanter og statsråder (foto: Stortinget). Andre, f.eks. konsernsjefer, får bilde fra Wikimedia Commons bare når Wikipedia-artikkelen beviselig gjelder riktig person (riktig yrke og riktig selskap). Bildene lagres på EYE, så du kontakter ingen andre nettsteder når du ser dem.</li>
+      <li><b>Kort omtale</b>: innledningen fra Wikipedia (CC BY-SA 4.0), med lenke. Fødselsdatoer fjernes.</li>
     </ul>
     <h2>Nyhetskilder</h2>
     <p>Overskrifter hentes hver natt fra et bredt spekter, fra venstre til høyre, og knyttes automatisk til partiene de nevner. Bare tittel og lenke vises.</p>

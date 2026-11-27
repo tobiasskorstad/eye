@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_UPLOAD: `${base}/wiki/upload/`, STORTINGET_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -42,6 +42,18 @@ test('bygg data fra alle kilder', { timeout: 120_000 }, async () => {
   // løfter og faktasjekk
   assert.ok(pub.lofter.regjering.lofter.length >= 5);
   assert.ok(pub.faktasjekk.sjekker.some(s => s.u.endsWith('/123') && s.p.includes('FrP')), 'automatisk faktasjekk hentes og knyttes til parti');
+});
+
+test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdato', async () => {
+  const P = pub.profiler;
+  assert.equal(P['gov:JGS'].fotoKilde, 'Stortinget', 'statsråder får Stortingets portrett');
+  assert.match(P['rep:MARNIL'].foto, /^img\/rep-marnil-[0-9a-f]{6}\.jpg$/);
+  assert.ok(!P['rep:TIM']?.foto, 'ingen bilde når Stortinget svarer 404');
+  assert.ok(!P['rep:HSP']?.wiki, 'flertydige Wikipedia-sider brukes ikke');
+  assert.match(P['gov:JGS'].wiki.tekst, /norsk politiker/);
+  assert.ok(!/1960|25\. august|født/.test(JSON.stringify(P)), 'fødselsdatoer fra Wikipedia publiseres ikke');
+  const img = await fs.readdir(path.join(dataDir, 'img'));
+  assert.ok(img.some(f => f.startsWith('gov-jgs-')) && img.length === 3, img.join(','));
 });
 
 test('offentlige data: alt fra registrene, men ingen fødselsdatoer', async () => {

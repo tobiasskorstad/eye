@@ -14,6 +14,9 @@ export const config = {
   trustProxy: env.TRUST_PROXY === '1',
   globalPerMinute: Number(env.GLOBAL_PER_MINUTE || 600),
   faktiskUrl: env.FAKTISK_URL || 'https://www.faktisk.no/tag/faktasjekk',
+  wikiNo: env.WIKI_NO || 'https://no.wikipedia.org/w/api.php',
+  wikiEn: env.WIKI_EN || 'https://en.wikipedia.org/w/api.php',
+  wikiUpload: env.WIKI_UPLOAD || 'https://upload.wikimedia.org/',
   brregApi: env.BRREG_API || 'https://data.brreg.no/enhetsregisteret/api',
 
   // Klokkeslett (Europe/Oslo) for nattlig oppdatering. Sett REFRESH_HOUR=-1 for å slå av.
