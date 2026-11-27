@@ -14,7 +14,7 @@ test('Wikipedia-sider godtas bare for riktig person', () => {
   const pg = (extract, description = '') => ({ title: 'X', extract, description });
   assert.ok(accept(pg('Anders Opedal er en norsk ingeniør og konsernsjef i Equinor.'), { kind: 'biz', sel: 'Equinor ASA' }, 'no'));
   assert.ok(!accept(pg('Anders Opedal er en norsk fotballspiller.'), { kind: 'biz', sel: 'Equinor ASA' }, 'no'), 'feil yrke');
-  assert.ok(!accept(pg('Ola Hansen er konsernsjef i Telenor.'), { kind: 'biz', sel: 'Equinor ASA' }, 'no'), 'feil selskap');
+  assert.equal(accept(pg('Ola Hansen er konsernsjef i Telenor.'), { kind: 'biz', sel: 'Equinor ASA' }, 'no'), 'sjekk', 'selskapet må finnes et sted i artikkelen');
   assert.ok(accept(pg('Jane Roe is a British businesswoman and chief executive of Frontline.'), { kind: 'biz', sel: 'Frontline plc' }, 'en'));
   assert.ok(accept(pg('Per Olsen er en norsk politiker fra Høyre.'), { kind: 'pol', parti: 'Høyre' }, 'no'));
   assert.ok(!accept(pg('Per Olsen er en norsk skuespiller.'), { kind: 'pol', parti: 'Høyre' }, 'no'));
@@ -27,4 +27,11 @@ test('personer: representanter, statsråder, partiledere og innsidere, uten dubl
     [{ navn: 'Kjell Inge Røkke', sel: 'Aker ASA' }, { navn: 'Kjell Inge Røkke', sel: 'Aker BP ASA' }], { partier: { A: { leder: 'Jonas Gahr Støre' }, H: { leder: 'Ine Eriksen Søreide' } } });
   assert.deepEqual(list.map(p => p.key), ['rep:JGS', 'gov:JGS', 'leder:H', 'ins:kjell-inge-rokke']);
   assert.equal(slug('ins:Kjell Inge Røkke'), 'ins-kjell-inge-rokke');
+});
+
+test('innsidernavn uten titler', async () => {
+  const { who, cleanName } = await import('../src/insider.js');
+  assert.equal(cleanName('Primary Insider Vegard Wollan'), 'Vegard Wollan');
+  assert.equal(cleanName('Mr. Artem Volynets'), 'Artem Volynets');
+  assert.equal(who('Mr. Artem Volynets, Chairman of the Board, has bought shares').navn, 'Artem Volynets');
 });

@@ -42,7 +42,13 @@ export function accept(page, want, lang) {
   const text = `${page.description || ''} ${page.extract}`;
   if (want.kind === 'pol') return POL.test(text) && (!want.parti || new RegExp(want.parti, 'i').test(text) || /storting|regjering/i.test(text));
   const co = firstWord(want.sel);
-  return BIZ[lang].test(text) && co.length >= 3 && text.toLowerCase().includes(co);
+  if (!BIZ[lang].test(text) || co.length < 3) return false;
+  return text.toLowerCase().includes(co) ? true : 'sjekk'; // selskapet står kanskje lenger ned i artikkelen
+}
+/** Hele artikkelteksten (for å se om selskapet er nevnt et sted). */
+async function fullText(lang, title) {
+  const d = await getJson(`${WIKI[lang]}?action=query&format=json&formatversion=2&prop=extracts&explaintext=1&exlimit=1&titles=${encodeURIComponent(title)}`);
+  return d?.query?.pages?.[0]?.extract || '';
 }
 
 async function wikiBatch(lang, titles) {
@@ -65,6 +71,8 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   const dir = path.join(config.dataDir, 'img'), cacheFile = path.join(config.dataDir, 'profiles-cache.json');
   await fs.mkdir(dir, { recursive: true });
   const cache = (await readJson(cacheFile))?.v === CACHE_V ? await readJson(cacheFile) : { v: CACHE_V, p: {} };
+  // Ny regel for næringslivsfolk (navnevask + sjekk av hele artikkelen): slå dem opp på nytt én gang
+  if (cache.biz !== 2) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 2; }
   const now = Date.now(), fresh = k => cache.p[k] && now - cache.p[k].t < WEEK, wfresh = k => cache.p[k] && now - (cache.p[k].tw || 0) < WEEK;
   const list = people.filter(p => p.key && p.navn && p.navn.split(/\s+/).length >= 2).slice(0, max);
   const out = {};
@@ -79,7 +87,9 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
       for (const p of chunk) {
         const pg = pages[p.navn], c = cache.p[p.key] ||= { t: 0 };
         if (lang === 'no') { c.wiki = null; c.tw = now; }
-        if (!accept(pg, p, lang)) continue;
+        let ok = accept(pg, p, lang);
+        if (ok === 'sjekk') ok = (await fullText(lang, pg.title).catch(() => '')).toLowerCase().includes(firstWord(p.sel));
+        if (!ok) continue;
         c.wiki = { tekst: cut(stripBirth(pg.extract), 600), beskrivelse: stripBirth(pg.description || ''), lang,
           url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(pg.title.replace(/ /g, '_'))}`,
           bilde: pg.thumbnail?.source?.startsWith(UPLOAD) ? pg.thumbnail.source : null, fil: pg.pageimage || null };

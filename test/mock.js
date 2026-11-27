@@ -116,7 +116,7 @@ export const WIKI_TEXT = 'Jonas Gahr Støre (født 25. august 1960 i Oslo) er en
 function wiki(lang, titles) {
   const base = `http://${'127.0.0.1'}`; // erstattes ikke: bildeadressen settes av testen via WIKI_UPLOAD
   const pages = titles.map(t => t === 'Jonas Gahr Støre' && lang === 'no' ? { title: t, extract: WIKI_TEXT, description: 'norsk politiker', thumbnail: { source: (process.env.WIKI_UPLOAD || base) + 'x.jpg' }, pageimage: 'Støre.jpg' }
-    : t === 'Anders Opedal' && lang === 'no' ? { title: t, extract: 'Anders Opedal (født 1968) er en norsk ingeniør og konsernsjef i Equinor.', description: 'norsk næringslivsleder', thumbnail: { source: (process.env.WIKI_UPLOAD || base) + 'x.jpg' }, pageimage: 'Opedal.jpg' }
+    : t === 'Anders Opedal' && lang === 'no' ? { title: t, extract: 'Anders Opedal (født 1968) er en norsk ingeniør og næringslivsleder.', description: 'norsk næringslivsleder', thumbnail: { source: (process.env.WIKI_UPLOAD || base) + 'x.jpg' }, pageimage: 'Opedal.jpg' }
     : t === 'Haagen Poppe' ? { title: t, extract: 'Haagen Poppe kan vise til flere personer.', pageprops: { disambiguation: '' } }
     : { title: t, missing: true });
   return { query: { pages } };
@@ -144,6 +144,7 @@ export function startMock(port = 0) {
       ? 'Anders Opedal, CEO of Equinor ASA, has today bought 10 000 shares at NOK 250 per share in the company.'
       : 'Folketrygdfondet AS has increased its holding and now owns 6,1 % of the shares in Equinor ASA, above the 5 % threshold.' } } });
     if (p === '/st/personbilde') return ['JGS', 'MARNIL', 'HSP'].includes(u.searchParams.get('personid')) ? send(200, JPEG, 'image/jpeg') : send(404, 'ikke funnet', 'text/plain');
+    if ((p === '/wiki/no') && !u.searchParams.get('exintro')) return send(200, { query: { pages: [{ title: u.searchParams.get('titles'), extract: 'Anders Opedal er norsk næringslivsleder. Han har vært konsernsjef i Equinor siden 2020.' }] } });
     if (p === '/wiki/no' || p === '/wiki/en') return send(200, wiki(p.slice(6), (u.searchParams.get('titles') || '').split('|')));
     if (p === '/wiki/upload/x.jpg') return send(200, JPEG, 'image/jpeg');
     if (p === '/st/kodetbiografi') { const b = bio(u.searchParams.get('personid')); return b ? send(200, b) : send(404, {}); }
