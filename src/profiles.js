@@ -100,7 +100,7 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   await fs.mkdir(dir, { recursive: true });
   const cache = (await readJson(cacheFile))?.v === CACHE_V ? await readJson(cacheFile) : { v: CACHE_V, p: {} };
   // Ny regel for næringslivsfolk (navnevask + sjekk av hele artikkelen): slå dem opp på nytt én gang
-  if (cache.biz !== 3) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 3; }
+  if (cache.biz !== 4) { for (const [k, c] of Object.entries(cache.p)) if (k.startsWith('ins:')) c.tw = 0; cache.biz = 4; }
   const now = Date.now(), fresh = k => cache.p[k] && now - cache.p[k].t < WEEK, wfresh = k => cache.p[k] && now - (cache.p[k].tw || 0) < WEEK;
   const list = people.filter(p => p.key && p.navn && p.navn.split(/\s+/).length >= 2).slice(0, max);
   const out = {};
