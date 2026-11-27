@@ -75,8 +75,8 @@ function prepare(d) {
   trades = [...D.trades.map(t => ({ ...t, r: byId[t.rep] })), ...(D.pep?.trades || []).map(t => ({ ...t, r: gov[t.pep] }))].filter(t => t.r).sort((a, b) => b.d.localeCompare(a.d));
   const NONE = /^(nei|ingen|har ingen|jeg har ingen|-|x)\b/i;
   holdings = [
-    ...reps.map(r => ({ navn: r.navn, h: r.h, parti: r.parti, gruppe: 'Stortinget', rolle: r.vara ? 'Vararepresentant' : 'Stortingsrepresentant', tekst: r.reg?.['9'] || '' })),
-    ...(D.pep?.regjering || []).map(g => ({ navn: g.navn, parti: pp(g.parti), gruppe: 'Regjeringen', rolle: g.tittel, tekst: g.reg ? g.reg['9'] || '' : '', mangler: !g.reg })),
+    ...reps.map(r => ({ navn: r.navn, h: r.h, rid: r.id, parti: r.parti, gruppe: 'Stortinget', rolle: r.vara ? 'Vararepresentant' : 'Stortingsrepresentant', tekst: r.reg?.['9'] || '' })),
+    ...(D.pep?.regjering || []).map(g => ({ navn: g.navn, g: hid(g.id), gid: g.id, parti: pp(g.parti), gruppe: 'Regjeringen', rolle: g.tittel, tekst: g.reg ? g.reg['9'] || '' : '', mangler: !g.reg })),
     ...(D.pep?.statssek || []).map(s => ({ navn: s.navn, parti: pp(s.parti), gruppe: 'Statssekretærer og politiske rådgivere', rolle: 'Statssekretær eller politisk rådgiver', tekst: s.felt?.aksjer || '' })),
   ].map(x => ({ ...x, eier: !!x.tekst && !NONE.test(x.tekst.trim()) }));
   trades.forEach(t => t.r.trades.push(t));
@@ -327,6 +327,16 @@ function stockByName(n) {
   const k = coKey(n); if (k.length < 3) return null;
   for (const st of stocks.values()) { const s2 = coKey(st.navn); if (s2 === k || (Math.min(s2.length, k.length) >= 5 && (s2.startsWith(k) || k.startsWith(s2)))) return st; }
   return null;
+}
+/** Lenker børsnoterte selskaper som nevnes i fritekst (f.eks. «Telenor ASA: 132 aksjer») til aksjesidene. */
+function linkStocks(text) {
+  let h = esc(text);
+  const names = [...stocks.values()].map(st => ({ st, base: st.navn.replace(/\s+\b(ASA|AS|Ltd\.?|Limited|plc|SE|AB|N\.V\.|S\.A\.)$/i, '').replace(/\s+Holdings?$/i, '').trim() })).filter(x => x.base.length >= 4).sort((a, b) => b.base.length - a.base.length);
+  for (const { st, base } of names) {
+    const re = new RegExp(`(^|[^\\p{L}>])(${esc(base).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s+(?:ASA|AS|Ltd\\.?|plc))?)(?![\\p{L}<])`, 'iu');
+    if (re.test(h) && !h.includes(`#aksje-${st.k}"`)) h = h.replace(re, `$1<a href="#aksje-${st.k}">$2</a>`);
+  }
+  return h;
 }
 const stockLink = n => { const st = stockByName(n); return st ? `<a href="#aksje-${st.k}">${esc(n)}</a>` : esc(n); };
 const ownerLink = n => n && owners.has(slug(n)) ? `<a href="#eier-${slug(n)}">${esc(n)}</a>` : esc(n || '–');
@@ -754,8 +764,12 @@ function tradesView() {
   const n = new Set(trades.map(t => t.rep || t.pep)).size, sum = trades.reduce((a, t) => a + t.ver, 0);
   const big = [...trades].sort((a, b) => b.ver - a.ver)[0];
   $('tk').innerHTML = `<div><b>${trades.length}</b><span>handler</span></div><div><b>${n}</b><span>personer</span></div><div><b>${nf(Math.round(sum / 1e5) / 10)} mill. kr</b><span>samlet verdi</span></div>${big ? `<div><b>${nf(big.ver)} kr</b><span>største: ${esc(big.r.navn)}, ${esc(big.sel)}</span></div>` : ''}`;
-  const t = $('tt').value;
-  $('tradeTable').tBodies[0].innerHTML = trades.filter(x => !t || x.k === t).map(x => `<tr${x.r.h ? ` data-go="rep-${x.r.h}"` : x.pep && govById[x.pep] ? ` data-go="statsrad-${hid(x.pep)}"` : ''}><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.r.h ? ['rep:' + x.rep] : ['gov:' + x.pep], x.r.navn, x.r.parti)}<div>${x.r.h ? `<a href="#rep-${x.r.h}">${esc(x.r.navn)}</a>` : x.pep && govById[x.pep] ? `<a href="#statsrad-${hid(x.pep)}">${esc(x.r.navn)}</a>` : esc(x.r.navn)}<div class="meta">${dot(x.r.parti)}${esc(x.r.parti)}${x.r.rolle ? ' · ' + esc(x.r.rolle) : ''}</div></div></div></td><td class="hide-s">${trade(x.k)}</td><td><span class="show-s">${trade(x.k)} </span>${stockLink(x.sel)}</td><td class="n hide-s">${nf(x.ant)}</td><td class="n">${nf(x.ver)}</td></tr>`).join('')
+  const t = $('tt').value, pf = $('tpp').value;
+  // Aksjene politikerne handler mest: antall personer og handler per selskap
+  const by = new Map();
+  for (const x of trades) { const k = coKey(x.sel); const g = by.get(k) || { sel: x.sel, who: new Set(), n: 0, kr: 0 }; g.who.add(x.r.navn); g.n++; g.kr += x.ver || 0; by.set(k, g); }
+  $('tTop').innerHTML = sec('t-top', 'Mest handlet av politikere', `<ul class="feed">${[...by.values()].sort((a, b) => b.who.size - a.who.size || b.n - a.n).slice(0, 8).map(g => `<li><div class="grow"><b>${stockLink(g.sel)}</b><div class="meta">${[...g.who].join(', ')}</div></div><b class="n">${g.n} ${g.n === 1 ? 'handel' : 'handler'}</b></li>`).join('')}</ul>`);
+  $('tradeTable').tBodies[0].innerHTML = trades.filter(x => (!t || x.k === t) && (!pf || x.r.parti === pf)).map(x => `<tr${x.r.h ? ` data-go="rep-${x.r.h}"` : x.pep && govById[x.pep] ? ` data-go="statsrad-${hid(x.pep)}"` : ''}><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.r.h ? ['rep:' + x.rep] : ['gov:' + x.pep], x.r.navn, x.r.parti)}<div>${x.r.h ? `<a href="#rep-${x.r.h}">${esc(x.r.navn)}</a>` : x.pep && govById[x.pep] ? `<a href="#statsrad-${hid(x.pep)}">${esc(x.r.navn)}</a>` : esc(x.r.navn)}<div class="meta">${dot(x.r.parti)}${esc(x.r.parti)}${x.r.rolle ? ' · ' + esc(x.r.rolle) : ''}</div></div></div></td><td class="hide-s">${trade(x.k)}</td><td><span class="show-s">${trade(x.k)} </span>${stockLink(x.sel)}</td><td class="n hide-s">${nf(x.ant)}</td><td class="n">${nf(x.ver)}</td></tr>`).join('')
     || '<tr><td colspan="6" class="empty">Ingen handler.</td></tr>';
 }
 
@@ -799,7 +813,7 @@ function holdingsView() {
   $('hk').innerHTML = groups.map(gr => { const l = holdings.filter(x => x.gruppe === gr); return `<div><b>${l.filter(x => x.eier).length} av ${l.length}</b><span>${esc(gr)}: oppgir aksjer eller eierandeler</span></div>`; }).join('');
   const list = holdings.filter(x => (!g || x.gruppe === g) && (!p || x.parti === p) && (!only || x.eier) && (!q || (x.navn + ' ' + x.tekst).toLowerCase().includes(q)))
     .sort((a, b) => b.eier - a.eier || a.navn.localeCompare(b.navn, 'nb'));
-  $('holdTable').tBodies[0].innerHTML = list.slice(0, 400).map(x => `<tr><td>${x.h ? `<a href="#rep-${x.h}">${esc(x.navn)}</a>` : esc(x.navn)} ${dot(x.parti)}<span class="meta">${esc(x.parti)}</span><div class="meta show-s">${esc(x.rolle)}</div></td><td class="hide-s">${esc(x.rolle)}</td><td>${x.tekst ? esc(x.tekst) : `<span class="meta">${x.mangler ? 'Står ikke i registeret ennå' : 'Ingenting oppgitt'}</span>`}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Ingen treff.</td></tr>';
+  $('holdTable').tBodies[0].innerHTML = list.slice(0, 400).map(x => `<tr${x.h ? ` data-go="rep-${x.h}"` : x.g ? ` data-go="statsrad-${x.g}"` : ''}><td><div class="who">${avatar(x.rid ? ['rep:' + x.rid] : x.gid ? ['gov:' + x.gid] : [], x.navn, x.parti)}<div>${x.h ? `<a href="#rep-${x.h}">${esc(x.navn)}</a>` : x.g ? `<a href="#statsrad-${x.g}">${esc(x.navn)}</a>` : `<b>${esc(x.navn)}</b>`}<div class="meta">${esc(x.rolle)} · ${dot(x.parti)}${esc(x.parti)}</div></div></div></td><td>${x.tekst ? linkStocks(x.tekst) : `<span class="meta">${x.mangler ? 'Står ikke i registeret' : 'Ingen oppgitt'}</span>`}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Ingen treff.</td></tr>';
 }
 
 /* ---------- selskaper ---------- */
@@ -910,7 +924,8 @@ function goLive() {
 
   $('leg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; off.has(b.dataset.p) ? off.delete(b.dataset.p) : off.add(b.dataset.p); legend(); repList(); });
   ['fy', 'ko', 'so'].forEach(id => $(id).addEventListener('input', repList));
-  $('tt').addEventListener('input', tradesView);
+  [...new Set(trades.map(x => x.r.parti))].sort().forEach(p => $('tpp').add(new Option(pname(p), p)));
+  $('tt').addEventListener('input', tradesView); $('tpp').addEventListener('input', tradesView);
   ['cf', 'cs'].forEach(id => $(id).addEventListener('input', cosView));
   $('liveForm').addEventListener('submit', e => { e.preventDefault(); liveSearch($('lq').value.trim()); });
   document.addEventListener('click', e => {
