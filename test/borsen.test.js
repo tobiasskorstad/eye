@@ -61,11 +61,11 @@ import { summarizeShort } from '../src/short.js';
 
 test('havbruk: tillatelser og MTB per selskap, bare godkjente', () => {
   const l = summarizeLicenses([
-    { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'VESTLAND' }, version: { status: 'APPROVED' } },
+    { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'VESTLAND', prodAreaCode: '3' }, version: { status: 'APPROVED' } },
     { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 945, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'NORDLAND' }, version: { status: 'APPROVED' } },
     { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 500, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, version: { status: 'CANCELLED' } },
   ]);
-  assert.deepEqual(l, [{ nr: '111111111', navn: 'Mowi Norway AS', n: 2, matf: 2, mtb: 1725, fylker: ['Vestland', 'Nordland'] }]);
+  assert.deepEqual(l, [{ nr: '111111111', navn: 'Mowi Norway AS', n: 2, matf: 2, mtb: 780, land: 945, fylker: ['Vestland', 'Nordland'] }], 'uten produksjonsområde = landbasert');
 });
 
 test('fartøy: bare selskaper, ikke privatpersoner', () => {

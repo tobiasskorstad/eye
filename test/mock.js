@@ -149,8 +149,8 @@ export function startMock(port = 0) {
       : [] } }); }
     if (p === '/ob/message' && u.searchParams.get('messageId') === '7005') return send(200, { data: { message: { publishedTime: '2026-08-20T06:00:00Z', body: 'Testvekst reports growth.\n\nAbout Testvekst\n\nTestvekst AS develops software for Norwegian schools and municipalities, with offices in Bergen.\n\nContacts\n\nIR' } } });
     if (p === '/aqua/api/v1/licenses-overview') return send(200, u.searchParams.get('range') !== '0-99' ? [] : [
-      { licenseNr: 'H-1', openLegalEntityNr: '913054210', legalEntityName: 'SMITE AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'NORDLAND' }, version: { status: 'APPROVED' } },
-      { licenseNr: 'H-2', openLegalEntityNr: '913054210', legalEntityName: 'SMITE AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'TROMS' }, version: { status: 'APPROVED' } },
+      { licenseNr: 'H-1', openLegalEntityNr: '913054210', legalEntityName: 'SMITE AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'NORDLAND', prodAreaCode: '9' }, version: { status: 'APPROVED' } },
+      { licenseNr: 'H-2', openLegalEntityNr: '913054210', legalEntityName: 'SMITE AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'TROMS', prodAreaCode: '10' }, version: { status: 'APPROVED' } },
       { licenseNr: 'H-3', openLegalEntityNr: '999999999', legalEntityName: 'SETTEFISK AS', capacity: { current: 2, unit: 'MILL', type: 'STK' }, type: { tag: 'KOMM-SETT' }, placement: { countyName: 'NORDLAND' }, version: { status: 'APPROVED' } }]);
     if (p === '/vessel/api/v1/vessels') return send(200, u.searchParams.get('page') !== '1' ? [] : [
       { name: 'HAVTRÅL', length: 64.2, buildYear: 2019, registrationMark: 'M 0001A', owners: [{ id: '913054210', entityType: 'COMPANY', name: 'SMITE AS' }] },

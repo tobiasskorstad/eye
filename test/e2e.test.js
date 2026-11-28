@@ -91,7 +91,7 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.ok(Object.keys(pub.bio).length > 0 && Object.values(pub.bio).every(b => Array.isArray(b.uy) && Array.isArray(b.verv)));
   assert.ok(pub.godtgjoring.representant > 1e6);
   // havbruk, havfiskeflåten og shortsalg
-  assert.deepEqual(pub.fiskeri.havbruk.eiere[0], { nr: '913054210', navn: 'Smite AS', n: 2, matf: 2, mtb: 1560, fylker: ['Nordland', 'Troms'] });
+  assert.deepEqual(pub.fiskeri.havbruk.eiere[0], { nr: '913054210', navn: 'Smite AS', n: 2, matf: 2, mtb: 1560, land: 0, fylker: ['Nordland', 'Troms'] });
   assert.equal(pub.fiskeri.fartoy.eiere.length, 1, 'fartøy eid av privatpersoner tas ikke med');
   assert.ok(!JSON.stringify(pub.fiskeri).includes('Ola Fisker'));
   assert.equal(pub.short.liste[0].pst, 0.8);

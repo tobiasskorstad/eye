@@ -11,7 +11,7 @@ import { getJson, allowHosts } from './http.js';
 const AQUA = config.fdirAqua, VESSEL = config.fdirVessel;
 allowHosts([AQUA, VESSEL]);
 const DAY = 864e5, sleep = ms => new Promise(r => setTimeout(r, ms));
-const title = s => String(s || '').toLowerCase().replace(/(^|[\s(\-/])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(As|Asa|Sa|Ans|Da)\b/g, x => x.toUpperCase()).trim();
+const title = s => String(s || '').toLowerCase().replace(/(^|[\s(\-/])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(As|Asa|Sa|Ans|Da)\b/g, x => x.toUpperCase()).replace(/ Og /g, ' og ').trim();
 
 /** Slår sammen tillatelser per innehaver. */
 export function summarizeLicenses(list) {
@@ -19,13 +19,18 @@ export function summarizeLicenses(list) {
   for (const l of list) {
     const nr = l.openLegalEntityNr; if (!/^\d{9}$/.test(nr || '')) continue;
     if (l.version?.status && l.version.status !== 'APPROVED') continue;
-    const e = by.get(nr) || { nr, navn: title(l.legalEntityName), n: 0, matf: 0, mtb: 0, fylker: new Set() };
+    const e = by.get(nr) || { nr, navn: title(l.legalEntityName), n: 0, matf: 0, mtb: 0, land: 0, fylker: new Set() };
     e.n++;
-    if (l.type?.tag === 'KOMM-MATF') { e.matf++; if (l.capacity?.unit === 'TN' && l.capacity?.type === 'MTK') e.mtb += Number(l.capacity.current) || 0; }
+    // Matfisk i sjø ligger i et produksjonsområde; landbaserte anlegg har ikke det og regnes for seg
+    if (l.type?.tag === 'KOMM-MATF') {
+      e.matf++;
+      const t = l.capacity?.unit === 'TN' && l.capacity?.type === 'MTK' ? Number(l.capacity.current) || 0 : 0;
+      if (l.placement?.prodAreaCode) e.mtb += t; else e.land += t;
+    }
     if (l.placement?.countyName) e.fylker.add(title(l.placement.countyName));
     by.set(nr, e);
   }
-  return [...by.values()].map(e => ({ ...e, mtb: Math.round(e.mtb), fylker: [...e.fylker] })).sort((a, b) => b.mtb - a.mtb || b.n - a.n);
+  return [...by.values()].map(e => ({ ...e, mtb: Math.round(e.mtb), land: Math.round(e.land), fylker: [...e.fylker] })).sort((a, b) => b.mtb - a.mtb || b.land - a.land || b.n - a.n);
 }
 /** Store fiskefartøy per eier (bare selskaper). */
 export function summarizeVessels(list) {
@@ -49,7 +54,7 @@ async function pages(fetchPage, max) {
 export async function fetchFiskeri({ warnings = [] } = {}) {
   const file = path.join(config.dataDir, 'fiskeri-cache.json');
   let cache = null; try { cache = JSON.parse(await fs.readFile(file, 'utf8')); } catch { }
-  if (cache && Date.now() - cache.t < 7 * DAY) return cache.d;
+  if (cache && cache.v === 2 && Date.now() - cache.t < 7 * DAY) return cache.d;
   const d = { ...(cache?.d || {}) };
   try {
     const lic = await pages(i => getJson(`${AQUA}/api/v1/licenses-overview?range=${i * 100}-${i * 100 + 99}`).catch(() => null), 80);
@@ -62,6 +67,6 @@ export async function fetchFiskeri({ warnings = [] } = {}) {
   } catch (e) { warnings.push('Fartøyregisteret feilet: ' + e.message); }
   if (!d.havbruk && !d.fartoy) throw new Error('ingen data fra Fiskeridirektoratet');
   await fs.mkdir(config.dataDir, { recursive: true });
-  await fs.writeFile(file, JSON.stringify({ t: Date.now(), d }));
+  await fs.writeFile(file, JSON.stringify({ v: 2, t: Date.now(), d }));
   return d;
 }
