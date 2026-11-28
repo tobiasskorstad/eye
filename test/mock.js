@@ -177,6 +177,14 @@ export function startMock(port = 0) {
     if ((m = p.match(/^\/br\/enheter\/(\d{9})\/roller$/))) { const c = F.COS.find(x => x[0] === m[1]); return c ? send(200, roller(c)) : send(404, {}); }
     if ((m = p.match(/^\/br\/enheter\/(\d{9})$/))) { const c = F.COS.find(x => x[0] === m[1]); return c ? send(200, enhet(c)) : send(404, {}); }
     if (p.startsWith('/br/underenheter/')) return send(404, {});
+    if ((m = p.match(/^\/rr\/regnskap\/(\d{9})$/))) {
+      if (m[1] !== '913054210') return send(404, {});
+      const year = (aar, inn, res) => ({ regnskapstype: 'SELSKAP', regnskapsperiode: { fraDato: `${aar}-01-01`, tilDato: `${aar}-12-31` }, valuta: 'NOK', avviklingsregnskap: false,
+        revisjon: { ikkeRevidertAarsregnskap: false, fravalgRevisjon: false },
+        resultatregnskapResultat: { aarsresultat: res, driftsresultat: { driftsresultat: res * 1.3, driftsinntekter: { sumDriftsinntekter: inn } } },
+        egenkapitalGjeld: { egenkapital: { sumEgenkapital: 2500000 }, gjeldOversikt: { sumGjeld: 1200000 } }, eiendeler: { sumEiendeler: 3700000 } });
+      return send(200, [year(2023, 4100000.0, 310000.0), year(2024, 4800000.0, 420000.0)]);
+    }
     send(404, { feil: 'mock: ukjent ' + p });
   });
   return new Promise(r => srv.listen(port, () => r(srv)));
