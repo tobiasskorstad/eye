@@ -598,10 +598,11 @@ function dummiesView() {
   const X = D.dummies; if (!X) { $('v-dummies').innerHTML = '<h1>Politikk for dummies</h1><p class="empty">Mangler innhold.</p>'; return; }
   $('duLede').textContent = X.om;
   $('duMethod').textContent = X.metode + ` Sist gjennomgått ${date(X.oppdatert, true)}.`;
+  duBasics(); duMatrix();
   $('duWords').innerHTML = X.ordliste.map(o => `<dt>${esc(o.ord)}</dt><dd>${esc(o.forklaring)}</dd>`).join('');
   $('duTopics').innerHTML = X.tema.map(t => `<button class="tbtn" data-t="${esc(t.id)}" aria-pressed="${DU.sel.has(t.id)}">${esc(t.navn)}</button>`).join('') + `<button class="tbtn" data-t="*">Alle</button>`;
   const chosen = X.tema.filter(t => DU.sel.has(t.id));
-  $('duCards').innerHTML = chosen.length ? `<h2>2. Hva mener du?</h2>` + chosen.map(t => duCard(t)).join('') : '<p class="empty">Velg minst én sak over.</p>';
+  $('duCards').innerHTML = chosen.length ? `<h2>2. Hva mener du?</h2><p class="meta" id="duProg"></p>` + chosen.map(t => duCard(t)).join('') : '<p class="empty">Velg minst én sak over.</p>';
   duResult();
 }
 function duCard(t) {
@@ -631,12 +632,38 @@ function duScores() {
   }).sort((a, b) => b.pct - a.pct || pname(a.p).localeCompare(pname(b.p), 'nb'));
   return { done, list };
 }
+// Norsk politikk på ett minutt: setefordeling og regjering regnes ut fra dataene, så teksten holder seg oppdatert.
+function duBasics() {
+  const n = reps.length; if (!n) { $('duBasics').innerHTML = ''; return; }
+  const seats = PORDER().map(p => [p, reps.filter(r => r.parti === p).length]).filter(x => x[1]);
+  const flertall = Math.floor(n / 2) + 1, gp = [...new Set(govs.map(g => g.parti))].filter(Boolean);
+  const gs = seats.filter(([p]) => gp.includes(p)).reduce((a, x) => a + x[1], 0);
+  const sml = gp.length === 1 ? pname(gp[0]) + ' styrer alene' : gp.map(pname).join(', ') + ' styrer sammen';
+  $('duBasics').innerHTML = `<details class="card basics"><summary><b>Norsk politikk på ett minutt</b> <span class="meta">– hvem bestemmer hva?</span></summary>
+  <div class="seatbar" role="img" aria-label="Setefordeling på Stortinget">${seats.map(([p, k]) => `<i style="flex:${k};background:${col(p)}" title="${esc(pname(p))}: ${k}"></i>`).join('')}<b style="left:${(100 * flertall / n).toFixed(1)}%"></b></div>
+  <div class="meta seatleg">${seats.map(([p, k]) => `<a href="#parti-${esc(p)}">${dot(p)}${esc(short(p))} ${k}</a>`).join(' ')} · streken viser flertall (${flertall})</div>
+  <ol class="steps">
+  <li><b>Du velger Stortinget.</b> Hvert fjerde år velger vi ${n} representanter. Et parti må ha over 4 % av stemmene for å få utjevningsmandater.</li>
+  <li><b>Stortinget gir og tar makt.</b> Det trengs ${flertall} stemmer for å vedta noe. Regjeringen kan bare sitte så lenge den ikke får flertallet mot seg.</li>
+  <li><b>Regjeringen styrer landet.</b> ${esc(sml)}${gs ? ` og har ${gs} av ${n} plasser` : ''}. ${gs && gs < flertall ? `Det er under ${flertall}, så regjeringen er en <i>mindretallsregjering</i> og må få med seg andre partier i hver sak.` : gs ? 'Det er flertall, så regjeringen kan få gjennom det meste selv.' : ''} <a href="#regjeringen">Se regjeringen</a>.</li>
+  <li><b>Pengene bestemmes i budsjettet.</b> Hver høst legger regjeringen fram statsbudsjettet. Det er her de fleste kompromissene inngås.</li>
+  <li><b>Lover blir til slik:</b> regjeringen eller representanter foreslår → en komité på Stortinget behandler saken → Stortinget stemmer. <a href="#voteringer">Se hvordan de har stemt</a>.</li></ol></details>`;
+}
+function duMatrix() {
+  const X = D.dummies, ps = ABC(), lab = { '-2': 'Helt uenig', '-1': 'Litt uenig', 0: 'Nøytral', 1: 'Litt enig', 2: 'Helt enig' };
+  $('duMatrix').innerHTML = `<details class="card"><summary><b>Alle partiene på alle sakene</b> <span class="meta">– oversikt over påstandene</span></summary>
+  <div class="tw"><table class="list mx"><thead><tr><th>Påstand</th>${ps.map(p => `<th title="${esc(pname(p))}">${esc(short(p))}</th>`).join('')}</tr></thead><tbody>
+  ${X.tema.map(t => `<tr><td><b>${esc(t.navn)}</b><div class="meta">${esc(t.pastand)}</div></td>${ps.map(p => { const v = t.partier[p]; return `<td class="v v${v < 0 ? 'm' : ''}${Math.abs(v)}" title="${esc(pname(p))}: ${lab[v]}${t.merk?.[p] ? ' – ' + esc(t.merk[p]) : ''}">${v > 0 ? '+' + v : v < 0 ? '−' + -v : '0'}</td>`; }).join('')}</tr>`).join('')}
+  </tbody></table></div><p class="meta">+2 = helt enig, −2 = helt uenig i påstanden. Hold over en rute for forklaring. Kildene står under hver sak.</p></details>`;
+}
 function duResult() {
   duSaveBox();
   const { done, list } = duScores();
-  $('duResult').innerHTML = done.length ? `<div class="res"><h2>3. Disse partiene er mest enige med deg</h2>
+  const sel = D.dummies.tema.filter(t => DU.sel.has(t.id)), left = sel.filter(t => DU.ans[t.id] == null);
+  if ($('duProg')) $('duProg').innerHTML = sel.length ? `Du har svart på ${sel.length - left.length} av ${sel.length}.${left.length ? ` <button class="linkbtn" data-next="${esc(left[0].id)}">Neste: ${esc(left[0].navn)} ↓</button>` : ' Se resultatet under.'}` : '';
+  $('duResult').innerHTML = done.length ? `<div class="dures"><h2>3. Disse partiene er mest enige med deg</h2>
   <p class="meta">Basert på ${done.length} ${done.length === 1 ? 'sak' : 'saker'}. Jo flere saker du svarer på, jo mer treffsikkert. Dette er ikke et råd om hva du bør stemme.</p>
-  ${list.map(r => `<div class="row2"><a href="#parti-${r.p}">${dot(r.p)}${esc(pname(r.p))}</a><div class="bar"><i style="width:${r.pct}%;background:${col(r.p)}"></i></div><b class="n">${r.pct} %</b></div>
+  ${list.map(r => `<div class="row2"><a href="#parti-${r.p}">${dot(r.p)}${esc(pname(r.p))}</a><div class="dubar"><i style="width:${r.pct}%;background:${col(r.p)}"></i></div><b class="n">${r.pct} %</b></div>
   <div class="meta" style="margin:-2px 0 8px">${r.enig.length ? 'Enige om: ' + esc(r.enig.join(', ')) : ''}${r.enig.length && r.uenig.length ? ' · ' : ''}${r.uenig.length ? 'Uenige om: ' + esc(r.uenig.join(', ')) : ''}</div>`).join('')}
   <button class="filterbtn" id="duReset">Start på nytt</button></div>` : '';
 }
@@ -942,6 +969,7 @@ function goLive() {
     const t = e.target.closest('[data-t]'), a = e.target.closest('[data-a]');
     if (t) { const id = t.dataset.t; if (id === '*') D.dummies.tema.forEach(x => DU.sel.add(x.id)); else DU.sel.has(id) ? DU.sel.delete(id) : DU.sel.add(id); dummiesView(); }
     else if (a) { DU.ans[a.dataset.a] = Number(a.dataset.v); for (const b of a.parentNode.children) b.setAttribute('aria-pressed', b === a); duResult(); duAutoSave(); }
+    else if (e.target.dataset.next) document.getElementById('du-' + e.target.dataset.next)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     else if (e.target.id === 'duReset') { DU.sel.clear(); DU.ans = {}; DU.vik = {}; dummiesView(); scrollTo(0, 0); }
   });
   $('v-dummies').addEventListener('change', e => { const w = e.target.dataset.w; if (w) { DU.vik[w] = e.target.checked; duResult(); duAutoSave(); } });

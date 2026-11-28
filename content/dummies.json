@@ -1,18 +1,48 @@
 {
-  "oppdatert": "2026-11-25",
+  "oppdatert": "2026-11-28",
   "om": "Politikk forklart enkelt. Velg sakene du bryr deg om, les hva striden handler om, og si om du er enig eller uenig. Da ser du hvilke partier som mener det samme som deg. Ingenting du svarer lagres eller sendes noe sted – alt skjer i nettleseren din.",
   "metode": "Partienes standpunkter bygger på partiprogrammene for 2025–2029, alternative budsjetter og hvordan de faktisk har stemt i Stortinget. Hvert standpunkt har kilder. Skalaen går fra helt uenig (−2) til helt enig (+2). Treffprosenten viser hvor nær partiet er dine svar på sakene du har valgt, ikke hvem du bør stemme på.",
   "ordliste": [
-    { "ord": "Stortinget", "forklaring": "Norges nasjonalforsamling. 169 representanter valgt for fire år. De vedtar lover og statsbudsjettet." },
-    { "ord": "Regjeringen", "forklaring": "Statsministeren og statsrådene. De styrer landet og foreslår lover og budsjett, men trenger flertall (85 stemmer) på Stortinget for å få det vedtatt." },
-    { "ord": "Mindretallsregjering", "forklaring": "En regjering som ikke har flertall alene og må forhandle med andre partier i hver sak. Ap styrer slik nå." },
-    { "ord": "Statsbudsjettet", "forklaring": "Planen for hva staten skal bruke penger på og hvor mye skatt folk og bedrifter betaler neste år. Vedtas hver desember." },
-    { "ord": "Opposisjonen", "forklaring": "Partiene som ikke sitter i regjering." },
-    { "ord": "Rødgrønn og borgerlig side", "forklaring": "De to blokkene. Rødgrønn: Ap, SV, Sp, Rødt og MDG. Borgerlig: Høyre, Frp, KrF og Venstre. Sp og KrF samarbeider noen ganger på tvers." },
-    { "ord": "Sperregrensen", "forklaring": "Et parti må få minst 4 prosent av stemmene nasjonalt for å få utjevningsmandater. Under det får partiet bare plasser der det er stort nok lokalt." },
-    { "ord": "Representantforslag", "forklaring": "Et forslag fra én eller flere stortingsrepresentanter. Opposisjonen bruker det for å vise hva de vil, selv om de ofte taper avstemningen." },
-    { "ord": "Formuesskatt", "forklaring": "Skatt på det du eier (penger, aksjer, eiendom) over et visst beløp, ikke på det du tjener." },
-    { "ord": "EØS-avtalen", "forklaring": "Avtalen som gjør at Norge er med i EUs indre marked uten å være medlem. Norge må ta inn mange EU-regler, men stemmer ikke over dem." }
+    {
+      "ord": "Stortinget",
+      "forklaring": "Norges nasjonalforsamling. 169 representanter valgt for fire år. De vedtar lover og statsbudsjettet."
+    },
+    {
+      "ord": "Regjeringen",
+      "forklaring": "Statsministeren og statsrådene. De styrer landet og foreslår lover og budsjett, men trenger flertall (85 stemmer) på Stortinget for å få det vedtatt."
+    },
+    {
+      "ord": "Mindretallsregjering",
+      "forklaring": "En regjering som ikke har flertall alene og må forhandle med andre partier i hver sak. Ap styrer slik nå."
+    },
+    {
+      "ord": "Statsbudsjettet",
+      "forklaring": "Planen for hva staten skal bruke penger på og hvor mye skatt folk og bedrifter betaler neste år. Vedtas hver desember."
+    },
+    {
+      "ord": "Opposisjonen",
+      "forklaring": "Partiene som ikke sitter i regjering."
+    },
+    {
+      "ord": "Rødgrønn og borgerlig side",
+      "forklaring": "De to blokkene. Rødgrønn: Ap, SV, Sp, Rødt og MDG. Borgerlig: Høyre, Frp, KrF og Venstre. Sp og KrF samarbeider noen ganger på tvers."
+    },
+    {
+      "ord": "Sperregrensen",
+      "forklaring": "Et parti må få minst 4 prosent av stemmene nasjonalt for å få utjevningsmandater. Under det får partiet bare plasser der det er stort nok lokalt."
+    },
+    {
+      "ord": "Representantforslag",
+      "forklaring": "Et forslag fra én eller flere stortingsrepresentanter. Opposisjonen bruker det for å vise hva de vil, selv om de ofte taper avstemningen."
+    },
+    {
+      "ord": "Formuesskatt",
+      "forklaring": "Skatt på det du eier (penger, aksjer, eiendom) over et visst beløp, ikke på det du tjener."
+    },
+    {
+      "ord": "EØS-avtalen",
+      "forklaring": "Avtalen som gjør at Norge er med i EUs indre marked uten å være medlem. Norge må ta inn mange EU-regler, men stemmer ikke over dem."
+    }
   ],
   "tema": [
     {
@@ -22,13 +52,41 @@
       "for": "Tilhengere av kutt sier skatten tvinger eiere til å ta penger ut av bedriftene, og at norske eiere taper mot utenlandske som ikke betaler den.",
       "mot": "Motstandere sier de rikeste allerede betaler lite skatt av formuen sin, og at kutt gir mest til dem som har mest.",
       "pastand": "Formuesskatten bør fjernes eller kuttes kraftig.",
-      "partier": { "A": -2, "FrP": 2, "H": 2, "SV": -2, "Sp": 0, "R": -2, "MDG": -1, "KrF": 0, "V": 1 },
-      "merk": { "H": "Vil fjerne den på aksjer og bedrifter. Landsmøtet 2026 vedtok å fjerne den helt.", "Sp": "Vil redusere den for eiere av små og mellomstore bedrifter, men beholde skatten.", "KrF": "Vil kutte på bedrifter, men øke på annen formue.", "V": "Vil gradvis fjerne den på bedrifter og aksjer.", "R": "Vil gjøre den mer progressiv (høyere for de rikeste)." },
+      "partier": {
+        "A": -2,
+        "FrP": 2,
+        "H": 2,
+        "SV": -2,
+        "Sp": 0,
+        "R": -2,
+        "MDG": -1,
+        "KrF": 0,
+        "V": 1
+      },
+      "merk": {
+        "H": "Vil fjerne den på aksjer og bedrifter. Landsmøtet 2026 vedtok å fjerne den helt.",
+        "Sp": "Vil redusere den for eiere av små og mellomstore bedrifter, men beholde skatten.",
+        "KrF": "Vil kutte på bedrifter, men øke på annen formue.",
+        "V": "Vil gradvis fjerne den på bedrifter og aksjer.",
+        "R": "Vil gjøre den mer progressiv (høyere for de rikeste)."
+      },
       "kilder": [
-        { "t": "Altinget: Høyres landsmøte og formuesskatten", "u": "https://www.altinget.no/lovebakken/artikkel/den-nye-hoeyre-lederen-tar-ikke-en-erna-aksepterer-vedtak-om-formuesskatt" },
-        { "t": "Altinget: Frps alternative budsjett", "u": "https://www.altinget.no/lovebakken/artikkel/frps-alternative-budsjett-oeker-oljepengebruk-med-15-milliarder-fjerner-ikke-hele-formuesskatten" },
-        { "t": "Altinget: Borgerlige partier barberer hverandres hjertesaker", "u": "https://www.altinget.no/statogstyring/artikkel/borgerlige-partier-barberer-hverandres-hjertesaker" },
-        { "t": "Venstres politiske prioriteringer", "u": "https://www.venstre.no/assets/Venstres-politiske-prioriteringer.pdf" }
+        {
+          "t": "Altinget: Høyres landsmøte og formuesskatten",
+          "u": "https://www.altinget.no/lovebakken/artikkel/den-nye-hoeyre-lederen-tar-ikke-en-erna-aksepterer-vedtak-om-formuesskatt"
+        },
+        {
+          "t": "Altinget: Frps alternative budsjett",
+          "u": "https://www.altinget.no/lovebakken/artikkel/frps-alternative-budsjett-oeker-oljepengebruk-med-15-milliarder-fjerner-ikke-hele-formuesskatten"
+        },
+        {
+          "t": "Altinget: Borgerlige partier barberer hverandres hjertesaker",
+          "u": "https://www.altinget.no/statogstyring/artikkel/borgerlige-partier-barberer-hverandres-hjertesaker"
+        },
+        {
+          "t": "Venstres politiske prioriteringer",
+          "u": "https://www.venstre.no/assets/Venstres-politiske-prioriteringer.pdf"
+        }
       ],
       "sok": "formuesskatt|skatt"
     },
@@ -39,12 +97,34 @@
       "for": "De som vil stanse letingen sier verden allerede har funnet mer olje enn vi kan brenne, og at Norge må bygge nye næringer nå.",
       "mot": "De som vil fortsette sier Europa trenger norsk gass, at næringen gir hundretusener jobber, og at produksjonen faller uansett hvis vi ikke leter.",
       "pastand": "Norge bør slutte å lete etter ny olje og gass.",
-      "partier": { "A": -2, "FrP": -2, "H": -2, "SV": 2, "Sp": -2, "R": 2, "MDG": 2, "KrF": 0, "V": 2 },
-      "merk": { "KrF": "Vil ikke åpne sårbare områder, men stanser ikke all leting.", "MDG": "Vil i tillegg ha en plan for å avslutte all produksjon." },
+      "partier": {
+        "A": -2,
+        "FrP": -2,
+        "H": -2,
+        "SV": 2,
+        "Sp": -2,
+        "R": 2,
+        "MDG": 2,
+        "KrF": 0,
+        "V": 2
+      },
+      "merk": {
+        "KrF": "Vil ikke åpne sårbare områder, men stanser ikke all leting.",
+        "MDG": "Vil i tillegg ha en plan for å avslutte all produksjon."
+      },
       "kilder": [
-        { "t": "Felles krav fra SV, Rødt og MDG om stans i nye letelisenser (2025)", "u": "https://forumfor.no/assets/docs/19.09.2025-Innspill-SV-R%C3%B8dt-og-MDG.pdf" },
-        { "t": "Stortinget: Innstilling om petroleumsmelding (Ap, Frp, H, Sp)", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2025-2026/inns-202526-284s/?m=2" },
-        { "t": "Altinget: Sp takker nei til oljefrieri fra Høyre", "u": "https://www.altinget.no/lovebakken/artikkel/sp-takker-nei-til-oljefrieri-fra-hoeyre-staar-ved-den-avtalen-vi-har-inngaatt" }
+        {
+          "t": "Felles krav fra SV, Rødt og MDG om stans i nye letelisenser (2025)",
+          "u": "https://forumfor.no/assets/docs/19.09.2025-Innspill-SV-R%C3%B8dt-og-MDG.pdf"
+        },
+        {
+          "t": "Stortinget: Innstilling om petroleumsmelding (Ap, Frp, H, Sp)",
+          "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2025-2026/inns-202526-284s/?m=2"
+        },
+        {
+          "t": "Altinget: Sp takker nei til oljefrieri fra Høyre",
+          "u": "https://www.altinget.no/lovebakken/artikkel/sp-takker-nei-til-oljefrieri-fra-hoeyre-staar-ved-den-avtalen-vi-har-inngaatt"
+        }
       ],
       "sok": "olje|petroleum|leting|sokkel|konsesjon|klima"
     },
@@ -55,12 +135,36 @@
       "for": "De som vil ta imot flere sier Norge er rikt og har plikt til å hjelpe de mest sårbare, slik FN ber om (5 000 i året).",
       "mot": "De som vil ta imot færre sier kommunene allerede har tatt imot mange ukrainere, og at integrering koster mye.",
       "pastand": "Norge bør ta imot flere kvoteflyktninger enn i dag.",
-      "partier": { "A": -1, "FrP": -2, "H": -1, "SV": 2, "Sp": -1, "R": 2, "MDG": 2, "KrF": 2, "V": 2 },
-      "merk": { "FrP": "Vil ta imot null kvoteflyktninger.", "KrF": "Har programfestet minst 5 000 i året.", "V": "Har programfestet minst 5 000 i året.", "H": "Støttet regjeringens kutt og vil ha et lavt nivå i mange år." },
+      "partier": {
+        "A": -1,
+        "FrP": -2,
+        "H": -1,
+        "SV": 2,
+        "Sp": -1,
+        "R": 2,
+        "MDG": 2,
+        "KrF": 2,
+        "V": 2
+      },
+      "merk": {
+        "FrP": "Vil ta imot null kvoteflyktninger.",
+        "KrF": "Har programfestet minst 5 000 i året.",
+        "V": "Har programfestet minst 5 000 i året.",
+        "H": "Støttet regjeringens kutt og vil ha et lavt nivå i mange år."
+      },
       "kilder": [
-        { "t": "Altinget: KrF går inn for 1000 kvoteflyktninger – SV, Rødt og MDG vil ha 5000", "u": "https://www.altinget.no/digital/artikkel/krf-gaar-inn-for-1000-kvoteflyktninger-i-alternativt-budsjett" },
-        { "t": "Altinget: Høyre freder regjeringens kutt i kvoteflyktninger", "u": "https://www.altinget.no/lovebakken/artikkel/hoeyres-alternative-budsjett-freder-regjeringens-kutt-i-kvoteflyktninger" },
-        { "t": "Stortinget: Budsjettdebatt 16.12.2025 (100 kvoteflyktninger)", "u": "https://www.stortinget.no/stid/2025/si251216-06.html" }
+        {
+          "t": "Altinget: KrF går inn for 1000 kvoteflyktninger – SV, Rødt og MDG vil ha 5000",
+          "u": "https://www.altinget.no/digital/artikkel/krf-gaar-inn-for-1000-kvoteflyktninger-i-alternativt-budsjett"
+        },
+        {
+          "t": "Altinget: Høyre freder regjeringens kutt i kvoteflyktninger",
+          "u": "https://www.altinget.no/lovebakken/artikkel/hoeyres-alternative-budsjett-freder-regjeringens-kutt-i-kvoteflyktninger"
+        },
+        {
+          "t": "Stortinget: Budsjettdebatt 16.12.2025 (100 kvoteflyktninger)",
+          "u": "https://www.stortinget.no/stid/2025/si251216-06.html"
+        }
       ],
       "sok": "flyktning|asyl|innvandr|integrering|utlending"
     },
@@ -71,12 +175,35 @@
       "for": "Tilhengere sier pasienten bør få behandling raskt, uansett hvem som eier sykehuset, og at det hindrer at bare de med råd kjøper seg forbi køen.",
       "mot": "Motstandere sier pengene og helsepersonellet trekkes bort fra de offentlige sykehusene, og at det gir et todelt helsevesen.",
       "pastand": "Staten bør bruke private sykehus og klinikker mer for å korte ned helsekøene.",
-      "partier": { "A": -2, "FrP": 2, "H": 2, "SV": -2, "Sp": -1, "R": -2, "MDG": -1, "KrF": 1, "V": 1 },
-      "merk": { "A": "Avviklet ordningen med fritt behandlingsvalg i 2023.", "FrP": "Vil likestille offentlige og private sykehus.", "H": "Vil gjeninnføre fritt behandlingsvalg." },
+      "partier": {
+        "A": -2,
+        "FrP": 2,
+        "H": 2,
+        "SV": -2,
+        "Sp": -1,
+        "R": -2,
+        "MDG": -1,
+        "KrF": 1,
+        "V": 1
+      },
+      "merk": {
+        "A": "Avviklet ordningen med fritt behandlingsvalg i 2023.",
+        "FrP": "Vil likestille offentlige og private sykehus.",
+        "H": "Vil gjeninnføre fritt behandlingsvalg."
+      },
       "kilder": [
-        { "t": "Altinget: Høyres helseløfter og fritt behandlingsvalg", "u": "https://www.altinget.no/helse/artikkel/-ingenting-som-tyder-paa-at-vestre-klarer-aa-innfri-ventetidsloeftet" },
-        { "t": "Altinget: Frp foreslår drastisk utvidelse av fritt behandlingsvalg", "u": "https://www.altinget.no/eu/artikkel/frp-foreslaar-drastisk-utvidelse-av-fritt-behandlingsvalg" },
-        { "t": "Altinget: Kjerkol om fritt behandlingsvalg", "u": "https://www.altinget.no/lovebakken/artikkel/-for-hoeyre-er-det-viktigere-med-gode-loesninger-for-folk-enn-ideologi" }
+        {
+          "t": "Altinget: Høyres helseløfter og fritt behandlingsvalg",
+          "u": "https://www.altinget.no/helse/artikkel/-ingenting-som-tyder-paa-at-vestre-klarer-aa-innfri-ventetidsloeftet"
+        },
+        {
+          "t": "Altinget: Frp foreslår drastisk utvidelse av fritt behandlingsvalg",
+          "u": "https://www.altinget.no/eu/artikkel/frp-foreslaar-drastisk-utvidelse-av-fritt-behandlingsvalg"
+        },
+        {
+          "t": "Altinget: Kjerkol om fritt behandlingsvalg",
+          "u": "https://www.altinget.no/lovebakken/artikkel/-for-hoeyre-er-det-viktigere-med-gode-loesninger-for-folk-enn-ideologi"
+        }
       ],
       "sok": "sykehus|helse|pasient|behandlingsvalg|ventetid|fastlege"
     },
@@ -87,11 +214,29 @@
       "for": "Tilhengere sier familier bør kunne velge skole, og at mangfold gjør hele skolen bedre.",
       "mot": "Motstandere sier friskoler tar elever og penger fra den offentlige nærskolen, som må være for alle.",
       "pastand": "Det bør bli lettere å starte friskoler.",
-      "partier": { "A": -2, "FrP": 2, "H": 2, "SV": -2, "Sp": -1, "R": -2, "MDG": 0, "KrF": 2, "V": 2 },
-      "merk": { "Sp": "Vil at kommunen skal kunne si nei, men støtter friskoler der det ikke finnes offentlig tilbud." },
+      "partier": {
+        "A": -2,
+        "FrP": 2,
+        "H": 2,
+        "SV": -2,
+        "Sp": -1,
+        "R": -2,
+        "MDG": 0,
+        "KrF": 2,
+        "V": 2
+      },
+      "merk": {
+        "Sp": "Vil at kommunen skal kunne si nei, men støtter friskoler der det ikke finnes offentlig tilbud."
+      },
       "kilder": [
-        { "t": "Stortinget: Innst. 104 S (2025–2026) om privatskolelova", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2025-2026/inns-202526-104s/?m=2" },
-        { "t": "Stortinget: Innst. 351 S (2024–2025) om å styrke friskoler", "u": "https://www.stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2024-2025/inns-202425-351s/?m=1" }
+        {
+          "t": "Stortinget: Innst. 104 S (2025–2026) om privatskolelova",
+          "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2025-2026/inns-202526-104s/?m=2"
+        },
+        {
+          "t": "Stortinget: Innst. 351 S (2024–2025) om å styrke friskoler",
+          "u": "https://www.stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2024-2025/inns-202425-351s/?m=1"
+        }
       ],
       "sok": "friskole|privatskole|skole|elev"
     },
@@ -102,12 +247,34 @@
       "for": "De som vil kutte sier folk i distriktene og bedrifter er avhengige av bil og rammes hardt av høye priser.",
       "mot": "De som er imot sier kutt koster staten milliarder, gir mer utslipp og hjelper dem som kjører mest mest.",
       "pastand": "Avgiftene på bensin og diesel bør settes ned.",
-      "partier": { "A": -1, "FrP": 2, "H": 0, "SV": -2, "Sp": 2, "R": -1, "MDG": -2, "KrF": 1, "V": -2 },
-      "merk": { "H": "Fikk gjennom et midlertidig kutt våren 2026, men kaller det uansvarlig å fortsette.", "KrF": "Stemte for kuttet i 2026." },
+      "partier": {
+        "A": -1,
+        "FrP": 2,
+        "H": 0,
+        "SV": -2,
+        "Sp": 2,
+        "R": -1,
+        "MDG": -2,
+        "KrF": 1,
+        "V": -2
+      },
+      "merk": {
+        "H": "Fikk gjennom et midlertidig kutt våren 2026, men kaller det uansvarlig å fortsette.",
+        "KrF": "Stemte for kuttet i 2026."
+      },
       "kilder": [
-        { "t": "TU: Stortinget vedtok kutt i drivstoffavgiftene (H, Frp, KrF, Sp)", "u": "https://www.tu.no/nyhetsstudio/111182" },
-        { "t": "TU: Søreide holder døren lukket for videre kutt", "u": "https://www.tu.no/artikler/soreide-holder-doren-lukket-for-avgiftskutt-pa-drivstoff-uansvarlig/575522" },
-        { "t": "Altinget: MDG, SV og Rødt truet med å bryte budsjettavtalen", "u": "https://www.altinget.no/lovebakken/artikkel/drivstoff-drama-paa-stortinget-prisene-kan-paavirke-klimapolitikkens-legitimitet" }
+        {
+          "t": "TU: Stortinget vedtok kutt i drivstoffavgiftene (H, Frp, KrF, Sp)",
+          "u": "https://www.tu.no/nyhetsstudio/111182"
+        },
+        {
+          "t": "TU: Søreide holder døren lukket for videre kutt",
+          "u": "https://www.tu.no/artikler/soreide-holder-doren-lukket-for-avgiftskutt-pa-drivstoff-uansvarlig/575522"
+        },
+        {
+          "t": "Altinget: MDG, SV og Rødt truet med å bryte budsjettavtalen",
+          "u": "https://www.altinget.no/lovebakken/artikkel/drivstoff-drama-paa-stortinget-prisene-kan-paavirke-klimapolitikkens-legitimitet"
+        }
       ],
       "sok": "bensin|diesel|drivstoff|veibruksavgift|CO2-avgift"
     },
@@ -118,12 +285,35 @@
       "for": "Tilhengere sier Norge allerede følger EUs regler, og at vi bør få være med og bestemme – særlig i en usikker verden.",
       "mot": "Motstandere sier medlemskap gir bort selvråderett over fisk, landbruk og naturressurser, og at EØS eller en enda løsere avtale er bedre.",
       "pastand": "Norge bør bli medlem av EU.",
-      "partier": { "A": 0, "FrP": -2, "H": 2, "SV": -2, "Sp": -2, "R": -2, "MDG": 2, "KrF": -2, "V": 2 },
-      "merk": { "A": "Tar ikke stilling i programmet og skyver spørsmålet til et senere landsmøte.", "H": "Vil be regjeringen utrede fullt medlemskap.", "Sp": "Vil erstatte EØS med en handelsavtale." },
+      "partier": {
+        "A": 0,
+        "FrP": -2,
+        "H": 2,
+        "SV": -2,
+        "Sp": -2,
+        "R": -2,
+        "MDG": 2,
+        "KrF": -2,
+        "V": 2
+      },
+      "merk": {
+        "A": "Tar ikke stilling i programmet og skyver spørsmålet til et senere landsmøte.",
+        "H": "Vil be regjeringen utrede fullt medlemskap.",
+        "Sp": "Vil erstatte EØS med en handelsavtale."
+      },
       "kilder": [
-        { "t": "Altinget: Høyre, Venstre og MDG sier ja til EU", "u": "https://www.altinget.no/lovebakken/artikkel/stortingets-eu-trekloever-med-senterparti-glis-etter-eoes-rapport-droemmene-deres-er-knust" },
-        { "t": "Altinget: Ap sier verken ja eller nei", "u": "https://www.altinget.no/artikkel/valget-kan-faa-store-konsekvenser-for-bruken-av-handlingsrommet-i-eoes" },
-        { "t": "Nei til EU: Partienes syn på EU/EØS (2025)", "u": "https://neitileu.no/kampanjer/stortingsvalg-2025/_/attachment/inline/b913f053-f2d5-4df1-b723-48179636b4c0:f87a28c2f413c29ce0fd29a09ce4b4fe1a94ad20/Stortingspartienes%20standpunkt%20til%20EU-E%C3%98S%20NtEUs%20valgrapport%202025.pdf" }
+        {
+          "t": "Altinget: Høyre, Venstre og MDG sier ja til EU",
+          "u": "https://www.altinget.no/lovebakken/artikkel/stortingets-eu-trekloever-med-senterparti-glis-etter-eoes-rapport-droemmene-deres-er-knust"
+        },
+        {
+          "t": "Altinget: Ap sier verken ja eller nei",
+          "u": "https://www.altinget.no/artikkel/valget-kan-faa-store-konsekvenser-for-bruken-av-handlingsrommet-i-eoes"
+        },
+        {
+          "t": "Nei til EU: Partienes syn på EU/EØS (2025)",
+          "u": "https://neitileu.no/kampanjer/stortingsvalg-2025/_/attachment/inline/b913f053-f2d5-4df1-b723-48179636b4c0:f87a28c2f413c29ce0fd29a09ce4b4fe1a94ad20/Stortingspartienes%20standpunkt%20til%20EU-E%C3%98S%20NtEUs%20valgrapport%202025.pdf"
+        }
       ],
       "sok": "\\bEU\\b|EØS|europeisk"
     },
@@ -134,11 +324,29 @@
       "for": "De som vil avkriminalisere sier straff ødelegger liv og ikke virker, og at helsehjelp gir bedre resultater.",
       "mot": "De som er imot sier straff er et viktig signal til unge, og at politiet trenger verktøy for å stoppe rusbruk tidlig.",
       "pastand": "Bruk og besittelse av litt narkotika bør møtes med hjelp, ikke straff – for alle, ikke bare rusavhengige.",
-      "partier": { "A": 0, "FrP": -2, "H": 2, "SV": 2, "Sp": -2, "R": 2, "MDG": 2, "KrF": -2, "V": 2 },
-      "merk": { "A": "Vil ikke straffe rusavhengige, men vil beholde straff for andre. Var med på forliket i 2025." },
+      "partier": {
+        "A": 0,
+        "FrP": -2,
+        "H": 2,
+        "SV": 2,
+        "Sp": -2,
+        "R": 2,
+        "MDG": 2,
+        "KrF": -2,
+        "V": 2
+      },
+      "merk": {
+        "A": "Vil ikke straffe rusavhengige, men vil beholde straff for andre. Var med på forliket i 2025."
+      },
       "kilder": [
-        { "t": "Altinget: Hvem er for og mot avkriminalisering", "u": "https://www.altinget.no/lovebakken/artikkel/arbeiderpartiet-kan-ha-funnet-midtstreken-som-kan-skape-et-flertall-for-ny-rusreform" },
-        { "t": "Stortinget: Debatt om rusreform juni 2025", "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2024-2025/refs-202425-06-10/sak30" }
+        {
+          "t": "Altinget: Hvem er for og mot avkriminalisering",
+          "u": "https://www.altinget.no/lovebakken/artikkel/arbeiderpartiet-kan-ha-funnet-midtstreken-som-kan-skape-et-flertall-for-ny-rusreform"
+        },
+        {
+          "t": "Stortinget: Debatt om rusreform juni 2025",
+          "u": "https://stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Referater/Stortinget/2024-2025/refs-202425-06-10/sak30"
+        }
       ],
       "sok": "narkotika|rus"
     },
@@ -149,11 +357,31 @@
       "for": "Tilhengere sier kvinnen selv er best egnet til å ta valget, og at nesten alle som søkte etter uke 12 fikk ja uansett.",
       "mot": "Motstandere sier fosteret er et menneskeliv som fortjener vern, og at uke 18 er for sent.",
       "pastand": "Kvinner bør selv kunne bestemme abort til og med uke 18.",
-      "partier": { "A": 2, "FrP": -1, "H": 0, "SV": 2, "Sp": 0, "R": 2, "MDG": 2, "KrF": -2, "V": 2 },
-      "merk": { "H": "Representantene stemte fritt: 16 for, 20 mot.", "FrP": "Representantene stemte fritt: 6 for, 14 mot.", "Sp": "Representantene stemte fritt: 13 for, 14 mot." },
+      "partier": {
+        "A": 2,
+        "FrP": -1,
+        "H": 0,
+        "SV": 2,
+        "Sp": 0,
+        "R": 2,
+        "MDG": 2,
+        "KrF": -2,
+        "V": 2
+      },
+      "merk": {
+        "H": "Representantene stemte fritt: 16 for, 20 mot.",
+        "FrP": "Representantene stemte fritt: 6 for, 14 mot.",
+        "Sp": "Representantene stemte fritt: 13 for, 14 mot."
+      },
       "kilder": [
-        { "t": "Altinget: Slik stemte Stortinget om ny abortgrense", "u": "https://www.altinget.no/forsvar/artikkel/stor-oversikt-slik-stemte-stortinget-om-ny-abortgrense" },
-        { "t": "Stortinget: Lov om abort", "u": "https://www.stortinget.no/no/Saker-og-publikasjoner/Saker/Sak/?p=99661" }
+        {
+          "t": "Altinget: Slik stemte Stortinget om ny abortgrense",
+          "u": "https://www.altinget.no/forsvar/artikkel/stor-oversikt-slik-stemte-stortinget-om-ny-abortgrense"
+        },
+        {
+          "t": "Stortinget: Lov om abort",
+          "u": "https://www.stortinget.no/no/Saker-og-publikasjoner/Saker/Sak/?p=99661"
+        }
       ],
       "sok": "abort"
     },
@@ -164,12 +392,163 @@
       "for": "Tilhengere sier tennene er en del av kroppen, og at mange dropper tannlegen fordi det er for dyrt.",
       "mot": "De som er skeptiske sier en full reform koster titalls milliarder, og at pengene bør gå til dem som trenger det mest.",
       "pastand": "Staten bør betale for tannlegen slik som for annen helsehjelp.",
-      "partier": { "A": 1, "FrP": -1, "H": -1, "SV": 2, "Sp": 1, "R": 2, "MDG": 1, "KrF": 1, "V": -1 },
-      "merk": { "A": "Vil gradvis utvide det offentlige ansvaret.", "FrP": "Vil prioritere eldre og dem med dårlig råd.", "Sp": "Vil ha en ordning med egenandelstak.", "KrF": "Vil ha en ordning med egenandelstak." },
+      "partier": {
+        "A": 1,
+        "FrP": -1,
+        "H": -1,
+        "SV": 2,
+        "Sp": 1,
+        "R": 2,
+        "MDG": 1,
+        "KrF": 1,
+        "V": -1
+      },
+      "merk": {
+        "A": "Vil gradvis utvide det offentlige ansvaret.",
+        "FrP": "Vil prioritere eldre og dem med dårlig råd.",
+        "Sp": "Vil ha en ordning med egenandelstak.",
+        "KrF": "Vil ha en ordning med egenandelstak."
+      },
       "kilder": [
-        { "t": "Tannlegetidende: Partienes tannhelsepolitikk 2025–2029", "u": "https://www.tannlegetidende.no/asset/journal/2025/08/Tidende-2025-08-608-9.pdf" }
+        {
+          "t": "Tannlegetidende: Partienes tannhelsepolitikk 2025–2029",
+          "u": "https://www.tannlegetidende.no/asset/journal/2025/08/Tidende-2025-08-608-9.pdf"
+        }
       ],
       "sok": "tann"
+    },
+    {
+      "id": "kontantstotte",
+      "navn": "Kontantstøtte",
+      "sok": "kontantstøtte|ventestøtte|barnehage",
+      "kort": "Kontantstøtte er penger staten gir foreldre som har ettåringer hjemme i stedet for i barnehage. I dag gjelder den for barn fra 13 til og med 19 måneder.",
+      "for": "De som vil fjerne den sier barnehagen er bra for språk og læring, og at støtten holder særlig mødre og innvandrerkvinner utenfor jobb.",
+      "mot": "De som vil beholde den sier foreldre selv bør få velge, og at ikke alle ettåringer er klare for barnehage.",
+      "pastand": "Kontantstøtten bør fjernes og erstattes med en støtte bare for dem som venter på barnehageplass.",
+      "partier": {
+        "A": -1,
+        "FrP": -1,
+        "H": 2,
+        "SV": 2,
+        "Sp": -2,
+        "R": 2,
+        "MDG": -2,
+        "KrF": -2,
+        "V": 2
+      },
+      "merk": {
+        "A": "Beholder ordningen, men kortet ned perioden til 19 måneder i 2024. Vil heller ha løpende barnehageopptak.",
+        "FrP": "Vil beholde den, men bare for foreldre som har vært i jobb året før fødselen.",
+        "KrF": "Vil øke den og gi den til barnet fyller 2 år.",
+        "MDG": "Vil gi den til barnet fyller 2 år og øke den til 10 000 kroner i måneden.",
+        "H": "Vil erstatte den med en ventestøtte for dem som venter på barnehageplass."
+      },
+      "kilder": [
+        {
+          "t": "Babyverden: Dette mener partiene om familiepolitikk (2025)",
+          "u": "https://www.babyverden.no/babyverden-pluss/babyverden-pluss-foreldre/valg-2025-dette-mener-partiene-om-familiepolitikk/"
+        },
+        {
+          "t": "Stortinget: Innst. 126 S (2025–2026), forslag om kontantstøtte",
+          "u": "https://www.stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Innstillinger/Stortinget/2025-2026/inns-202526-126s/?m=3"
+        }
+      ]
+    },
+    {
+      "id": "lofoten",
+      "navn": "Lofoten og Vesterålen",
+      "sok": "Lofoten|Vesterålen|Senja|konsekvensutredning",
+      "kort": "Havet utenfor Lofoten, Vesterålen og Senja er stengt for oljeboring. Det er et av verdens viktigste gyteområder for torsk, men det kan også ligge mye olje og gass der.",
+      "for": "De som vil holde området stengt sier fiskeriene og naturen er for verdifulle til å risikere oljesøl, og at verden må bruke mindre olje.",
+      "mot": "De som vil åpne sier olje og gass gir jobber og inntekter i Nord-Norge, og at man i hvert fall bør utrede hva som ligger der.",
+      "pastand": "Havet utenfor Lofoten, Vesterålen og Senja bør holdes stengt for olje- og gassvirksomhet.",
+      "partier": {
+        "A": 2,
+        "FrP": -2,
+        "H": -2,
+        "SV": 2,
+        "Sp": 2,
+        "R": 2,
+        "MDG": 2,
+        "KrF": 2,
+        "V": 2
+      },
+      "merk": {
+        "H": "Vil starte en konsekvensutredning, som er første steg før en eventuell åpning."
+      },
+      "kilder": [
+        {
+          "t": "Naturvernforbundet: Partiguide 2025 (partienes egne svar)",
+          "u": "https://naturvernforbundet.no/content/uploads/2025/06/Partiguide_1-44.pdf"
+        },
+        {
+          "t": "Altinget: Høyre vil konsekvensutrede flere felt i nord",
+          "u": "https://www.altinget.no/statogstyring/artikkel/vil-konsekvensutrede-flere-felt-i-nord-og-er-positive-til-kjernekraft"
+        }
+      ]
+    },
+    {
+      "id": "elektrifisering",
+      "navn": "Strøm til oljeplattformer",
+      "sok": "elektrifisering|kraft fra land|Melkøya|sokkel",
+      "kort": "Mange oljeplattformer lager strømmen sin med gassturbiner som slipper ut mye CO₂. Elektrifisering betyr å legge kabler så de får strøm fra land i stedet.",
+      "for": "De som vil stanse det sier det bruker opp strøm vi trenger til industri og husholdninger, kan gi høyere strømpris, og krever ny vindkraft.",
+      "mot": "De som vil fortsette sier det er en av de raskeste måtene å kutte norske utslipp på, og at selskapene betaler for det selv.",
+      "pastand": "Vi bør slutte å legge strøm fra land ut til olje- og gassplattformene.",
+      "partier": {
+        "A": -2,
+        "FrP": 2,
+        "H": -2,
+        "SV": 2,
+        "Sp": 2,
+        "R": 2,
+        "MDG": 2,
+        "KrF": 2,
+        "V": -2
+      },
+      "merk": {
+        "H": "Vil fortsette, men kreve at selskapene bygger ut ny kraft selv for de siste prosjektene."
+      },
+      "kilder": [
+        {
+          "t": "Naturvernforbundet: Partiguide 2025 (partienes egne svar)",
+          "u": "https://naturvernforbundet.no/content/uploads/2025/06/Partiguide_1-44.pdf"
+        },
+        {
+          "t": "Altinget: Høyres programutkast om energi",
+          "u": "https://www.altinget.no/statogstyring/artikkel/vil-konsekvensutrede-flere-felt-i-nord-og-er-positive-til-kjernekraft"
+        }
+      ]
+    },
+    {
+      "id": "oppdrett",
+      "navn": "Lakseoppdrett",
+      "sok": "oppdrett|havbruk|lakselus|lukkede anlegg",
+      "kort": "Det meste av norsk laks vokser opp i åpne merder i sjøen. Lakselus og rømt oppdrettsfisk skader villaksen. Lukkede anlegg hindrer det, men er dyrere.",
+      "for": "De som vil kreve lukkede anlegg sier det er eneste måten å redde villaksen og stoppe forurensningen på.",
+      "mot": "De som er imot et krav sier det vil koste for mye, flytte jobber ut av kystsamfunnene og at teknologien ikke er klar for alt.",
+      "pastand": "Alt fiskeoppdrett bør skje i lukkede anlegg, uten rømming, lus og forurensning.",
+      "partier": {
+        "A": -2,
+        "FrP": 0,
+        "H": -2,
+        "SV": 2,
+        "Sp": -2,
+        "R": 2,
+        "MDG": 2,
+        "KrF": -2,
+        "V": 0
+      },
+      "merk": {
+        "V": "Svarte verken ja eller nei. Vil ha strengere miljøkrav.",
+        "FrP": "Svarte verken ja eller nei."
+      },
+      "kilder": [
+        {
+          "t": "Naturvernforbundet: Partiguide 2025 (partienes egne svar)",
+          "u": "https://naturvernforbundet.no/content/uploads/2025/06/Partiguide_1-44.pdf"
+        }
+      ]
     }
   ]
 }
