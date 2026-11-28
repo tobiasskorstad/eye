@@ -179,20 +179,29 @@
   </section>
 
   <section id="v-owners" class="view" hidden>
-    <h1>Eiere og innsidere</h1>
-    <p class="lede">Hvem flytter de store pengene på Oslo Børs? Styreledere, konsernsjefer og andre toppledere må melde alle sine handler, og investorer må melde når de eier mer enn 5, 10, 15, 20, 25, 33, 50, 67 eller 90 prosent av et selskap. Alt hentes fra Oslo Børs hver tredje time.</p>
+    <h1>Børs og eiere</h1>
+    <p class="lede">Hvem kjøper og selger på Oslo Børs? Toppledere og styremedlemmer må melde alle handler, og store eiere må melde når de passerer 5, 10, 15, 20, 25, 33, 50, 67 eller 90 prosent.</p>
     <div class="kpis" id="ok"></div>
-    <h2>Største handler fra toppledere og styremedlemmer</h2>
-    <p class="meta">Siste 60 dager, etter verdi. Verdien regnes ut fra antall og kurs i meldingen. Handler gjort av nærstående eller selskaper personen kontrollerer, står på personen som meldingen gjelder.</p>
-    <div class="tw"><table class="list" id="topTrades"><thead><tr><th>Dato</th><th>Hvem</th><th>Selskap</th><th class="n">Verdi, kr</th></tr></thead><tbody></tbody></table></div>
-    <h2>Innsidere som har handlet mest</h2>
-    <div class="tw"><table class="list" id="topPeople"><thead><tr><th>Navn</th><th>Rolle og selskap</th><th class="n">Handler</th><th class="n">Kjøpt for, kr</th><th class="n hide-s">Solgt for, kr</th></tr></thead><tbody></tbody></table></div>
-    <h2>De mest aktive storeierne</h2>
-    <div class="tw"><table class="list" id="topOwners"><thead><tr><th>Eier</th><th>Selskaper de har passert en grense i</th></tr></thead><tbody></tbody></table></div>
+    <div id="bourseDash"></div>
     <details class="card"><summary><b>Hvorfor ikke en liste over landets millionærer?</b></summary>
-      <p>Formue og inntekt for privatpersoner står i skattelistene, men loven forbyr å legge dem ut i søkbar form. Selv pressen får bare bruke dem til journalistikk, og kan ikke publisere hele lister. Du kan søke selv hos <a href="https://www.skatteetaten.no/skatt/skattelister/" rel="noopener">Skatteetaten</a> (søket ditt blir synlig for den du søker på). Maktkartet viser derfor bare det som er offentlig etter verdipapirloven: handler fra toppledere og store eierposter i børsselskaper.</p>
+      <p>Formue og inntekt for privatpersoner står i skattelistene, men loven forbyr å legge dem ut i søkbar form. Du kan søke selv hos <a href="https://www.skatteetaten.no/skatt/skattelister/" rel="noopener">Skatteetaten</a> (søket ditt blir synlig for den du søker på). Maktkartet viser derfor bare det som er offentlig etter verdipapirloven: handler fra toppledere og store eierposter i børsselskaper.</p>
     </details>
   </section>
+
+  <section id="v-listed" class="view" hidden>
+    <h1>Selskapene på børsen</h1>
+    <p class="lede">Aksjeselskaper på Oslo Børs, Euronext Expand og Euronext Growth. Klikk på et selskap for å se hva det gjør, regnskap, styre og ledelse, innsidehandler og store eiere.</p>
+    <div class="row">
+      <input id="lq" type="search" placeholder="Søk etter selskap, ticker eller bransje" aria-label="Søk i børsselskaper">
+      <select id="lm" aria-label="Marked"><option value="">Alle markeder</option><option>Oslo Børs</option><option>Euronext Expand</option><option>Euronext Growth</option></select>
+      <select id="ls" aria-label="Sorter"><option value="navn">A–Å</option><option value="inn">Størst omsetning</option><option value="ins">Mest innsidehandel</option></select>
+    </div>
+    <p class="meta" id="lk"></p>
+    <div class="tw"><table class="list" id="listTable"><thead><tr><th>Selskap</th><th class="hide-s">Marked</th><th class="n">Driftsinntekter</th><th class="n hide-s">Innsidehandler</th></tr></thead><tbody></tbody></table></div>
+    <p class="meta">Listen lages av meldingene selskapene sender til Oslo Børs. Driftsinntekter er fra siste årsregnskap i Regnskapsregisteret (bare norske selskaper).</p>
+  </section>
+
+  <section id="v-money" class="view" hidden></section>
 
   <section id="v-flagging" class="view" hidden>
     <h1>Store eiere</h1>

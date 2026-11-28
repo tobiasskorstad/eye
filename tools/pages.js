@@ -33,7 +33,10 @@ const cssName = `app.${hash(css).replace(/[^\w]/g, '')}.css`, jsName = `app.${ha
 await fs.writeFile(path.join(out, cssName), css);
 await fs.writeFile(path.join(out, jsName), js);
 await fs.writeFile(path.join(out, 'index.html'), html.replace('href="app.css"', `href="${cssName}"`).replace('src="app.js"', `src="${jsName}"`));
-await fs.writeFile(path.join(out, 'data.json'), JSON.stringify(data));
+// Store tilleggsdata lastes bare når de trengs: full biografi (åpnes på profilsider)
+const { bio = {}, ...lean } = data;
+await fs.writeFile(path.join(out, 'bio.json'), JSON.stringify(bio));
+await fs.writeFile(path.join(out, 'data.json'), JSON.stringify(lean));
 // Portretter lastet ned i bygget (data/img): publiseres sammen med siden, så de besøkende ikke kontakter tredjeparter.
 const imgDir = path.join(path.dirname(dataFile), 'img'), used = new Set(Object.values(data.profiler || {}).map(p => p.foto).filter(Boolean));
 await fs.mkdir(path.join(out, 'img'), { recursive: true });

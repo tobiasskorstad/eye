@@ -115,3 +115,21 @@ export function buildReps(list, bios, questions) {
   });
   return { reps, parti, kom };
 }
+
+/**
+ * Hele den offentlige biografien fra Stortinget i kompakt form: utdanning og yrke, verv i kommune, fylke, parti og
+ * organisasjoner, stortingsperioder, komitéverv og perioder i regjering. Foreldre og fødested tas ikke med.
+ */
+export function compactBio(b) {
+  if (!b) return null;
+  const yr = v => (Number(v) > 0 ? Number(v) : null);
+  const ms = v => { const m = /Date\((-?\d+)/.exec(String(v || '')); const t = m ? Number(m[1]) : NaN; return Number.isFinite(t) && t > -6e13 ? new Date(t).toISOString().slice(0, 10) : null; };
+  const t = s => String(s || '').replace(/\s+/g, ' ').trim();
+  const uy = (b.utdanning_yrke_kodet_liste || []).map(x => [String(x.type) === '10' ? 'u' : String(x.type) === '20' ? 'y' : 'a', t(x.navn), yr(x.fra_aar), yr(x.til_aar), t(x.merknad)]).filter(x => x[1]);
+  const verv = (b.verv_kodet_liste || []).map(x => [t(x.type), t(x.organisasjon), t(x.sted), t(x.verv), yr(x.fra_aar), yr(x.til_aar)]).filter(x => x[1] || x[3]);
+  const per = (b.stortingsperiode_kodet_liste || []).map(x => [t(x.stortingsperiode_id), t(x.parti_id), t(x.fylke), t(x.verv)]);
+  const kom = (b.stortingsverv_kodet_liste || []).map(x => [t(x.komite_navn), t(x.verv), yr(x.fra_aar), yr(x.til_aar), t(x.komite_type), t(x.stortingsperiode_id)]).filter(x => x[0]);
+  const regj = (b.permisjon_kodet_liste || []).filter(x => x.fravaer_grunn === 'REGJ').map(x => [ms(x.fra_dato), ms(x.til_dato)]);
+  const p = b.personalia_kodet || {};
+  return { uy, verv, per, kom, regj, ans: [p.ansiennitet_aar || 0, p.ansiennitet_dager || 0], lit: (b.litteratur_kodet_liste || []).length };
+}

@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, PARTIFIN_URL: `${base}/pf`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -66,7 +66,7 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.deepEqual(pub.innside.map(i => i.navn), ['Anders Opedal', 'Kari Testesen'], 'titler som «Primary Insider» vaskes bort');
   assert.equal(P['ins:anders-opedal'].fotoKilde, 'Wikimedia Commons');
   assert.match(P['ins:anders-opedal'].wiki.tekst, /næringslivsleder/, 'godtatt fordi hele artikkelen nevner selskapet');
-  assert.equal(pub.flagging.length, 1);
+  assert.equal(pub.flagging.length, 2);
   // tall i debatten: alle indikatorene, med kilde og sammenligning
   assert.equal(pub.tall.length, 8);
   const led = pub.tall.find(t => t.id === 'ledighet'), rente = pub.tall.find(t => t.id === 'rente');
@@ -77,6 +77,19 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.deepEqual([pub.regnskap['913054210'].aar, pub.regnskap['913054210'].inn, pub.regnskap['913054210'].forrige.inn], [2024, 4800000, 4100000]);
   assert.match(pub.aksjer.EQNR.om, /^Equinor is an international energy company/, 'selskapets egen beskrivelse samles per aksje');
   assert.ok(!pub.innside.some(i => 'om' in i), 'beskrivelsen lagres bare én gang per aksje');
+  // alle aksjeselskaper på børsen, også uten innsidehandel; obligasjonsutstedere (Nordic ABM) tas ikke med
+  assert.equal(pub.aksjer.YAR?.notert, true, 'Yara skal med selv uten nylige innsidehandler');
+  assert.equal(pub.aksjer.TVEKST?.marked, 'Euronext Growth');
+  assert.match(pub.aksjer.TVEKST.om, /^Testvekst AS develops software/);
+  assert.ok(!pub.aksjer.OBFIN, 'rene obligasjonsutstedere skal ikke med');
+  // penger til partiene: organisasjoner med navn, privatpersoner bare som sum
+  assert.equal(pub.partifin.partier.A.aar[2025].sum, 21050000);
+  assert.equal(pub.partifin.partier.A.aar[2025].privN, 1);
+  assert.deepEqual(pub.partifin.givere.map(g => g.navn), ['Landsorganisasjonen i Norge', 'Smite AS']);
+  assert.ok(!JSON.stringify(pub.partifin).includes('Ola Privat'), 'navn på private givere skal ikke publiseres');
+  // biografi og godtgjøring
+  assert.ok(Object.keys(pub.bio).length > 0 && Object.values(pub.bio).every(b => Array.isArray(b.uy) && Array.isArray(b.verv)));
+  assert.ok(pub.godtgjoring.representant > 1e6);
 });
 
 test('offentlige data: alt fra registrene, men ingen fødselsdatoer', async () => {
