@@ -3,6 +3,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { buildStatic } from './seo.js';
 
 const root = new URL('..', import.meta.url).pathname;
 const [dataFile = path.join(root, 'data/eye.json'), out = path.join(root, 'site')] = process.argv.slice(2);
@@ -32,9 +33,19 @@ const css = await fs.readFile(path.join(root, 'public/app.css')), js = await fs.
 const cssName = `app.${hash(css).replace(/[^\w]/g, '')}.css`, jsName = `app.${hash(js).replace(/[^\w]/g, '')}.js`;
 await fs.writeFile(path.join(out, cssName), css);
 await fs.writeFile(path.join(out, jsName), js);
-await fs.writeFile(path.join(out, 'index.html'), html.replace('href="app.css"', `href="${cssName}"`).replace('src="app.js"', `src="${jsName}"`));
+// Nettstedets faste adresse (til kanoniske lenker, sitemap og deling). Settes til eget domene senere.
+const SITE = (process.env.SITE_URL || 'https://tobiasskorstad.github.io/eye').replace(/\/$/, '');
+if (!/^https:\/\/[\w.-]+(\/[\w.-]+)*$/.test(SITE)) throw new Error('SITE_URL har feil format');
+await fs.writeFile(path.join(out, 'index.html'), html.replace('href="app.css"', `href="${cssName}"`).replace('src="app.js"', `src="${jsName}"`).replaceAll('%SITE%', SITE));
+const kontakt = JSON.parse(await fs.readFile(path.join(root, 'content/kontakt.json'), 'utf8').catch(() => '{}'));
+if (kontakt.epost && !/^[^@\s<>"]+@[\w.-]+\.[a-z]{2,}$/i.test(kontakt.epost)) throw new Error('kontakt.epost har feil format');
+const favicon = html.match(/<link rel="icon" href="([^"]+)"/)?.[1] || '';
+await fs.copyFile(path.join(root, 'public/og.png'), path.join(out, 'og.png')).catch(() => {});
+// Én vanlig HTML-side per politiker, parti, selskap og dommer, så søkemotorer finner dem og lenker kan deles
+const stat = await buildStatic({ data, out, site: SITE, csp: CSP, cssName, favicon, kontakt });
 // Store tilleggsdata lastes bare når de trengs: full biografi (åpnes på profilsider)
 const { bio = {}, dommere = null, oljefondet = null, ...lean } = data;
+lean.lenker = stat.lenker; lean.kontakt = kontakt; lean.site = SITE;
 // Oljefondet: hele investeringslisten i egen fil; data.json får bare nøkkeltallene
 await fs.writeFile(path.join(out, 'oljefondet.json'), JSON.stringify(oljefondet || {}));
 if (oljefondet) lean.oljefondet = { hentet: oljefondet.hentet, dato: oljefondet.beholdning?.dato, antall: oljefondet.beholdning?.antall, verdi: oljefondet.historikk?.verdi?.slice(-1)[0] || null, budsjett: oljefondet.budsjett };
@@ -46,7 +57,7 @@ const imgDir = path.join(path.dirname(dataFile), 'img'), used = new Set(Object.v
 await fs.mkdir(path.join(out, 'img'), { recursive: true });
 for (const f of await fs.readdir(imgDir).catch(() => [])) if (/^[a-z0-9-]{1,80}\.jpg$/.test(f) && used.has('img/' + f)) await fs.copyFile(path.join(imgDir, f), path.join(out, 'img', f));
 await fs.writeFile(path.join(out, '.nojekyll'), '');
-await fs.writeFile(path.join(out, 'robots.txt'), 'User-agent: *\nAllow: /\n');
+await fs.writeFile(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
 await fs.mkdir(path.join(out, '.well-known'), { recursive: true });
 await fs.writeFile(path.join(out, '.well-known/security.txt'), 'Contact: https://github.com/tobiasskorstad/eye/security/advisories/new\nPreferred-Languages: no, en\nExpires: 2027-12-31T23:00:00.000Z\n');
-console.log('skrev', out);
+console.log('skrev', out, `(${stat.antall} statiske sider)`);

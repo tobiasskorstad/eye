@@ -1,0 +1,10 @@
+{
+  "ansvarlig": null,
+  "epost": null,
+  "svartid": "Vi svarer innen en uke, og retter åpenbare feil samme dag som vi ser dem.",
+  "rettelser": [
+    { "d": "2026-11-28", "tekst": "Flaggemeldinger fra J.P. Morgan Securities PLC ble tolket med feil eiernavn. Tolkningen er rettet, og alle meldinger er lest på nytt." },
+    { "d": "2026-11-28", "tekst": "Landbaserte oppdrettsanlegg ble regnet med i rangeringen av de største oppdretterne i sjø. De vises nå for seg." },
+    { "d": "2026-11-28", "tekst": "Godtgjøringen for stortingsrepresentantene ble ikke vist for perioden 2025–2029 fordi periodene ble skrevet ulikt. Rettet." }
+  ]
+}

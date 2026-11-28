@@ -1,0 +1,27 @@
+name: Meld feil
+description: Noe på Maktkartet er feil, utdatert eller mangler
+title: "Feil: "
+labels: ["feil"]
+body:
+  - type: input
+    id: side
+    attributes:
+      label: Hvilken side?
+      description: Lim inn adressen til siden.
+    validations:
+      required: true
+  - type: textarea
+    id: feil
+    attributes:
+      label: Hva er feil?
+      description: Hva står det, og hva burde det stått?
+    validations:
+      required: true
+  - type: input
+    id: kilde
+    attributes:
+      label: Kilde
+      description: Lenke til et register, en børsmelding eller annen kilde som viser riktig opplysning (hvis du har).
+  - type: markdown
+    attributes:
+      value: "Gjelder det deg selv, og vil du ikke skrive offentlig? Bruk kontaktadressen på siden «Kilder og metode» i stedet. Ikke legg inn fødselsnummer eller andre sensitive opplysninger her."

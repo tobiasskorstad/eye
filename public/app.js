@@ -101,7 +101,7 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['home', 'questions', 'money', 'listed', 'short', 'sea', 'judges', 'judge', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om', 'fund', 'fundinv', 'fundex'];
+const VIEWS = ['home', 'questions', 'money', 'listed', 'short', 'sea', 'judges', 'judge', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om', 'fund', 'fundinv', 'fundex', 'ansvar'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['sporsmal', 'Spørsmål'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['partipenger', 'Penger til partiene'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
@@ -110,7 +110,7 @@ const SECTIONS = {
   of: [['oljefondet', 'Slik virker fondet'], ['fondinvesteringer', 'Investeringene'], ['fondutelukket', 'Utelukkede selskaper']],
   fa: [], om: [], du: [], ko: [], ov: [], rg: [],
 };
-const HASHVIEW = { oversikt: ['home', 'ov'], dommere: ['judges', 'do'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], short: ['short', 'ei'], havbruk: ['sea', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], oljefondet: ['fund', 'of'], fondinvesteringer: ['fundinv', 'of'], fondutelukket: ['fundex', 'of'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { oversikt: ['home', 'ov'], dommere: ['judges', 'do'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], short: ['short', 'ei'], havbruk: ['sea', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], oljefondet: ['fund', 'of'], fondinvesteringer: ['fundinv', 'of'], fondutelukket: ['fundex', 'of'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'], ansvar: ['ansvar', 'om'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -133,8 +133,28 @@ function route() {
   else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'borsselskaper'); }
   else if ((m = h.match(/^eier-([a-z0-9-]+)$/)) && owners.has(m[1])) { renderOwner(owners.get(m[1])); show('owner', 'ei', 'storeeiere'); }
   else if ((m = h.match(/^dommer-(\d+)$/))) { renderJudge(m[1]); show('judge', 'do', 'dommere'); }
-  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); if (v === 'judges') judgesView(); if (v.startsWith('fund')) fundView(v); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
+  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); if (v === 'judges') judgesView(); if (v.startsWith('fund')) fundView(v); if (v === 'ansvar') ansvarView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
   scrollTo(0, 0);
+  // «Meld feil» gjelder siden du står på
+  const here = shareUrl() || location.href;
+  $('meldFeil').href = `https://github.com/tobiasskorstad/eye/issues/new?template=feil.yml&title=${encodeURIComponent('Feil på ' + (document.querySelector('.view:not([hidden]) h1')?.textContent || 'Maktkartet'))}&side=${encodeURIComponent(here)}`;
+}
+/** Fast adresse til den statiske siden for det du ser på (for deling og søkemotorer). */
+function shareUrl(h = location.hash) { const p = D?.lenker?.[decodeURIComponent(h)]; return p ? `${D.site || location.origin + location.pathname.replace(/[^/]*$/, '')}/${p}`.replace(/([^:])\/\//g, '$1/') : null; }
+
+/* ---------- ansvar og retting ---------- */
+function ansvarView() {
+  const K = { ...(D.kontakt || {}) }; if (!/^[^@\s<>"]+@[\w.-]+\.[a-z]{2,}$/i.test(K.epost || '')) K.epost = null;
+  const meld = 'https://github.com/tobiasskorstad/eye/issues/new?template=feil.yml';
+  $('v-ansvar').innerHTML = `<h1>Ansvar og retting</h1><p class="lede">Maktkartet samler opplysninger fra offentlige registre. Mye av det tolkes automatisk, og da kan det bli feil. Vi vil heller rette en feil for mye enn en for lite.</p>
+  <section class="block"><div class="bh"><h2>Hvem står bak</h2></div><p>${K.ansvarlig ? `Ansvarlig for innholdet er <b>${esc(K.ansvarlig)}</b>.` : 'Maktkartet er et uavhengig prosjekt uten reklame, sporing eller bindinger til partier, selskaper eller organisasjoner.'} Koden er åpen, så alle kan se hvordan opplysningene hentes og vises.</p>
+  <p>${K.epost ? `Kontakt: <a href="mailto:${esc(K.epost)}">${esc(K.epost)}</a>` : `Kontakt: <a href="${meld}" rel="noopener">skjemaet for å melde feil</a>. En egen e-postadresse kommer.`}</p></section>
+  <section class="block"><div class="bh"><h2>Slik retter vi feil</h2></div><ul class="blist">
+    <li><b>Meld fra</b> med lenke til siden og gjerne en kilde. Bruk «Meld feil» nederst på hver side${K.epost ? ', eller send e-post hvis det gjelder deg selv og du ikke vil skrive offentlig' : ''}.</li>
+    <li><b>Feil hos oss</b> (feil tolkning, feil kobling mellom person og selskap, utdatert visning) retter vi og noterer i listen under. ${esc(K.svartid || '')}</li>
+    <li><b>Feil i selve registeret</b> må rettes av den som eier det, for eksempel Stortinget eller Brønnøysundregistrene. Vi viser alltid til kilden og sier fra til dem.</li>
+    <li><b>Gjelder det deg?</b> Du kan be om retting eller protestere mot at opplysninger om deg vises (personvernforordningen artikkel 16 og 21). Vi svarer innen en måned, og fjerner opplysninger som ikke har en klar offentlig interesse. Se også <a href="#personvern">personvern</a>.</li></ul></section>
+  <section class="block"><div class="bh"><h2>Rettelser</h2></div>${(K.rettelser || []).length ? `<ul class="feed">${K.rettelser.map(r => `<li><div class="grow">${esc(r.tekst)}<div class="meta">${date(r.d)}</div></div></li>`).join('')}</ul>` : '<p class="empty">Ingen rettelser ennå.</p>'}</section>`;
 }
 
 /* ---------- Stortinget ---------- */
@@ -185,8 +205,9 @@ const wikiBox = p => p.wiki ? `<div class="wiki"><p>${esc(p.wiki.tekst)}</p><div
 /** Toppen av en personside: bilde, navn, rolle, omtale. */
 function profileHead({ keys, navn, parti, kicker, sub, follow = '' }) {
   const p = prof(keys);
+  const su = shareUrl();
   return `<div class="profile"><div class="ph">${avatar(keys, navn, parti, 'l')}${credit(p)}</div>
-  <div class="pinfo"><div class="kicker">${kicker}</div><div class="hrow"><h1>${esc(navn)}</h1>${follow}</div>${sub ? `<div class="meta">${sub}</div>` : ''}${wikiBox(p)}</div></div>`;
+  <div class="pinfo"><div class="kicker">${kicker}</div><div class="hrow"><h1>${esc(navn)}</h1>${follow}</div>${sub ? `<div class="meta">${sub}</div>` : ''}${su ? `<a class="share" href="${url(su)}" title="Fast lenke som kan deles og finnes i søkemotorer">Lenke til denne siden</a>` : ''}${wikiBox(p)}</div></div>`;
 }
 /** Innholdsfortegnelse som hopper til seksjoner på siden (uten å endre adressen). */
 const toc = items => `<nav class="toc" aria-label="På denne siden">${items.filter(Boolean).map(([id, l]) => `<button type="button" data-jump="${esc(id)}">${l}</button>`).join('')}</nav>`;
