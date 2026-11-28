@@ -2,16 +2,17 @@
 <html lang="nb">
 <head>
 <meta charset="utf-8">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cellipse cx=%228%22 cy=%228%22 rx=%227%22 ry=%224.5%22 fill=%22none%22 stroke=%22%23111%22 stroke-width=%221.6%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%222%22 fill=%22%23111%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23ff7a1a%22/%3E%3Cpath d=%22M7 22.5 13 12l6 7 6-10%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0f1318">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EYE – Stortinget, penger og makt</title>
+<title>Maktkartet – makt og penger i Norge</title>
 <meta name="description" content="Hva stortingsrepresentantene eier, hvilke verv de har, hvilke aksjer de handler og hva de spør regjeringen om. Rett fra offentlige registre.">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 <header class="top">
   <div class="bar">
-    <a class="brand" href="#oversikt" aria-label="EYE, til forsiden"><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="14" ry="9" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="16" cy="16" r="4.5" fill="currentColor"/></svg>EYE</a>
+    <a class="brand" href="#oversikt" aria-label="Maktkartet, til forsiden"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M7 22.5 13 12l6 7 6-10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="22.5" r="2.4" fill="#fff"/><circle cx="13" cy="12" r="2.4" fill="#fff"/><circle cx="19" cy="19" r="2.4" fill="#fff"/><circle cx="25" cy="9" r="2.4" fill="#fff"/></svg>Maktkartet</a>
     <div class="search" role="search">
       <input id="gq" type="search" autocomplete="off" placeholder="Søk etter politiker, selskap eller orgnr" aria-label="Søk" aria-controls="gres" aria-expanded="false">
       <div id="gres" class="gres" hidden></div>
@@ -26,7 +27,7 @@
     <a href="#handler" data-s="pe">Politikernes penger</a>
     <a href="#eiere" data-s="ei">Børs og eiere</a>
     <a href="#faktasjekk" data-s="fa">Faktasjekk</a>
-    <a href="#forklart" data-s="du">Politikk for dummies</a>
+    <a href="#forklart" data-s="du">Politikk forklart</a>
     <a href="#om" data-s="om">Kilder</a>
   </nav>
   <nav aria-label="Undermeny" id="subnav" class="sub"></nav>
@@ -93,17 +94,11 @@
 
 
   <section id="v-dummies" class="view" hidden>
-    <h1>Politikk for dummies</h1>
-    <p class="lede" id="duLede"></p>
-    <div id="duBasics"></div>
-    <details class="glossary"><summary>Ord du bør kunne</summary><dl id="duWords"></dl></details>
-    <h2>1. Hva bryr du deg om?</h2>
-    <p class="meta">Trykk på sakene du vil se. Du kan velge så mange du vil.</p>
-    <div class="chips" id="duTopics"></div>
-    <div id="duCards"></div>
-    <div id="duResult"></div>
+    <h1>Politikk forklart</h1>
+    <p class="lede">De store sakene forklart enkelt, og hvor partiene står. Svar på det du vil. Alt regnes ut i nettleseren din, og ingenting lagres.</p>
+    <div class="tabs" role="tablist" id="duTabs"></div>
+    <div id="duPanel"></div>
     <div id="duSave"></div>
-    <div id="duMatrix"></div>
     <p class="meta" id="duMethod"></p>
   </section>
 
@@ -111,19 +106,19 @@
 
   <section id="v-personvern" class="view" hidden>
     <h1>Personvern</h1>
-    <p class="lede">EYE kan brukes uten konto. Lager du en konto, lagrer vi så lite som mulig, og du kan slette alt selv når som helst.</p>
+    <p class="lede">Maktkartet kan brukes uten konto. Lager du en konto, lagrer vi så lite som mulig, og du kan slette alt selv når som helst.</p>
     <h2>Hva vi lagrer</h2>
     <ul>
       <li><b>Innlogging:</b> e-postadressen og navnet du får fra Google eller Apple, og når du sist logget inn. Vi får aldri passordet ditt.</li>
       <li><b>Det du følger:</b> hvilke politikere, partier og selskaper du har trykket «Følg» på.</li>
       <li><b>Varsler:</b> om du vil ha e-post når noe nytt skjer.</li>
-      <li><b>Svar i Politikk for dummies:</b> bare hvis du selv krysser av for det. Svarene viser politiske meninger, som er særlig sensitive opplysninger etter personvernforordningen (artikkel 9). Derfor lagres de bare med ditt uttrykkelige samtykke, og de slettes med en gang du trekker samtykket.</li>
+      <li><b>Svar i Politikk forklart:</b> bare hvis du selv krysser av for det. Svarene viser politiske meninger, som er særlig sensitive opplysninger etter personvernforordningen (artikkel 9). Derfor lagres de bare med ditt uttrykkelige samtykke, og de slettes med en gang du trekker samtykket.</li>
     </ul>
     <h2>Hvorfor og hvor</h2>
-    <p>Grunnlaget er samtykket ditt (artikkel 6 nr. 1 a og artikkel 9 nr. 2 a). Dataene lagres hos Supabase i EU (Frankfurt). Vi selger ikke data, viser ikke reklame og bruker ingen sporing eller analyseverktøy. Svar i Politikk for dummies som ikke lagres, forlater aldri nettleseren din.</p>
+    <p>Grunnlaget er samtykket ditt (artikkel 6 nr. 1 a og artikkel 9 nr. 2 a). Dataene lagres hos Supabase i EU (Frankfurt). Vi selger ikke data, viser ikke reklame og bruker ingen sporing eller analyseverktøy. Svar i Politikk forklart som ikke lagres, forlater aldri nettleseren din.</p>
     <h2>Dine rettigheter</h2>
     <p>Under «Min side» kan du laste ned alle data om deg, trekke samtykke og slette kontoen. Sletting fjerner alt med en gang. Du kan også klage til Datatilsynet.</p>
-    <p class="meta">Behandlingsansvarlig er eieren av EYE. Kontakt via <a href="https://github.com/tobiasskorstad/eye/issues" rel="noopener">GitHub</a>.</p>
+    <p class="meta">Behandlingsansvarlig er eieren av Maktkartet. Kontakt via <a href="https://github.com/tobiasskorstad/eye/issues" rel="noopener">GitHub</a>.</p>
   </section>
 
   <section id="v-votes" class="view" hidden>
@@ -163,7 +158,7 @@
 
   <section id="v-facts" class="view" hidden>
     <h1>Faktasjekk</h1>
-    <p class="lede">Sjekk påstander mot offisielle tall, og les faktasjekkene fra Faktisk.no. EYE feller ingen dom selv: vi viser tallene, utviklingen og kilden.</p>
+    <p class="lede">Sjekk påstander mot offisielle tall, og les faktasjekkene fra Faktisk.no. Maktkartet feller ingen dom selv: vi viser tallene, utviklingen og kilden.</p>
     <nav class="toc" aria-label="På denne siden"><button type="button" data-jump="f-tall">Tall i debatten</button><button type="button" data-jump="f-sjekk">Faktasjekker</button><button type="button" data-jump="f-selv">Sjekk selv</button></nav>
     <section class="block" id="f-tall"><div class="bh"><h2>Tall i debatten</h2><span class="meta" id="tallOppd"></span></div>
       <p class="meta">De mest omstridte tallene i politikken, rett fra SSB og Norges Bank. Oppdateres automatisk. Trykk på et tall for å gå til kilden.</p>
@@ -194,7 +189,7 @@
     <h2>De mest aktive storeierne</h2>
     <div class="tw"><table class="list" id="topOwners"><thead><tr><th>Eier</th><th>Selskaper de har passert en grense i</th></tr></thead><tbody></tbody></table></div>
     <details class="card"><summary><b>Hvorfor ikke en liste over landets millionærer?</b></summary>
-      <p>Formue og inntekt for privatpersoner står i skattelistene, men loven forbyr å legge dem ut i søkbar form. Selv pressen får bare bruke dem til journalistikk, og kan ikke publisere hele lister. Du kan søke selv hos <a href="https://www.skatteetaten.no/skatt/skattelister/" rel="noopener">Skatteetaten</a> (søket ditt blir synlig for den du søker på). EYE viser derfor bare det som er offentlig etter verdipapirloven: handler fra toppledere og store eierposter i børsselskaper.</p>
+      <p>Formue og inntekt for privatpersoner står i skattelistene, men loven forbyr å legge dem ut i søkbar form. Selv pressen får bare bruke dem til journalistikk, og kan ikke publisere hele lister. Du kan søke selv hos <a href="https://www.skatteetaten.no/skatt/skattelister/" rel="noopener">Skatteetaten</a> (søket ditt blir synlig for den du søker på). Maktkartet viser derfor bare det som er offentlig etter verdipapirloven: handler fra toppledere og store eierposter i børsselskaper.</p>
     </details>
   </section>
 
@@ -236,7 +231,7 @@
     <details class="card"><summary><b>Hvem er politisk eksponerte personer, og hvem mangler her?</b></summary>
       <p>Hvem som er PEP i Norge, står i <a href="https://www.regjeringen.no/no/dokumenter/forskrift-om-stillinger-og-funksjoner-som-medforer-status-som-politisk-eksponert-person/id3173733/" rel="noopener">forskriften fra Finansdepartementet (1. oktober 2026)</a>. Her er bare de gruppene som har et offentlig register over aksjer:</p>
       <ul><li><b>Med:</b> stortingsrepresentanter, statsministeren og statsrådene, statssekretærer (og politiske rådgivere, som står i samme register, men ikke er PEP).</li>
-      <li><b>Ikke med ennå:</b> dommere i Høyesterett og Arbeidsretten har et eget register over sidegjøremål og aksjeposter over 200 000 kroner, men det er ikke koblet til EYE ennå.</li>
+      <li><b>Ikke med ennå:</b> dommere i Høyesterett og Arbeidsretten har et eget register over sidegjøremål og aksjeposter over 200 000 kroner, men det er ikke koblet til Maktkartet ennå.</li>
       <li><b>Ingen offentlige aksjeopplysninger:</b> partienes sentralstyrer, ambassadører, toppledere i departementene, Forsvaret, Norges Bank, tilsyn, direktorater og statlige foretak. Familiemedlemmer og nære medarbeidere tas ikke med; de er privatpersoner.</li></ul>
     </details>
   </section>
@@ -283,7 +278,7 @@
   <section id="v-om" class="view" hidden></section>
 </main>
 
-<footer><div class="fwrap"><div><b class="fbrand">EYE</b><p id="foot"></p></div><nav aria-label="Bunnmeny" class="flinks"><a href="#om">Kilder og metode</a><a href="#personvern">Personvern</a><a href="https://github.com/tobiasskorstad/eye/issues" rel="noopener">Meld feil</a><a href="https://github.com/tobiasskorstad/eye" rel="noopener">Kildekode</a></nav></div></footer>
+<footer><div class="fwrap"><div><b class="fbrand">Maktkartet</b><p id="foot"></p></div><nav aria-label="Bunnmeny" class="flinks"><a href="#om">Kilder og metode</a><a href="#personvern">Personvern</a><a href="https://github.com/tobiasskorstad/eye/issues" rel="noopener">Meld feil</a><a href="https://github.com/tobiasskorstad/eye" rel="noopener">Kildekode</a></nav></div></footer>
 <script src="app.js"></script>
 </body>
 </html>

@@ -28,6 +28,6 @@ Knappen vises automatisk når Apple er slått på i Supabase.
 ## 4. E-postvarsler (valgfritt)
 Krever eget domene (f.eks. eye.no) verifisert hos https://resend.com.
 - Secrets: `SUPABASE_SECRET_KEY` (Supabase secret key), `RESEND_API_KEY`
-- Variable: `EPOST_FRA` (f.eks. `EYE <varsler@eye.no>`)
+- Variable: `EPOST_FRA` (f.eks. `Maktkartet <varsler@maktkartet.no>`)
 
 Uten dette fungerer «Følg» og «Nytt siden sist» på Min side, men det sendes ingen e-post.

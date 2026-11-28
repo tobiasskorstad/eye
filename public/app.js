@@ -1,4 +1,4 @@
-// EYE – ingen rammeverk. All tekst fra data går gjennom esc(), alle lenker gjennom url().
+// Maktkartet – ingen rammeverk. All tekst fra data går gjennom esc(), alle lenker gjennom url().
 'use strict';
 const COL = { R: '#8a1020', SV: '#d6336c', MDG: '#58a72a', A: '#e1202d', Sp: '#0f7a3c', KrF: '#e0a800', V: '#0b8f86', H: '#1d6ee0', FrP: '#0a2c66' };
 const ORDER = ['R', 'SV', 'MDG', 'A', 'Sp', 'KrF', 'V', 'H', 'FrP'];
@@ -130,7 +130,7 @@ function route() {
   else if ((m = h.match(/^person-([a-z0-9-]+)$/)) && insiders.has(m[1])) { renderPerson(insiders.get(m[1])); show('person', 'ei', 'eiere'); }
   else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'eiere'); }
   else if ((m = h.match(/^eier-([a-z0-9-]+)$/)) && owners.has(m[1])) { renderOwner(owners.get(m[1])); show('owner', 'ei', 'storeeiere'); }
-  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'EYE – Stortinget, penger og makt'; }
+  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
   scrollTo(0, 0);
 }
 
@@ -228,7 +228,7 @@ function tradeSummary(list) {
 const tradeBlock = list => {
   const sum = tradeSummary(list);
   return `<div class="tw"><table><thead><tr><th>Selskap</th><th class="n">Handler</th><th class="n hide-s">Kjøpt</th><th class="n hide-s">Solgt</th><th class="n">Netto aksjer</th><th class="n hide-s">Sist</th></tr></thead><tbody>${sum.map(g => { const net = g.kjop - g.salg; return `<tr><td><b>${stockLink(g.sel)}</b></td><td class="n">${g.n}</td><td class="n hide-s">${g.kjop ? nf(g.kjop) : '–'}</td><td class="n hide-s">${g.salg ? nf(g.salg) : '–'}</td><td class="n"><b class="${net > 0 ? 'pos' : net < 0 ? 'neg' : ''}">${net > 0 ? '+' : ''}${nf(net)}</b></td><td class="n hide-s">${sdate(g.d)}</td></tr>`; }).join('')}</tbody></table></div>
-  <p class="meta">Netto = kjøpt minus solgt i perioden EYE har data for. Det er ikke nødvendigvis hele beholdningen; den står i interesseregisteret.</p>
+  <p class="meta">Netto = kjøpt minus solgt i perioden Maktkartet har data for. Det er ikke nødvendigvis hele beholdningen; den står i interesseregisteret.</p>
   ${list.length > 5 ? `<details class="more"><summary>Vis alle ${list.length} handler</summary>${tradeTable(list)}</details>` : tradeTable(list)}`;
 };
 
@@ -265,7 +265,7 @@ function renderRep(r) {
   ${sec('s-reg', 'Interesseregisteret', `${rg.ingen ? '<p>Har ingen registreringspliktige interesser.</p>' : paras.length ? `<dl class="facts reg">${paras.map(k => `<dt>§ ${k} ${PARA[k] || ''}</dt><dd>${esc(rg[k])}</dd>`).join('')}</dl>` : `<p class="empty">Ingen oppføringer.</p>`}
   <p class="meta">Ordrett fra Stortingets register, ajourført ${date(D.regDato, true)}.</p>`)}
   ${sec('s-lenker', 'Kilder', `<div class="links"><a href="https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representant/?perid=${encodeURIComponent(r.id)}">Stortingets side</a>${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}${prof(['rep:' + r.id]).wiki ? `<a href="${url(prof(['rep:' + r.id]).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
-  document.title = `${r.navn} – EYE`;
+  document.title = `${r.navn} – Maktkartet`;
 }
 const tradeTable = list => `<div class="tw"><table class="trades"><thead><tr><th>Dato</th><th>Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead><tbody>${list.map(t => `<tr><td class="d">${sdate(t.d)}</td><td>${trade(t.k)}</td><td>${stockLink(t.sel)}</td><td class="n hide-s">${nf(t.ant)}</td><td class="n">${nf(t.ver)}</td></tr>`).join('')}</tbody></table></div>`;
 
@@ -293,7 +293,7 @@ function renderMinister(g) {
   ${g.trades.length ? sec('s-tr', 'Aksjehandler', tradeBlock(g.trades)) : ''}
   ${sec('s-reg', 'Interesseregisteret', !reg ? '<p class="empty">Står ikke i registeret ennå.</p>' : reg.ingen ? '<p>Har ingen registreringspliktige interesser.</p>' : paras.length ? `<dl class="facts reg">${paras.map(k => `<dt>§ ${k} ${PARA[k] || ''}</dt><dd>${esc(reg[k])}</dd>`).join('')}</dl><p class="meta">Ordrett fra regjeringsdelen av Stortingets register, ajourført ${date(D.regDato, true)}.</p>` : '<p class="empty">Ingen oppføringer.</p>')}
   ${sec('s-lenker', 'Kilder', `<div class="links">${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}<a href="https://www.regjeringen.no/no/om-regjeringa/" rel="noopener">Regjeringen.no</a>${prof(govKeys(g)).wiki ? `<a href="${url(prof(govKeys(g)).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
-  document.title = `${g.navn} – EYE`;
+  document.title = `${g.navn} – Maktkartet`;
 }
 
 /* ---------- personsider for innsidere ---------- */
@@ -307,7 +307,7 @@ function renderPerson(x) {
   <div id="pBrreg"></div>
   ${sec('s-tr', 'Meldte handler', `<div class="tw"><table><thead><tr><th>Dato</th><th>Selskap</th><th>Melding</th><th class="n">Verdi, kr</th></tr></thead><tbody>${x.list.map(i => `<tr><td class="d">${sdate(i.d)}</td><td><b>${stocks.has(slug(i.tick || i.sel)) ? `<a href="#aksje-${slug(i.tick || i.sel)}">${esc(i.sel)}</a>` : esc(i.sel)}</b><div class="meta">${ITYPE[i.k] || '–'}</div></td><td>${esc(i.tekst || i.tittel)} <a href="${url(i.u)}" rel="noopener">Les meldingen</a></td><td class="n">${money(i)}</td></tr>`).join('')}</tbody></table></div>
   <p class="meta">Handler gjort av nærstående eller selskaper personen kontrollerer, står på personen som meldingen gjelder. Navn og beløp leses automatisk ut av meldingen og kan være feil – sjekk alltid meldingen.</p>`)}`;
-  document.title = `${x.navn} – EYE`;
+  document.title = `${x.navn} – Maktkartet`;
   personBrreg(x);
 }
 /** Selskapene personen er innsider i, slått opp live i Enhetsregisteret: fakta + om rollen er registrert der. */
@@ -378,7 +378,7 @@ function renderStock(st) {
   ${D.aksjer?.[st.tick || st.navn]?.nr ? finBlock(D.aksjer[st.tick || st.navn].nr, 'a-fin') : ''}
   <div id="aBrreg"></div>
   ${sec('a-kilder', 'Kilder', `<div class="links">${[...L, ...F].slice(0, 1).map(x => `<a href="${url(x.u)}" rel="noopener">Siste børsmelding (NewsWeb)</a>`).join('')}</div><p class="meta">Innsidehandler og flaggemeldinger fra Oslo Børs NewsWeb. Navn, beløp og andeler leses automatisk ut av meldingsteksten og kan være feil – sjekk alltid meldingen.</p>`)}`;
-  document.title = `${st.navn} – EYE`;
+  document.title = `${st.navn} – Maktkartet`;
   stockBrreg(st);
 }
 /** Norske selskaper: slå opp i Enhetsregisteret live (bransje, ansatte, kommune, styre og ledelse). */
@@ -402,7 +402,7 @@ function renderOwner(o) {
   <div class="kpis"><div><b>${latest.length}</b><span>selskaper</span></div><div><b>${list.length}</b><span>flaggemeldinger, 90 dager</span></div><div><b>${list.filter(f => f.retning === 'opp').length} / ${list.filter(f => f.retning === 'ned').length}</b><span>økte / reduserte</span></div></div>
   ${sec('o-sel', 'Eierandeler', `<div class="tw"><table><thead><tr><th>Selskap</th><th class="n">Siste andel</th><th>Endring</th><th class="n">Dato</th></tr></thead><tbody>${latest.map(f => { const st = stocks.get(slug(f.tick || f.sel)); return `<tr${st ? ` data-go="aksje-${st.k}"` : ''}><td>${st ? `<a href="#aksje-${st.k}">${esc(f.sel)}</a>` : esc(f.sel)}</td><td class="n"><b>${pct(f.pst)}</b></td><td>${arrow(f.retning) || '–'}</td><td class="n">${sdate(f.d)}</td></tr>`; }).join('')}</tbody></table></div>`)}
   ${sec('o-all', 'Alle meldinger', `<ul class="feed">${list.map(f => `<li><div class="grow">${esc(f.tekst || f.tittel)} <a href="${url(f.u)}" rel="noopener">Les meldingen</a><div class="meta">${esc(f.sel)} · ${sdate(f.d)}</div></div></li>`).join('')}</ul><p class="meta">Store banker som Goldman Sachs og J.P. Morgan flagger ofte fordi de holder aksjer for kunder eller i forbindelse med utlån, ikke nødvendigvis som langsiktige eiere.</p>`)}`;
-  document.title = `${o.navn} – EYE`;
+  document.title = `${o.navn} – Maktkartet`;
 }
 
 const insiderLink = n => n && insiders.has(slug(n)) ? `<a href="#person-${slug(n)}">${esc(n)}</a>` : esc(n || '–');
@@ -411,7 +411,7 @@ const insiderLink = n => n && insiders.has(slug(n)) ? `<a href="#person-${slug(n
 const cut = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n).replace(/\s\S*$/, '') + ' …' : t; };
 function homeView() {
   const L = D.innside || [], fk = D.faktasjekk?.sjekker || [];
-  $('homeLede').textContent = `EYE samler det som står i offentlige registre om Stortinget, regjeringen og de største pengene på Oslo Børs, og lenker alltid til kilden. Oppdatert ${date(D.hentet, true)}.`;
+  $('homeLede').textContent = `Maktkartet samler det som står i offentlige registre om Stortinget, regjeringen og de største pengene på Oslo Børs, og lenker alltid til kilden. Oppdatert ${date(D.hentet, true)}.`;
   $('homeKpis').innerHTML = `<a href="#stortinget"><b>${reps.length}</b><span>stortingsrepresentanter</span></a><a href="#regjeringen"><b>${govs.length}</b><span>statsråder</span></a><a href="#handler"><b>${trades.length}</b><span>aksjehandler fra politikere</span></a><a href="#aksjeposter"><b>${holdings.length}</b><span>aksjeposter hos politisk eksponerte</span></a><a href="#innside"><b>${L.length}</b><span>innsidehandler siste 60 dager</span></a>`;
   const gl = [...govs].sort((a, b) => govRank(a.tittel) - govRank(b.tittel) || a.tittel.localeCompare(b.tittel, 'nb'));
   $('homeGov').innerHTML = gl.length ? sec('h-gov', 'Regjeringen', `<div class="strip">${gl.slice(0, 8).map(g => `<a href="#statsrad-${hid(g.id)}" title="${esc(g.navn)}, ${esc(g.tittel)}">${avatar(govKeys(g), g.navn, g.parti, 'm')}<b>${esc(g.navn)}</b><span>${esc(g.tittel)}</span></a>`).join('')}</div>`, `<a href="#regjeringen">Alle ${gl.length} →</a>`) : '';
@@ -508,7 +508,7 @@ function renderParty(p) {
   <h2 id="p-nyheter">Nyheter</h2>${newsList(x.nyheter)}
   ${auto.length ? `<h3>Siste fra nyhetsstrømmen</h3>${newsList(auto)}<p class="meta">Hentet automatisk hver natt. Bare overskrift og lenke vises.</p>` : ''}
   <h2 id="p-reps">Representantene</h2><div class="tw"><table class="list"><thead><tr><th>Representant</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead><tbody>${[...mine].sort((a, b) => b.q - a.q).map(r => `<tr data-go="rep-${r.h}"><td><div class="who">${avatar(['rep:' + r.id], r.navn, r.parti)}<div><a href="#rep-${r.h}">${esc(r.navn)}</a><div class="meta">${esc(r.fylke)}</div></div></div></td><td class="n">${num(r.q)}</td><td class="n">${r.cos.length}</td><td class="n">${r.trades.length}</td></tr>`).join('')}</tbody></table></div>`;
-  document.title = pname(p) + ' – EYE';
+  document.title = pname(p) + ' – Maktkartet';
 }
 
 
@@ -555,7 +555,7 @@ function omView() {
   const spm = reps.reduce((a, r) => a + num(r.q), 0), outlets = [...new Set(allNews().map(n => n.kilde))].sort((a, b) => a.localeCompare(b, 'nb'));
   const card = (navn, u, hva, mengde, ofte, lisens = '') => `<div class="src"><div class="src-h"><b>${esc(navn)}</b>${u ? `<a href="${url(u)}" rel="noopener">${esc(host(u))} ↗</a>` : ''}</div><p>${hva}</p><div class="src-m">${mengde ? `<span class="chip">${mengde}</span>` : ''}<span class="chip">${esc(ofte)}</span>${lisens ? `<span class="chip">${esc(lisens)}</span>` : ''}</div></div>`;
   const grp = (t, intro, cards) => `<section class="srcg"><h2>${t}</h2>${intro ? `<p class="meta">${intro}</p>` : ''}<div class="srcs">${cards.join('')}</div></section>`;
-  $('v-om').innerHTML = `<div class="hero"><h1>Kilder og metode</h1><p class="lede">Alt på EYE kommer fra offentlige kilder, og vi lenker alltid til originalen. Her ser du hvor hver opplysning kommer fra, hvor mye vi har hentet, og hvor ofte den oppdateres.</p></div>
+  $('v-om').innerHTML = `<div class="hero"><h1>Kilder og metode</h1><p class="lede">Alt på Maktkartet kommer fra offentlige kilder, og vi lenker alltid til originalen. Her ser du hvor hver opplysning kommer fra, hvor mye vi har hentet, og hvor ofte den oppdateres.</p></div>
   <div class="status"><span class="pulse" aria-hidden="true"></span><div><b>Sist oppdatert ${tid(D.hentet)}</b><div class="meta">Nettstedet bygges på nytt automatisk hver tredje time. Interesseregisteret er fra ${date(D.regDato, true)}.</div></div></div>
   ${D.warnings?.length ? `<details class="card warnbox"><summary><b>${D.warnings.length} ${D.warnings.length === 1 ? 'merknad' : 'merknader'} fra siste oppdatering</b> <span class="meta">– det som ikke kunne hentes, vises fra forrige versjon</span></summary><ul>${D.warnings.map(w => `<li>${warn(w)}</li>`).join('')}</ul></details>` : ''}
   ${grp('Politikerne', '', [
@@ -577,8 +577,8 @@ function omView() {
     card('Faktisk.no', 'https://www.faktisk.no/', 'Faktasjekker fra den uavhengige redaksjonen Faktisk.no.', `${nf(D.faktasjekk?.sjekker?.length || 0)} saker`, 'Hver tredje time'),
     card('Poll of polls', 'https://www.pollofpolls.no/', 'Gjennomsnitt av meningsmålingene for stortingsvalg.', '', 'Hver tredje time'),
   ])}
-  ${grp('Partier, løfter og Politikk for dummies', 'Dette er skrevet for hånd og gjennomgått på datoene som står under. Hvert standpunkt og hver status har egne kilder.', [
-    card('Partiprogrammer 2025–2029', '', 'Hva partiene står for, hvem som støtter og kritiserer dem, og partienes standpunkter i Politikk for dummies.', `${nf(D.dummies?.tema?.length || 0)} saker forklart`, D.dummies?.oppdatert ? 'Gjennomgått ' + date(D.dummies.oppdatert) : 'Manuelt'),
+  ${grp('Partier, løfter og Politikk forklart', 'Dette er skrevet for hånd og gjennomgått på datoene som står under. Hvert standpunkt og hver status har egne kilder.', [
+    card('Partiprogrammer 2025–2029', '', 'Hva partiene står for, hvem som støtter og kritiserer dem, og partienes standpunkter i Politikk forklart.', `${nf(D.dummies?.tema?.length || 0)} saker forklart`, D.dummies?.oppdatert ? 'Gjennomgått ' + date(D.dummies.oppdatert) : 'Manuelt'),
     card('Løfter og gjennomslag', '', 'Valgløfter fra 2025 sammenholdt med budsjetter, vedtak, SSB og nyheter.', '', D.lofter?.oppdatert ? 'Gjennomgått ' + date(D.lofter.oppdatert) : 'Manuelt'),
   ])}
   ${grp('Bilder og omtaler', '', [
@@ -643,38 +643,47 @@ function factsView() {
   $('factSelf').innerHTML = F.selv.map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a></li>`).join('');
 }
 
-/* ---------- politikk for dummies ---------- */
-// Svarene holdes bare i minnet. Ingenting lagres, sendes eller legges i adressen.
-const DU = { sel: new Set(), ans: {}, vik: {} };
+/* ---------- politikk forklart ---------- */
+// Svarene holdes bare i minnet. Ingenting lagres, sendes eller legges i adressen (med mindre brukeren selv samtykker på kontoen sin).
+const DU = { sel: new Set(), ans: {}, vik: {}, tab: 'test', i: 0 };
 const SCALE = [[-2, 'Helt uenig'], [-1, 'Litt uenig'], [0, 'Nøytral'], [1, 'Litt enig'], [2, 'Helt enig']];
 const SLABEL = Object.fromEntries(SCALE);
 const ABC = () => Object.keys(D.dummies?.tema[0]?.partier || {}).sort((a, b) => pname(a).localeCompare(pname(b), 'nb'));
+const DUTABS = [['test', 'Ta testen'], ['tabell', 'Partiene sak for sak'], ['storting', 'Slik styres Norge'], ['ord', 'Ordliste']];
 function dummiesView() {
-  const X = D.dummies; if (!X) { $('v-dummies').innerHTML = '<h1>Politikk for dummies</h1><p class="empty">Mangler innhold.</p>'; return; }
-  $('duLede').textContent = X.om;
+  const X = D.dummies; if (!X) { $('v-dummies').innerHTML = '<h1>Politikk forklart</h1><p class="empty">Mangler innhold.</p>'; return; }
+  $('duTabs').innerHTML = DUTABS.map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${DU.tab === k}">${l}</button>`).join('');
   $('duMethod').textContent = X.metode + ` Sist gjennomgått ${date(X.oppdatert, true)}.`;
-  duBasics(); duMatrix();
-  $('duWords').innerHTML = X.ordliste.map(o => `<dt>${esc(o.ord)}</dt><dd>${esc(o.forklaring)}</dd>`).join('');
-  $('duTopics').innerHTML = X.tema.map(t => `<button class="tbtn" data-t="${esc(t.id)}" aria-pressed="${DU.sel.has(t.id)}">${esc(t.navn)}</button>`).join('') + `<button class="tbtn" data-t="*">Alle</button>`;
-  const chosen = X.tema.filter(t => DU.sel.has(t.id));
-  $('duCards').innerHTML = chosen.length ? `<h2>2. Hva mener du?</h2><p class="meta" id="duProg"></p>` + chosen.map(t => duCard(t)).join('') : '<p class="empty">Velg minst én sak over.</p>';
-  duResult();
+  const p = $('duPanel');
+  if (DU.tab === 'tabell') p.innerHTML = duMatrix();
+  else if (DU.tab === 'storting') p.innerHTML = duBasics();
+  else if (DU.tab === 'ord') p.innerHTML = `<dl class="gloss">${X.ordliste.map(o => `<div><dt>${esc(o.ord)}</dt><dd>${esc(o.forklaring)}</dd></div>`).join('')}</dl>`;
+  else p.innerHTML = duTest();
+  duSaveBox();
 }
-function duCard(t) {
+function duTest() {
+  const T = D.dummies.tema, n = T.length, done = T.filter(t => DU.ans[t.id] != null).length;
+  const dots = `<div class="qdots" aria-label="Sakene">${T.map((t, i) => `<button data-go-q="${i}" class="${DU.ans[t.id] != null ? 'done' : ''}${i === DU.i ? ' cur' : ''}" title="${esc(t.navn)}" aria-label="Sak ${i + 1}: ${esc(t.navn)}"></button>`).join('')}</div>`;
+  const main = DU.i >= n ? duFinal() : duQuestion(T[DU.i], DU.i, n);
+  return `<div class="qwrap"><div class="qmain"><div class="qtop"><span>${DU.i >= n ? 'Resultat' : `Sak ${DU.i + 1} av ${n}`}</span><span class="meta">${done} besvart</span></div>${dots}${main}</div>
+  <aside class="qside" aria-label="Resultat så langt">${duMini()}</aside></div>`;
+}
+function duQuestion(t, i, n) {
   const votes = (S()?.voteringer || []).filter(v => new RegExp(t.sok, 'i').test(v.tittel + ' ' + v.tema)).slice(0, 3);
-  const byPos = SCALE.map(([v, l]) => `<div><b>${l}</b>${ABC().filter(p => t.partier[p] === v).map(p => `<span title="${esc(pname(p))}${t.merk?.[p] ? ': ' + esc(t.merk[p]) : ''}">${dot(p)}${esc(short(p))}</span>`).join('')}</div>`).join('');
-  return `<div class="du" id="du-${esc(t.id)}"><h3>${esc(t.navn)}</h3><p>${esc(t.kort)}</p>
-  <div class="two"><div><b>Argument for:</b> ${esc(t.for)}</div><div><b>Argument mot:</b> ${esc(t.mot)}</div></div>
-  <p class="claim">«${esc(t.pastand)}»</p>
+  const byPos = SCALE.map(([v, l]) => `<div><b>${l}</b>${ABC().filter(p => t.partier[p] === v).map(p => `<span title="${esc(pname(p))}${t.merk?.[p] ? ': ' + esc(t.merk[p]) : ''}">${dot(p)}${esc(short(p))}</span>`).join('') || '<span class="meta">–</span>'}</div>`).join('');
+  return `<article class="q" id="du-${esc(t.id)}"><h2>${esc(t.navn)}</h2><p class="qintro">${esc(t.kort)}</p>
+  <div class="pc2"><div><span class="lbl">For</span>${esc(t.for)}</div><div><span class="lbl">Mot</span>${esc(t.mot)}</div></div>
+  <p class="claim">${esc(t.pastand)}</p>
   <div class="seg" role="group" aria-label="Hva mener du">${SCALE.map(([v, l]) => `<button data-a="${esc(t.id)}" data-v="${v}" aria-pressed="${DU.ans[t.id] === v}">${l}</button>`).join('')}</div>
-  <label class="imp"><input type="checkbox" data-w="${esc(t.id)}" ${DU.vik[t.id] ? 'checked' : ''}> Dette er ekstra viktig for meg</label>
-  <details><summary>Hva partiene mener</summary><div class="scale">${byPos}</div>
-  <ul>${ABC().filter(p => t.merk?.[p]).map(p => `<li>${dot(p)}<b>${esc(pname(p))}:</b> ${esc(t.merk[p])}</li>`).join('')}</ul>
-  ${votes.length ? `<p><b>Slik har de stemt nylig</b> (hentes automatisk):</p><ul class="news">${votes.map(v => `<li>${esc(v.tittel)} – ${esc(v.tema)}<div class="meta">${sdate(v.d)} · ${v.vedtatt ? 'Vedtatt' : 'Forkastet'} ${num(v.for)}–${num(v.mot)}</div><div>${PORDER().filter(x => v.pos[x]).map(x => posCell(x, v.pos[x])).join('')}</div></li>`).join('')}</ul>` : ''}
-  <p class="meta">Kilder: ${srcLinks(t.kilder)}</p></details></div>`;
+  <div class="qnav"><label class="imp"><input type="checkbox" data-w="${esc(t.id)}" ${DU.vik[t.id] ? 'checked' : ''}> Ekstra viktig for meg</label>
+  <span class="qbtn">${i > 0 ? `<button class="ghost" data-go-q="${i - 1}">← Forrige</button>` : ''}<button class="ghost" data-go-q="${i + 1}">${DU.ans[t.id] != null ? 'Neste →' : 'Hopp over →'}</button></span></div>
+  <details class="qmore"><summary>Hva partiene mener</summary><div class="scale">${byPos}</div>
+  ${ABC().some(p => t.merk?.[p]) ? `<ul class="notes">${ABC().filter(p => t.merk?.[p]).map(p => `<li>${dot(p)}<b>${esc(short(p))}:</b> ${esc(t.merk[p])}</li>`).join('')}</ul>` : ''}
+  ${votes.length ? `<p class="lbl">Slik har de stemt nylig</p><ul class="news">${votes.map(v => `<li>${esc(v.tittel)} – ${esc(v.tema)}<div class="meta">${sdate(v.d)} · ${v.vedtatt ? 'Vedtatt' : 'Forkastet'} ${num(v.for)}–${num(v.mot)}</div><div>${PORDER().filter(x => v.pos[x]).map(x => posCell(x, v.pos[x])).join('')}</div></li>`).join('')}</ul>` : ''}
+  <p class="meta">Kilder: ${srcLinks(t.kilder)}</p></details></article>`;
 }
 function duScores() {
-  const X = D.dummies, done = X.tema.filter(t => DU.sel.has(t.id) && DU.ans[t.id] != null);
+  const X = D.dummies, done = X.tema.filter(t => DU.ans[t.id] != null);
   if (!done.length) return { done, list: [] };
   const list = ABC().map(p => {
     let s = 0, w = 0; const enig = [], uenig = [];
@@ -687,41 +696,44 @@ function duScores() {
   }).sort((a, b) => b.pct - a.pct || pname(a.p).localeCompare(pname(b.p), 'nb'));
   return { done, list };
 }
-// Norsk politikk på ett minutt: setefordeling og regjering regnes ut fra dataene, så teksten holder seg oppdatert.
+const PNICK = p => ({ SV: 'SV', MDG: 'MDG', KrF: 'KrF' })[p] || pname(p);
+const duRow = r => `<div class="rrow"><a href="#parti-${r.p}" title="${esc(pname(r.p))}">${dot(r.p)}${esc(PNICK(r.p))}</a><div class="dubar"><i style="width:${r.pct}%;background:${col(r.p)}"></i></div><b class="n">${r.pct} %</b></div>`;
+function duMini() {
+  const { done, list } = duScores();
+  if (!done.length) return `<p class="lbl">Ditt resultat</p><p class="meta">Svar på én eller flere saker, så ser du her hvilke partier som er mest enige med deg.</p>`;
+  return `<p class="lbl">Ditt resultat så langt</p><div class="mini">${list.map(duRow).join('')}</div><p class="meta">${done.length} ${done.length === 1 ? 'sak' : 'saker'} besvart. ${DU.i < D.dummies.tema.length ? `<button class="linkbtn" data-go-q="${D.dummies.tema.length}">Se hele resultatet</button>` : ''}</p>`;
+}
+function duFinal() {
+  const { done, list } = duScores();
+  if (!done.length) return `<div class="q"><h2>Du har ikke svart på noen saker ennå</h2><p><button class="btn" data-go-q="0">Start testen</button></p></div>`;
+  return `<div class="q"><h2>Disse partiene er mest enige med deg</h2><p class="meta">Basert på ${done.length} av ${D.dummies.tema.length} saker. Saker du merket som ekstra viktige teller dobbelt. Dette er ikke et råd om hva du bør stemme.</p>
+  <div class="final">${list.map(r => `${duRow(r)}<div class="meta why">${r.enig.length ? 'Enige om: ' + esc(r.enig.join(', ')) : ''}${r.enig.length && r.uenig.length ? ' · ' : ''}${r.uenig.length ? 'Uenige om: ' + esc(r.uenig.join(', ')) : ''}</div>`).join('')}</div>
+  <p class="qbtn"><button class="ghost" data-go-q="0">Endre svarene</button><button class="ghost" id="duReset">Start på nytt</button></p></div>`;
+}
+// Slik styres Norge: setefordeling og regjering regnes ut fra dataene, så teksten holder seg oppdatert.
 function duBasics() {
-  const n = reps.length; if (!n) { $('duBasics').innerHTML = ''; return; }
+  const n = reps.length; if (!n) return '<p class="empty">Mangler data.</p>';
   const seats = PORDER().map(p => [p, reps.filter(r => r.parti === p).length]).filter(x => x[1]);
   const flertall = Math.floor(n / 2) + 1, gp = [...new Set(govs.map(g => g.parti))].filter(Boolean);
   const gs = seats.filter(([p]) => gp.includes(p)).reduce((a, x) => a + x[1], 0);
   const sml = gp.length === 1 ? pname(gp[0]) + ' styrer alene' : gp.map(pname).join(', ') + ' styrer sammen';
-  $('duBasics').innerHTML = `<details class="card basics"><summary><b>Norsk politikk på ett minutt</b> <span class="meta">– hvem bestemmer hva?</span></summary>
-  <div class="seatbar" role="img" aria-label="Setefordeling på Stortinget">${seats.map(([p, k]) => `<i style="flex:${k};background:${col(p)}" title="${esc(pname(p))}: ${k}"></i>`).join('')}<b style="left:${(100 * flertall / n).toFixed(1)}%"></b></div>
+  return `<div class="basics"><div class="seatbar" role="img" aria-label="Setefordeling på Stortinget">${seats.map(([p, k]) => `<i style="flex:${k};background:${col(p)}" title="${esc(pname(p))}: ${k}"></i>`).join('')}<b style="left:${(100 * flertall / n).toFixed(1)}%"></b></div>
   <div class="meta seatleg">${seats.map(([p, k]) => `<a href="#parti-${esc(p)}">${dot(p)}${esc(short(p))} ${k}</a>`).join(' ')} · streken viser flertall (${flertall})</div>
   <ol class="steps">
-  <li><b>Du velger Stortinget.</b> Hvert fjerde år velger vi ${n} representanter. Et parti må ha over 4 % av stemmene for å få utjevningsmandater.</li>
-  <li><b>Stortinget gir og tar makt.</b> Det trengs ${flertall} stemmer for å vedta noe. Regjeringen kan bare sitte så lenge den ikke får flertallet mot seg.</li>
-  <li><b>Regjeringen styrer landet.</b> ${esc(sml)}${gs ? ` og har ${gs} av ${n} plasser` : ''}. ${gs && gs < flertall ? `Det er under ${flertall}, så regjeringen er en <i>mindretallsregjering</i> og må få med seg andre partier i hver sak.` : gs ? 'Det er flertall, så regjeringen kan få gjennom det meste selv.' : ''} <a href="#regjeringen">Se regjeringen</a>.</li>
-  <li><b>Pengene bestemmes i budsjettet.</b> Hver høst legger regjeringen fram statsbudsjettet. Det er her de fleste kompromissene inngås.</li>
-  <li><b>Lover blir til slik:</b> regjeringen eller representanter foreslår → en komité på Stortinget behandler saken → Stortinget stemmer. <a href="#voteringer">Se hvordan de har stemt</a>.</li></ol></details>`;
+  <li><b>Du velger Stortinget</b><span>Hvert fjerde år velger vi ${n} representanter. Et parti må ha over 4 % av stemmene for å få utjevningsmandater.</span></li>
+  <li><b>Flertallet bestemmer</b><span>Det trengs ${flertall} stemmer for å vedta noe. Regjeringen kan bare sitte så lenge flertallet ikke stemmer den ut.</span></li>
+  <li><b>Regjeringen styrer landet</b><span>${esc(sml)}${gs ? ` og har ${gs} av ${n} plasser` : ''}. ${gs && gs < flertall ? `Det er under ${flertall}, så det er en <i>mindretallsregjering</i> som må få med seg andre partier i hver sak.` : gs ? 'Det er flertall, så regjeringen kan få gjennom det meste selv.' : ''} <a href="#regjeringen">Se regjeringen</a></span></li>
+  <li><b>Pengene fordeles i budsjettet</b><span>Hver høst legger regjeringen fram statsbudsjettet. Det er her de fleste kompromissene inngås.</span></li>
+  <li><b>Slik blir en lov til</b><span>Regjeringen eller representanter foreslår, en komité behandler saken, og Stortinget stemmer. <a href="#voteringer">Se hvordan de har stemt</a></span></li></ol></div>`;
 }
 function duMatrix() {
   const X = D.dummies, ps = ABC(), lab = { '-2': 'Helt uenig', '-1': 'Litt uenig', 0: 'Nøytral', 1: 'Litt enig', 2: 'Helt enig' };
-  $('duMatrix').innerHTML = `<details class="card"><summary><b>Alle partiene på alle sakene</b> <span class="meta">– oversikt over påstandene</span></summary>
-  <div class="tw"><table class="list mx"><thead><tr><th>Påstand</th>${ps.map(p => `<th title="${esc(pname(p))}">${esc(short(p))}</th>`).join('')}</tr></thead><tbody>
-  ${X.tema.map(t => `<tr><td><b>${esc(t.navn)}</b><div class="meta">${esc(t.pastand)}</div></td>${ps.map(p => { const v = t.partier[p]; return `<td class="v v${v < 0 ? 'm' : ''}${Math.abs(v)}" title="${esc(pname(p))}: ${lab[v]}${t.merk?.[p] ? ' – ' + esc(t.merk[p]) : ''}">${v > 0 ? '+' + v : v < 0 ? '−' + -v : '0'}</td>`; }).join('')}</tr>`).join('')}
-  </tbody></table></div><p class="meta">+2 = helt enig, −2 = helt uenig i påstanden. Hold over en rute for forklaring. Kildene står under hver sak.</p></details>`;
+  return `<p class="meta">Hvor enig hvert parti er i påstanden. Grønt er enig, rødt er uenig. Hold over en rute for forklaring.</p>
+  <div class="tw"><table class="mx"><thead><tr><th>Sak</th>${ps.map(p => `<th title="${esc(pname(p))}">${dot(p)}${esc(short(p))}</th>`).join('')}</tr></thead><tbody>
+  ${X.tema.map((t, i) => `<tr><td><button class="linkbtn plain" data-go-q="${i}" data-tab="test">${esc(t.navn)}</button><div class="meta">${esc(t.pastand)}</div></td>${ps.map(p => { const v = t.partier[p]; return `<td class="v v${v < 0 ? 'm' : ''}${Math.abs(v)}" title="${esc(pname(p))}: ${lab[v]}${t.merk?.[p] ? ' – ' + esc(t.merk[p]) : ''}">${v > 0 ? '+' + v : v < 0 ? '−' + -v : '0'}</td>`; }).join('')}</tr>`).join('')}
+  </tbody></table></div>`;
 }
-function duResult() {
-  duSaveBox();
-  const { done, list } = duScores();
-  const sel = D.dummies.tema.filter(t => DU.sel.has(t.id)), left = sel.filter(t => DU.ans[t.id] == null);
-  if ($('duProg')) $('duProg').innerHTML = sel.length ? `Du har svart på ${sel.length - left.length} av ${sel.length}.${left.length ? ` <button class="linkbtn" data-next="${esc(left[0].id)}">Neste: ${esc(left[0].navn)} ↓</button>` : ' Se resultatet under.'}` : '';
-  $('duResult').innerHTML = done.length ? `<div class="dures"><h2>3. Disse partiene er mest enige med deg</h2>
-  <p class="meta">Basert på ${done.length} ${done.length === 1 ? 'sak' : 'saker'}. Jo flere saker du svarer på, jo mer treffsikkert. Dette er ikke et råd om hva du bør stemme.</p>
-  ${list.map(r => `<div class="row2"><a href="#parti-${r.p}">${dot(r.p)}${esc(pname(r.p))}</a><div class="dubar"><i style="width:${r.pct}%;background:${col(r.p)}"></i></div><b class="n">${r.pct} %</b></div>
-  <div class="meta" style="margin:-2px 0 8px">${r.enig.length ? 'Enige om: ' + esc(r.enig.join(', ')) : ''}${r.enig.length && r.uenig.length ? ' · ' : ''}${r.uenig.length ? 'Uenige om: ' + esc(r.uenig.join(', ')) : ''}</div>`).join('')}
-  <button class="filterbtn" id="duReset">Start på nytt</button></div>` : '';
-}
+function duResult() { if (DU.tab === 'test') { $('duPanel').innerHTML = duTest(); duSaveBox(); } }
 
 
 /* ---------- konto (Supabase, innlogging med Google/Apple) ---------- */
@@ -801,12 +813,12 @@ const followName = (type, ref) => type === 'rep' ? byId[ref]?.navn || ref : type
 const hashLink = h => /^#[\w-]*$/.test(h) ? h : '#';
 const followHref = (type, ref) => type === 'rep' ? `#rep-${byId[ref]?.h || ''}` : type === 'parti' ? `#parti-${ref}` : `#org-${ref}`;
 async function kontoView() {
-  const v = $('v-konto'); document.title = 'Min side – EYE';
+  const v = $('v-konto'); document.title = 'Min side – Maktkartet';
   if (!AUTH) { v.innerHTML = '<h1>Konto</h1><p class="empty">Brukerkontoer er ikke slått på ennå.</p>'; return; }
   const msg = KO.melding ? `<p class="card" role="status">${esc(KO.melding)}</p>` : ''; KO.melding = '';
   if (!KO.s) {
     if (!KO.prov) KO.prov = await fetch(AUTH.url + '/auth/v1/settings', { headers: { apikey: AUTH.key }, credentials: 'omit' }).then(r => r.json()).then(s => s.external || {}).catch(() => ({ google: true }));
-    v.innerHTML = `<h1>Logg inn</h1>${msg}<p class="lede">Med en konto kan du følge politikere, partier og selskaper og se hva som er nytt siden sist. Du kan også lagre svarene dine i Politikk for dummies, hvis du vil.</p>
+    v.innerHTML = `<h1>Logg inn</h1>${msg}<p class="lede">Med en konto kan du følge politikere, partier og selskaper og se hva som er nytt siden sist. Du kan også lagre svarene dine i Politikk forklart, hvis du vil.</p>
     <div class="login">${KO.prov.google ? '<button data-login="google">Fortsett med Google</button>' : ''}${KO.prov.apple ? '<button class="apple" data-login="apple">Fortsett med Apple</button>' : ''}${!KO.prov.google && !KO.prov.apple ? '<p class="empty">Ingen innloggingsmåter er slått på ennå.</p>' : ''}</div>
     <p class="meta">Vi får e-postadressen din fra Google eller Apple, aldri passordet. Les <a href="#personvern">personvernerklæringen</a>.</p>`;
     return;
@@ -817,7 +829,7 @@ async function kontoView() {
   <div class="card"><h2>Nytt siden sist</h2>${!mine.length ? '<p class="empty">Du følger ingenting ennå. Trykk «☆ Følg» på en politiker, et parti eller et selskap.</p>' : feed.length ? `<ul class="news">${feed.map(e => `<li class="${e.d > seen.slice(0, 10) ? 'new' : ''}"><a href="${e.lenke?.startsWith('#') ? hashLink(e.lenke) : url(e.lenke)}">${esc(e.tekst)}</a><div class="meta">${date(e.d)}</div></li>`).join('')}</ul>` : '<p class="empty">Ingenting nytt de siste 60 dagene.</p>'}</div>
   <div class="card"><h2>Du følger</h2>${mine.length ? `<ul>${mine.map(([t, r]) => `<li><a href="${hashLink(followHref(t, r))}">${esc(followName(t, r))}</a> <button class="filterbtn" data-f="${esc(t + ':' + r)}">Slutt å følge</button></li>`).join('')}</ul>` : '<p class="empty">Ingenting ennå.</p>'}
   <label class="imp"><input type="checkbox" id="koEpost" ${KO.profil?.epostvarsler ? 'checked' : ''}> Send meg e-post når det skjer noe nytt (maks én om dagen)</label></div>
-  <div class="card"><h2>Svar i Politikk for dummies</h2>${KO.profil?.samtykke_svar ? `<p>Du har gitt samtykke ${date(KO.profil.samtykke_svar.slice(0, 10))}. ${KO.svar?.length || 0} svar er lagret.</p><button class="danger" id="koTrekk">Trekk samtykke og slett svarene</button>` : '<p>Svarene dine lagres ikke. Du kan slå på lagring nederst i <a href="#forklart">Politikk for dummies</a>.</p>'}</div>
+  <div class="card"><h2>Svar i Politikk forklart</h2>${KO.profil?.samtykke_svar ? `<p>Du har gitt samtykke ${date(KO.profil.samtykke_svar.slice(0, 10))}. ${KO.svar?.length || 0} svar er lagret.</p><button class="danger" id="koTrekk">Trekk samtykke og slett svarene</button>` : '<p>Svarene dine lagres ikke. Du kan slå på lagring nederst i <a href="#forklart">Politikk forklart</a>.</p>'}</div>
   <div class="card"><h2>Dine data</h2><p><button class="filterbtn" id="koEksport">Last ned alt vi har om deg</button> <button class="filterbtn" id="koUt">Logg ut</button></p><p><button class="danger" id="koSlett">Slett kontoen min</button></p><p class="meta"><a href="#personvern">Personvern</a></p></div>`;
   if (KO.profil) api(`profiles?id=eq.${KO.s.user.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ sist_sett: new Date().toISOString() }) }).catch(() => { });
 }
@@ -858,7 +870,7 @@ function duSaveBox() {
   if (!AUTH) { box.innerHTML = ''; return; }
   box.innerHTML = !KO.s ? `<p class="meta">Vil du lagre svarene? <a href="#konto">Logg inn</a>. Uten konto forsvinner de når du lukker siden.</p>`
     : KO.profil?.samtykke_svar ? `<p class="meta">Svarene dine lagres på kontoen din. <a href="#konto">Endre på Min side</a>.</p>`
-    : `<div class="card"><label class="imp"><input type="checkbox" id="duConsent"> Jeg samtykker til at EYE lagrer svarene mine. Jeg forstår at de viser politiske meninger, og at jeg kan slette dem når som helst.</label></div>`;
+    : `<div class="card"><label class="imp"><input type="checkbox" id="duConsent"> Jeg samtykker til at Maktkartet lagrer svarene mine. Jeg forstår at de viser politiske meninger, og at jeg kan slette dem når som helst.</label></div>`;
 }
 
 /* ---------- aksjehandler ---------- */
@@ -946,7 +958,7 @@ const chg = (a, b) => a != null && b ? `<span class="${a >= b ? 'pos' : 'neg'}">
 /** Nøkkeltall fra siste årsregnskap, med endring fra året før. */
 function finBlock(nr, id = 'fin') {
   const r = RS(nr), n9 = String(nr || '').replace(/\D/g, '');
-  if (!r) return sec(id, 'Økonomi', `<p class="meta">Har ikke levert årsregnskap til Regnskapsregisteret, eller EYE har ikke hentet det. <a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${n9}" rel="noopener">Se hos Brønnøysundregistrene</a></p>`);
+  if (!r) return sec(id, 'Økonomi', `<p class="meta">Har ikke levert årsregnskap til Regnskapsregisteret, eller Maktkartet har ikke hentet det. <a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${n9}" rel="noopener">Se hos Brønnøysundregistrene</a></p>`);
   const f = r.forrige || {}, margin = r.inn ? Math.round(100 * r.drift / r.inn) : null, ekAndel = r.eiend ? Math.round(100 * r.ek / r.eiend) : null;
   return sec(id, `Økonomi ${r.aar}`, `<div class="kpis fin">
     <div><b>${money2(r.inn, r.valuta)}</b><span>driftsinntekter ${chg(r.inn, f.inn)}</span></div>
@@ -974,12 +986,12 @@ async function renderOrg(nr) {
   const v = $('v-org'), local = byNr[nr];
   const localPols = local ? local.ids.map(id => ({ id })) : [];
   v.innerHTML = local ? orgHtml(local, local.personer, localPols) : '<p class="loading">Henter fra Brønnøysund …</p>';
-  document.title = (local ? local.navn : 'Selskap') + ' – EYE';
+  document.title = (local ? local.navn : 'Selskap') + ' – Maktkartet';
   try {
     let e;
     if (SERVER) { const r = await fetch('/api/enhet/' + nr); e = await r.json(); if (!r.ok) throw new Error(e.feil); }
     else { e = await brEnhet(nr); if (!e) throw new Error('Fant ikke enheten i Brønnøysund'); }
-    if (location.hash.slice(1) === 'org-' + nr) { v.innerHTML = orgHtml(e, e.personer, e.politikere || []); document.title = e.navn + ' – EYE'; }
+    if (location.hash.slice(1) === 'org-' + nr) { v.innerHTML = orgHtml(e, e.personer, e.politikere || []); document.title = e.navn + ' – Maktkartet'; }
   } catch (err) { if (!local) v.innerHTML = `<a class="back" href="#selskaper">← Selskaper</a><p class="empty">${esc(err.message || 'Fant ikke selskapet')}</p>`; }
 }
 
@@ -1021,13 +1033,18 @@ function goLive() {
   [...new Set(allNews().map(n => n.kilde))].sort().forEach(s => $('ns').add(new Option(s, s)));
   homeView(); govView(); chamber(); repList(); tradesView(); cosView(); partiesView(); votesView(); agreeView(); promisesView(); newsView(); factsView(); dummiesView();
   $('v-dummies').addEventListener('click', e => {
-    const t = e.target.closest('[data-t]'), a = e.target.closest('[data-a]');
-    if (t) { const id = t.dataset.t; if (id === '*') D.dummies.tema.forEach(x => DU.sel.add(x.id)); else DU.sel.has(id) ? DU.sel.delete(id) : DU.sel.add(id); dummiesView(); }
-    else if (a) { DU.ans[a.dataset.a] = Number(a.dataset.v); for (const b of a.parentNode.children) b.setAttribute('aria-pressed', b === a); duResult(); duAutoSave(); }
-    else if (e.target.dataset.next) document.getElementById('du-' + e.target.dataset.next)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else if (e.target.id === 'duReset') { DU.sel.clear(); DU.ans = {}; DU.vik = {}; dummiesView(); scrollTo(0, 0); }
+    const tab = e.target.closest('[data-tab]'), go = e.target.closest('[data-go-q]'), a = e.target.closest('[data-a]');
+    const top = () => { const el = $('duTabs'); if (el.getBoundingClientRect().top < 0 || el.getBoundingClientRect().top > innerHeight * .6) el.scrollIntoView({ block: 'start' }); };
+    if (tab) DU.tab = tab.dataset.tab;
+    if (go) DU.i = Math.max(0, Math.min(D.dummies.tema.length, Number(go.dataset.goQ)));
+    if (tab || go) { dummiesView(); top(); return; }
+    if (a) {
+      const id = a.dataset.a; DU.ans[id] = Number(a.dataset.v); DU.sel.add(id); duAutoSave();
+      for (const b of a.parentNode.children) b.setAttribute('aria-pressed', b === a);
+      setTimeout(() => { if (D.dummies.tema[DU.i]?.id === id) { DU.i++; duResult(); top(); } }, 260);
+    } else if (e.target.id === 'duReset') { DU.sel.clear(); DU.ans = {}; DU.vik = {}; DU.i = 0; dummiesView(); top(); }
   });
-  $('v-dummies').addEventListener('change', e => { const w = e.target.dataset.w; if (w) { DU.vik[w] = e.target.checked; duResult(); duAutoSave(); } });
+  $('v-dummies').addEventListener('change', e => { const w = e.target.dataset.w; if (w) { DU.vik[w] = e.target.checked; DU.sel.add(w); $('duPanel').querySelector('.qside').innerHTML = duMini(); duAutoSave(); } });
   kontoInit();
   document.addEventListener('click', e => { if (e.target.closest('#v-konto, [data-f], [data-login]')) kontoClick(e); });
   $('v-dummies').addEventListener('change', e => { if (e.target.id === 'duConsent' && e.target.checked) setConsent(true); });

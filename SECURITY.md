@@ -2,7 +2,7 @@
 
 Fant du et hull? Meld det privat via **Security → Report a vulnerability** i dette repoet, ikke som åpen issue.
 
-## Slik er EYE sikret
+## Slik er Maktkartet sikret
 - **Ingen server i drift.** Nettstedet er statiske filer på GitHub Pages, bygget hver natt av GitHub Actions. Ingen database, ingen innlogging, ingen brukerdata lagres.
 - **Ingen hemmeligheter.** Alle kilder er åpne API-er uten nøkler. Repoet har ingen tokens eller passord.
 - **XSS-vern.** All tekst fra kildene settes inn escapet (`esc()`), og alle lenker går gjennom `url()` som bare slipper gjennom `http(s)`. Testes med ondsinnede data i `test/security.test.js`.

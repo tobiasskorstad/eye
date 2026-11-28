@@ -43,5 +43,5 @@ export const config = {
   // Stortingets API har kvote; voteringer hentes sakte
   stortingetDelayMs: Number(env.STORTINGET_DELAY_MS ?? 700),
   maxNewVotes: Number(env.MAX_NEW_VOTES || 150),
-  userAgent: env.USER_AGENT || 'EYE/0.2 (https://tobiasskorstad.github.io/eye/; https://github.com/tobiasskorstad/eye/issues) node-fetch',
+  userAgent: env.USER_AGENT || 'Maktkartet/0.3 (https://tobiasskorstad.github.io/eye/; https://github.com/tobiasskorstad/eye/issues) node-fetch',
 };

@@ -1,4 +1,4 @@
-# EYE
+# Maktkartet
 
 **Nettsted:** https://tobiasskorstad.github.io/eye/ (bygges hver natt av GitHub Actions, se `.github/workflows/pages.yml`).
 Kjør bygget manuelt: Actions → publiser → Run workflow. Sikkerhet: se `SECURITY.md`.
@@ -21,13 +21,13 @@ Kjør bygget manuelt: Actions → publiser → Run workflow. Sikkerhet: se `SECU
 
 ## Åpenhet først
 
-EYE gjengir offentlige registre så fullstendig som mulig:
+Maktkartet gjengir offentlige registre så fullstendig som mulig:
 
 - Interesseregisteret vises **ordrett**, alle paragrafer, også gaver, reiser og «andre forhold».
 - Selskapssider viser **alle** registrerte roller i Enhetsregisteret, ikke bare politikerne.
 - Alle aksjehandler representantene har meldt vises.
 
-Det eneste som holdes utenfor er det loven krever: fødselsdatoer (brukes bare internt for å koble representanter til roller), adresser og telefonnummer til privatpersoner, og søk etter privatpersoner. EYE er en tjeneste om makt og penger, ikke en personsøketjeneste.
+Det eneste som holdes utenfor er det loven krever: fødselsdatoer (brukes bare internt for å koble representanter til roller), adresser og telefonnummer til privatpersoner, og søk etter privatpersoner. Maktkartet er en tjeneste om makt og penger, ikke en personsøketjeneste.
 
 ## Partifanen
 
