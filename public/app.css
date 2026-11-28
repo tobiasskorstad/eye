@@ -461,3 +461,15 @@ footer{max-width:none;border-top:1px solid var(--line);background:var(--soft);pa
 .hl p a{text-decoration:none}.hl p a:hover,.hl .meta a:hover{text-decoration:underline;text-decoration-color:var(--hi)}
 .hl .meta a{text-decoration:none;color:var(--mute)}
 @media (max-width:520px){.tile .tn small{display:block;margin:4px 0 0}}
+
+/* biografi, penger og børs */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 32px}
+.bgrid h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;margin:14px 0 4px}
+.blist{list-style:none;padding:0;margin:0}.blist li{padding:5px 0;border-bottom:1px solid var(--line);font-size:15px}
+dl.facts.slim{margin:6px 0 2px}
+.cols2.even{grid-template-columns:1fr 1fr}
+.feed.cols-2{columns:2 280px;column-gap:32px}.feed.cols-2 li{break-inside:avoid}
+.mxs td,.mxs th{vertical-align:middle}
+#v-owners .kpis>a,#v-owners .kpis>div{color:var(--ink);text-decoration:none}
+@media (max-width:860px){.cols2.even{grid-template-columns:1fr}}
+.bgrid h3 .meta{text-transform:none;letter-spacing:0;font-weight:500}

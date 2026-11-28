@@ -7,6 +7,8 @@ import * as st from './stortinget.js';
 import * as reg from './register.js';
 import * as br from './brreg.js';
 import { fetchRegnskap } from './regnskap.js';
+import { fetchPartifin } from './partifin.js';
+import { fetchListed } from './borsen.js';
 import { fetchStats } from './stats.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
@@ -161,6 +163,18 @@ export async function buildData() {
     if (!a.om && x.om) Object.assign(a, { om: x.om, omDato: x.d, omU: x.u });
   }
   for (const x of [...innside, ...flagging]) delete x.om;
+  // Alle aksjeselskaper på børsen, også dem uten nylige innsidehandler (beskrivelse fra rapportmeldinger og Wikidata)
+  try {
+    const listed = await fetchListed({ warnings });
+    for (const s of listed) {
+      const a = aksjer[s.tick] ||= { tick: s.tick, navn: s.navn, om: null };
+      Object.assign(a, { marked: s.marked, web: s.web, stiftet: s.stiftet, bransje: s.bransje?.length ? s.bransje : undefined, notert: true });
+      if (!a.om && s.om) Object.assign(a, { om: s.om, omDato: s.omDato, omU: s.omU });
+      if (!a.om && s.wdesc) a.wdesc = s.wdesc;
+      if (s.nr) a.nr = s.nr;
+    }
+    log('børsselskaper', listed.length);
+  } catch (e) { warnings.push('Børslisten feilet: ' + e.message); for (const [k, a] of Object.entries(previous?.aksjer || {})) aksjer[k] ||= a; }
 
   // 4a2. Organisasjonsnummer for norske børsselskaper (slås opp én gang i måneden) og årsregnskap
   let regnskap = previous?.regnskap || {};
@@ -169,6 +183,7 @@ export async function buildData() {
     let nrCache = {}; try { nrCache = JSON.parse(await fs.readFile(nrFile, 'utf8')); } catch { }
     const norske = Object.values(aksjer).filter(a => /\b(ASA|AS)$/i.test(a.navn.trim()));
     for (const a of norske) {
+      if (a.nr) continue; // org.nr. fra Wikidata
       const c = nrCache[a.navn];
       if (!c || Date.now() - c.t > 30 * 864e5) nrCache[a.navn] = { t: Date.now(), nr: (await br.resolveCandidate(a.navn).catch(() => null))?.organisasjonsnummer || null };
       if (nrCache[a.navn].nr) a.nr = nrCache[a.navn].nr;
@@ -223,12 +238,24 @@ export async function buildData() {
   const tall = await fetchStats(previous?.tall, warnings);
   log('tall i debatten', tall.length);
 
+  // 6c. Penger til partiene (partifinansiering.no)
+  let partifin = previous?.partifin || null;
+  try { partifin = await fetchPartifin({ warnings }); log('partifinansiering', partifin.aar.join(', '), partifin.givere.length, 'givere'); }
+  catch (e) { warnings.push('Partifinansiering feilet: ' + e.message + (partifin ? ' – viser forrige' : '')); }
+
+  // 6d. Full biografi for representanter og statsråder (lastes av nettleseren bare når en profil åpnes)
+  const govIds = (pep?.regjering || []).map(g => g.id).filter(id => id && !bios[id]);
+  const govBios = govIds.length ? await st.fetchBiographies([...Object.keys(bios), ...govIds]).catch(() => ({})) : {};
+  const bio = {};
+  for (const [id, b] of Object.entries({ ...bios, ...govBios })) { const c = st.compactBio(b); if (c) bio[id] = c; }
+  const godtgjoring = await readJson(path.join(config.contentDir, 'godtgjoring.json'));
+
   // 7. Lagre: offentlig fil uten fødselsdatoer; intern fil for live-matching
   const internal = { reps: reps.map(r => ({ id: r.id, navn: r.navn, parti: r.parti, etternavn: r.etternavn, fodselsdato: r.fodselsdato })) };
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, partifin, bio, godtgjoring, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

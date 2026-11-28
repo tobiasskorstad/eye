@@ -138,10 +138,25 @@ export function startMock(port = 0) {
     if (p === '/st/voteringsresultat') return send(200, { voteringsresultat_liste: reps.slice(0, 4).map((r, i) => ({ representant: { id: r.id, parti: { id: r.parti } }, votering: [2, 3, 2, 1][i] })) });
     if (p === '/faktisk') return send(200, '<html><article class="x"><a href="/faktasjekk/stemmer-pastand-om-skatt/123"><h3>Faktasjekk Stemmer påstanden om skatt fra Frp?</h3></a><time datetime="2026-11-20T10:00:00Z"></time></article></html>', 'text/html');
     if (p === '/faktisk-forside') return send(200, '<html><article data-section="artikkel"><a href="https://www.faktisk.no/artikkel/falsk-profil-spredte-desinformasjon/129273"><h2>Falsk profil spredte desinformasjon i Norge</h2></a><time datetime="2026-11-25T09:00:00+01:00"></time></article><article><a href="/kommentar/noe/1"><h2>Kommentar tas ikke med her</h2></a></article></html>', 'text/html');
-    if (p === '/ob/list') return send(200, { data: { messages: u.searchParams.get('category') === '1102'
-      ? [{ messageId: 7001, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-25T08:00:00Z' },
-        { messageId: 7003, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-23T08:00:00Z' }]
-      : [{ messageId: 7002, title: 'Disclosure of large shareholding', issuerName: 'Equinor ASA', issuerSign: 'EQNR', publishedTime: '2026-11-24T08:00:00Z' }] } });
+    if (p === '/ob/list') { const cat = u.searchParams.get('category'); return send(200, { data: { messages: cat === '1102'
+      ? [{ messageId: 7001, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', markets: ['XOSL'], publishedTime: '2026-11-25T08:00:00Z' },
+        { messageId: 7003, title: 'Mandatory notification of trade', issuerName: 'Equinor ASA', issuerSign: 'EQNR', markets: ['XOSL'], publishedTime: '2026-11-23T08:00:00Z' }]
+      : cat === '1002' ? [{ messageId: 7004, title: 'Half-year report', issuerName: 'Yara International ASA', issuerSign: 'YAR', markets: ['XOSL'], publishedTime: '2026-07-20T06:00:00Z' },
+        { messageId: 7005, title: 'Half-year report', issuerName: 'Testvekst AS', issuerSign: 'TVEKST', markets: ['MERK'], publishedTime: '2026-08-20T06:00:00Z' },
+        { messageId: 7006, title: 'Half-year report', issuerName: 'Obligasjon Finans AS', issuerSign: 'OBFIN', markets: ['XOAM'], publishedTime: '2026-08-21T06:00:00Z' }]
+      : cat === '1006' ? [{ messageId: 7002, title: 'Disclosure of large shareholding', issuerName: 'Equinor ASA', issuerSign: 'EQNR', markets: ['XOSL'], publishedTime: '2026-11-24T08:00:00Z' },
+        { messageId: 7007, title: 'Disclosure of large shareholding', issuerName: 'Yara International ASA', issuerSign: 'YAR', markets: ['XOSL'], publishedTime: '2026-03-24T08:00:00Z' }]
+      : [] } }); }
+    if (p === '/ob/message' && u.searchParams.get('messageId') === '7005') return send(200, { data: { message: { publishedTime: '2026-08-20T06:00:00Z', body: 'Testvekst reports growth.\n\nAbout Testvekst\n\nTestvekst AS develops software for Norwegian schools and municipalities, with offices in Bergen.\n\nContacts\n\nIR' } } });
+    if ((m = p.match(/^\/pf\/nb\/(arlige-bidrag|bidrag-i-valgar)\/Json$/))) {
+      const y = u.searchParams.get('year'), code = u.searchParams.get('centralPartyListCode');
+      if (m[1] !== 'arlige-bidrag' || y !== '2025') return send(200, []);
+      if (code === 'A') return send(200, [
+        { party: 'Arbeiderpartiet', partyUnit: 'Sentral partiorganisasjon', donator: 'Landsorganisasjonen i Norge', address: 'Torggata 12 0181 OSLO', received: '2025-08-20', sum: 21000000 },
+        { party: 'Oslo Arbeiderparti', partyUnit: 'Fylkesparti', donator: 'Ola Privat', address: 'BÆRUM', received: '2025-05-02', sum: 50000 }]);
+      if (code === 'FRP') return send(200, [{ party: 'Fremskrittspartiet', partyUnit: 'Sentral partiorganisasjon', donator: 'Smite AS', address: 'Gate 1 0150 OSLO', received: '2025-06-12', sum: 100000 }]);
+      return send(200, []);
+    }
     if (p === '/ob/message' && u.searchParams.get('messageId') === '7003') return send(200, { data: { message: { body: 'Primary Insider Kari Testesen, Chair of the Board, has today sold 5 000 shares at NOK 260 per share in Equinor ASA.' } } });
     if (p === '/wd') {
       const a = u.searchParams.get('action'), ids = (u.searchParams.get('ids') || '').split('|');

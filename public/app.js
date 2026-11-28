@@ -87,6 +87,7 @@ function prepare(d) {
   const stockOf = x => { const k = slug(x.tick || x.sel); if (!k) return null; let st = stocks.get(k);
     if (!st) { const a = D.aksjer?.[x.tick || x.sel] || {}; st = { k, tick: x.tick || null, navn: x.sel, om: a.om || null, omDato: a.omDato, omU: a.omU, ins: [], flag: [], pol: [] }; stocks.set(k, st); }
     return st; };
+  for (const [key, a] of Object.entries(D.aksjer || {})) { const st = stockOf({ tick: a.tick, sel: a.navn }); if (st) Object.assign(st, { notert: !!a.notert || !!st.notert, marked: a.marked, web: a.web, stiftet: a.stiftet, bransje: a.bransje, wdesc: a.wdesc, om: st.om || a.om, omDato: st.omDato || a.omDato, omU: st.omU || a.omU }); }
   for (const x of D.innside || []) stockOf(x)?.ins.push(x);
   for (const f of D.flagging || []) { stockOf(f)?.flag.push(f); if (f.eier) { const k = slug(f.eier); const o = owners.get(k) || { s: k, navn: f.eier, list: [] }; o.list.push(f); owners.set(k, o); } }
   for (const t of trades) { const st = stockByName(t.sel); if (st) st.pol.push(t); }
@@ -100,15 +101,15 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['home', 'questions', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['home', 'questions', 'money', 'listed', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['sporsmal', 'Spørsmål'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
-  pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
+  pa: [['partier', 'Oversikt'], ['partipenger', 'Penger til partiene'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
   pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['selskaper', 'Selskaper']],
-  ei: [['eiere', 'Toppliste'], ['storeeiere', 'Store eiere'], ['innside', 'Alle innsidehandler']],
+  ei: [['eiere', 'Oversikt'], ['borsselskaper', 'Selskaper'], ['innside', 'Innsidehandler'], ['storeeiere', 'Store eiere']],
   fa: [], om: [], du: [], ko: [], ov: [], rg: [],
 };
-const HASHVIEW = { oversikt: ['home', 'ov'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { oversikt: ['home', 'ov'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -128,7 +129,7 @@ function route() {
   else if ((m = h.match(/^org-(\d{9})$/))) { renderOrg(m[1]); show('org', 'pe', 'selskaper'); }
   else if ((m = h.match(/^statsrad-(\w+)$/)) && govByH[m[1]]) { renderMinister(govByH[m[1]]); show('minister', 'rg', 'regjeringen'); }
   else if ((m = h.match(/^person-([a-z0-9-]+)$/)) && insiders.has(m[1])) { renderPerson(insiders.get(m[1])); show('person', 'ei', 'eiere'); }
-  else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'eiere'); }
+  else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'borsselskaper'); }
   else if ((m = h.match(/^eier-([a-z0-9-]+)$/)) && owners.has(m[1])) { renderOwner(owners.get(m[1])); show('owner', 'ei', 'storeeiere'); }
   else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
   scrollTo(0, 0);
@@ -246,7 +247,7 @@ function renderRep(r) {
     kicker: `${dot(r.parti)}${r.vara ? 'Møtende vararepresentant' : 'Stortingsrepresentant'}${g ? ` · <a href="#statsrad-${hid(g.id)}">${esc(g.tittel)}</a>` : ''}`,
     sub: `${partyLink} · ${esc(r.fylke)}${r.kom.length ? ' · ' + r.kom.map(k => esc(D.kom[k] || k)).join(', ') : ''}` })}
   <div class="kpis"><div><b>${num(r.q)}</b><span>spørsmål til regjeringen</span></div><div><b>${r.cos.length}</b><span>selskaper og organisasjoner</span></div><div><b>${r.trades.length}</b><span>aksjehandler${sum ? `, ${kr(sum)} kr` : ''}</span></div>${om ? `<div><b>${om[0] - om[1]} av ${om[0]}</b><span>personlige voteringer</span></div>` : ''}</div>
-  ${toc([['s-om', 'Om'], r.cos.length && ['s-cos', `Selskaper (${r.cos.length})`], r.trades.length && ['s-tr', `Aksjehandler (${r.trades.length})`], ['s-reg', 'Interesseregisteret'], ['s-q', 'Spørsmål'], ['s-lenker', 'Kilder']])}
+  ${toc([['s-om', 'Om'], ['s-bio', 'Biografi'], r.cos.length && ['s-cos', `Selskaper (${r.cos.length})`], r.trades.length && ['s-tr', `Aksjehandler (${r.trades.length})`], ['s-reg', 'Interesseregisteret'], ['s-q', 'Spørsmål'], ['s-lenker', 'Kilder']])}
   <div class="cols">
   ${sec('s-om', 'Om', `<dl class="facts">
     <dt>Parti</dt><dd>${partyLink}</dd><dt>Valgdistrikt</dt><dd>${esc(r.fylke)}</dd>
@@ -254,11 +255,13 @@ function renderRep(r) {
     <dt>Født</dt><dd>${esc(r.fodt || '–')}</dd>
     <dt>På Stortinget</dt><dd>${num(r.per)} ${r.per === 1 ? 'periode' : 'perioder'}${r.forst ? ` (første i ${esc(r.forst)})` : ''}</dd>
     ${r.utd ? `<dt>Utdanning</dt><dd>${esc(r.utd)}</dd>` : ''}${r.yrke ? `<dt>Yrke</dt><dd>${esc(r.yrke)}</dd>` : ''}
+    ${payHtml(g ? (/^statsminister/i.test(g.tittel) ? 'pm' : 'gov') : 'rep')}
     ${om ? `<dt>Voteringer</dt><dd>Stemte i ${om[0] - om[1]} av ${om[0]} personlige voteringer. <span class="meta">I vanlige voteringer stemmer ofte bare rundt 101 representanter etter avtale mellom partiene, så tallet viser ikke fravær alene.</span></dd>` : ''}
   </dl>`)}
   ${sec('s-q', 'Spørsmål til regjeringen', `${r.q ? `<p>${num(r.q)} spørsmål denne perioden. Mest til ${r.top.map(t => `${esc(t.til)} (${num(t.n)})`).join(', ')}.</p>` : '<p class="empty">Ingen spørsmål denne perioden.</p>'}
   ${r.siste ? `<p><span class="meta">Siste, ${date(r.siste.d)} (${QTYPE[r.siste.t] || ''}):</span><br>«${esc(r.siste.tit)}» <a href="https://www.stortinget.no/no/Saker-og-publikasjoner/Sporsmal/${r.siste.t === 'I' ? 'Interpellasjoner/Interpellasjon/' : 'Skriftlige-sporsmal-og-svar/Skriftlig-sporsmal/'}?qnid=${encodeURIComponent(r.siste.id)}">Les svaret</a></p>` : ''}`)}
   </div>
+  <div id="bioBox"></div>
   ${r.cos.length ? sec('s-cos', 'Selskaper', `<div class="tw"><table class="list"><thead><tr><th>Selskap</th><th>Rolle i Brønnøysund</th><th class="n">Eier (fra registeret)</th><th class="n hide-s">Ansatte</th></tr></thead><tbody>${coRows}</tbody></table></div>
   <p class="meta">Selskapene representanten har oppgitt i interesseregisteret. Rolle hentes fra Brønnøysundregistrene. Eierandel leses automatisk fra § 9 i interesseregisteret – sjekk teksten nederst på siden.</p>`) : ''}
   ${r.trades.length ? sec('s-tr', 'Aksjehandler', tradeBlock(r.trades)) : ''}
@@ -266,6 +269,7 @@ function renderRep(r) {
   <p class="meta">Ordrett fra Stortingets register, ajourført ${date(D.regDato, true)}.</p>`)}
   ${sec('s-lenker', 'Kilder', `<div class="links"><a href="https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representant/?perid=${encodeURIComponent(r.id)}">Stortingets side</a>${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}${prof(['rep:' + r.id]).wiki ? `<a href="${url(prof(['rep:' + r.id]).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
   document.title = `${r.navn} – Maktkartet`;
+  fillBio(r.id, 'bioBox');
 }
 const tradeTable = list => `<div class="tw"><table class="trades"><thead><tr><th>Dato</th><th>Handel</th><th>Selskap</th><th class="n hide-s">Antall</th><th class="n">Verdi, kr</th></tr></thead><tbody>${list.map(t => `<tr><td class="d">${sdate(t.d)}</td><td>${trade(t.k)}</td><td>${stockLink(t.sel)}</td><td class="n hide-s">${nf(t.ant)}</td><td class="n">${nf(t.ver)}</td></tr>`).join('')}</tbody></table></div>`;
 
@@ -289,11 +293,13 @@ function renderMinister(g) {
   const reg = g.reg, paras = PARA_ORDER.filter(k => reg?.[k]), r = byId[g.id];
   $('v-minister').innerHTML = `<a class="back" href="#regjeringen">← Hele regjeringen</a>
   ${profileHead({ keys: govKeys(g), navn: g.navn, parti: g.parti, kicker: `${dot(g.parti)}${esc(g.tittel)}`, sub: `${g.dep ? esc(g.dep) + ' · ' : ''}${P?.partier[g.parti] ? `<a href="#parti-${g.parti}">${esc(pname(g.parti))}</a>` : esc(pname(g.parti))}${r ? ` · <a href="#rep-${r.h}">Også på Stortinget</a>` : ''}` })}
-  <div class="kpis"><div><b>${g.trades.length}</b><span>aksjehandler meldt</span></div><div><b>${paras.length}</b><span>registrerte interesser</span></div></div>
+  <div class="kpis"><div><b>${g.trades.length}</b><span>aksjehandler meldt</span></div><div><b>${paras.length}</b><span>registrerte interesser</span></div>${D.godtgjoring ? `<div><b>${nf(/^statsminister/i.test(g.tittel) ? D.godtgjoring.statsminister : D.godtgjoring.statsrad)} kr</b><span>godtgjøring i året</span></div>` : ''}</div>
+  <div id="bioBoxG"></div>
   ${g.trades.length ? sec('s-tr', 'Aksjehandler', tradeBlock(g.trades)) : ''}
   ${sec('s-reg', 'Interesseregisteret', !reg ? '<p class="empty">Står ikke i registeret ennå.</p>' : reg.ingen ? '<p>Har ingen registreringspliktige interesser.</p>' : paras.length ? `<dl class="facts reg">${paras.map(k => `<dt>§ ${k} ${PARA[k] || ''}</dt><dd>${esc(reg[k])}</dd>`).join('')}</dl><p class="meta">Ordrett fra regjeringsdelen av Stortingets register, ajourført ${date(D.regDato, true)}.</p>` : '<p class="empty">Ingen oppføringer.</p>')}
   ${sec('s-lenker', 'Kilder', `<div class="links">${D.regUrl ? `<a href="${url(D.regUrl)}">Interesseregisteret (PDF)</a>` : ''}<a href="https://www.regjeringen.no/no/om-regjeringa/" rel="noopener">Regjeringen.no</a>${prof(govKeys(g)).wiki ? `<a href="${url(prof(govKeys(g)).wiki.url)}" rel="noopener">Wikipedia</a>` : ''}</div>`)}`;
   document.title = `${g.navn} – Maktkartet`;
+  fillBio(g.id, 'bioBoxG');
 }
 
 /* ---------- personsider for innsidere ---------- */
@@ -359,11 +365,12 @@ function renderStock(st) {
   // Største eiere som har flagget: nyeste melding per eier
   const latest = [...new Map(F.filter(f => f.eier).map(f => [f.eier, f])).values()];
   const lastPrice = L.find(x => x.kurs && (!x.cur || x.cur === 'NOK'));
-  $('v-stock').innerHTML = `<a class="back" href="#eiere">← Børs og eiere</a>
+  $('v-stock').innerHTML = `<a class="back" href="#borsselskaper">← Alle børsselskaper</a>
   <div class="hrow"><div><div class="kicker">Børsnotert${st.tick ? ` · <span class="tick">${esc(st.tick)}</span>` : ''}</div><h1>${esc(st.navn)}</h1></div></div>
-  ${st.om ? `<div class="wiki"><p>${esc(st.om)}</p><div class="meta">Selskapets egen beskrivelse, fra <a href="${url(st.omU)}" rel="noopener">børsmelding ${date(st.omDato)}</a></div></div>` : '<p class="meta">Selskapet har ikke tatt med en beskrivelse av seg selv i børsmeldingene vi har lest.</p>'}
-  <div class="kpis"><div><b>${L.length}</b><span>innsidehandler, 60 dager</span></div><div><b>${buy ? kr(buy) : '–'}</b><span>kjøpt av innsidere, kr</span></div><div><b>${sell ? kr(sell) : '–'}</b><span>solgt av innsidere, kr</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>${PT.length ? `<div><b>${new Set(PT.map(t => t.r.navn)).size}</b><span>politikere har handlet aksjen</span></div>` : ''}${lastPrice ? `<div><b>${lastPrice.kurs.toLocaleString('nb-NO')} kr</b><span>kurs i siste innsidehandel (${sdate(lastPrice.d)})</span></div>` : ''}</div>
-  ${toc([L.length && ['a-ins', `Innsidere (${per.size})`], latest.length && ['a-eiere', `Store eiere (${latest.length})`], PT.length && ['a-pol', `Politikere (${PT.length})`], D.aksjer?.[st.tick || st.navn]?.nr && ['a-fin', 'Økonomi'], ['a-br', 'Brønnøysund'], ['a-kilder', 'Kilder']])}
+  ${st.om ? `<div class="wiki"><p>${esc(st.om)}</p><div class="meta">Selskapets egen beskrivelse, fra <a href="${url(st.omU)}" rel="noopener">børsmelding ${date(st.omDato)}</a></div></div>` : st.wdesc ? `<div class="wiki"><p>${esc(st.wdesc.charAt(0).toUpperCase() + st.wdesc.slice(1))}.</p><div class="meta">Fra Wikidata</div></div>` : '<p class="meta">Selskapet har ikke tatt med en beskrivelse av seg selv i børsmeldingene vi har lest.</p>'}
+  ${L.length || F.length || PT.length ? `<div class="kpis"><div><b>${L.length}</b><span>innsidehandler, 60 dager</span></div><div><b>${buy ? kr(buy) : '–'}</b><span>kjøpt av innsidere, kr</span></div><div><b>${sell ? kr(sell) : '–'}</b><span>solgt av innsidere, kr</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>${PT.length ? `<div><b>${new Set(PT.map(t => t.r.navn)).size}</b><span>politikere har handlet aksjen</span></div>` : ''}${lastPrice ? `<div><b>${lastPrice.kurs.toLocaleString('nb-NO')} kr</b><span>kurs i siste innsidehandel (${sdate(lastPrice.d)})</span></div>` : ''}</div>` : '<p class="meta">Ingen innsidehandler de siste 60 dagene og ingen flaggemeldinger de siste 90 dagene.</p>'}
+  ${st.marked || st.web || st.stiftet || st.bransje?.length ? `<dl class="facts slim">${st.marked ? `<dt>Notert på</dt><dd>${esc(st.marked)}${st.tick ? ` · <span class="tick">${esc(st.tick)}</span>` : ''}</dd>` : ''}${st.bransje?.length ? `<dt>Bransje</dt><dd>${esc(st.bransje.join(', '))}</dd>` : ''}${st.stiftet ? `<dt>Stiftet</dt><dd>${esc(st.stiftet)}</dd>` : ''}${st.web ? `<dt>Nettsted</dt><dd><a href="${url(st.web)}" rel="noopener">${esc(st.web.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></dd>` : ''}</dl>` : ''}
+  ${toc([L.length && ['a-ins', `Innsidere (${per.size})`], latest.length && ['a-eiere', `Store eiere (${latest.length})`], PT.length && ['a-pol', `Politikere (${PT.length})`], donationsBy(st.navn) && ['s-pf', 'Bidrag til partier'], D.aksjer?.[st.tick || st.navn]?.nr && ['a-fin', 'Økonomi'], ['a-br', 'Brønnøysund'], ['a-kilder', 'Kilder']])}
   ${L.length ? sec('a-ins', 'Innsidere som har handlet', `<div class="tw"><table><thead><tr><th>Person</th><th class="n">Handler</th><th class="n">Netto aksjer</th><th class="n hide-s">Kjøpt, kr</th><th class="n hide-s">Solgt, kr</th></tr></thead><tbody>${[...per.values()].sort((a, b) => (b.k + b.s) - (a.k + a.s)).map(p => `<tr${p.navn && insiders.has(slug(p.navn)) ? ` data-go="person-${slug(p.navn)}"` : ''}><td><div class="who">${avatar(p.navn ? ['ins:' + slug(p.navn)] : [], p.navn || '?')}<div>${p.navn ? insiderLink(p.navn) : '<span class="meta">Navn ikke lest ut</span>'}<div class="meta">${esc(p.rolle || '')}</div></div></div></td><td class="n">${p.n}</td><td class="n">${p.ant ? `<b class="${p.ant > 0 ? 'pos' : 'neg'}">${p.ant > 0 ? '+' : ''}${nf(p.ant)}</b>` : '–'}</td><td class="n hide-s">${p.k ? kr(p.k) : '–'}</td><td class="n hide-s">${p.s ? kr(p.s) : '–'}</td></tr>`).join('')}</tbody></table></div>
   <details class="more"><summary>Vis alle ${L.length} meldinger</summary><div class="tw"><table><thead><tr><th>Dato</th><th>Melding</th><th class="n">Verdi</th></tr></thead><tbody>${L.map(x => `<tr><td class="d">${sdate(x.d)}</td><td><b>${ITYPE[x.k] || '–'}</b>${x.navn ? ' · ' + insiderLink(x.navn) : ''}<div class="meta">${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a></div></td><td class="n">${money(x)}</td></tr>`).join('')}</tbody></table></div></details>`) : ''}
   ${latest.length ? sec('a-eiere', 'Store eiere som har flagget', `<div class="tw"><table><thead><tr><th>Eier</th><th class="n">Andel</th><th>Endring</th><th class="n hide-s">Dato</th></tr></thead><tbody>${latest.map(f => `<tr><td>${ownerLink(f.eier)}</td><td class="n"><b>${pct(f.pst)}</b></td><td>${arrow(f.retning) || '–'} <a href="${url(f.u)}" rel="noopener" class="meta">melding</a></td><td class="n hide-s">${sdate(f.d)}</td></tr>`).join('')}</tbody></table></div>
@@ -376,6 +383,7 @@ function renderStock(st) {
     ${PT.length > 3 ? `<details class="more"><summary>Vis alle ${PT.length} handler</summary><ul class="feed">${PT.map(t => `<li><div class="grow">${who(t)} ${trade(t.k).toLowerCase()} ${nf(t.ant)} aksjer<div class="meta">${sdate(t.d)}</div></div><b class="n">${kr(t.ver)}</b></li>`).join('')}</ul></details>` : ''}
     <p class="meta">Fra Stortingets og regjeringens register over aksjehandler. Netto = kjøpt minus solgt.</p>`; })()) : ''}
   ${D.aksjer?.[st.tick || st.navn]?.nr ? finBlock(D.aksjer[st.tick || st.navn].nr, 'a-fin') : ''}
+  ${donationHtml(st.navn)}
   <div id="aBrreg"></div>
   ${sec('a-kilder', 'Kilder', `<div class="links">${[...L, ...F].slice(0, 1).map(x => `<a href="${url(x.u)}" rel="noopener">Siste børsmelding (NewsWeb)</a>`).join('')}</div><p class="meta">Innsidehandler og flaggemeldinger fra Oslo Børs NewsWeb. Navn, beløp og andeler leses automatisk ut av meldingsteksten og kan være feil – sjekk alltid meldingen.</p>`)}`;
   document.title = `${st.navn} – Maktkartet`;
@@ -502,11 +510,12 @@ function renderParty(p) {
   <p>${esc(x.om)}</p>
   <div class="leader">${leaderCard(p)}</div>
   <div class="kpis"><div><b>${mine.length}</b><span>mandater</span></div><div><b>${P.maling?.snitt[p] != null ? P.maling.snitt[p].toFixed(1).replace('.', ',') + ' %' : '–'}</b><span>snitt på målinger</span></div><div><b>${nf(q)}</b><span>spørsmål til regjeringen</span></div><div><b>${tr}</b><span>aksjehandler, ${co} selskaper</span></div></div>
-  ${toc([['p-saker', 'Saker'], S() && ['p-stem', 'Stemmegivning'], D.lofter?.regjering?.parti === p && ['p-lofter', 'Løfter'], D.lofter?.gjennomslag?.partier?.[p] && ['p-gj', 'Gjennomslag'], (D.faktasjekk?.sjekker || []).some(x => (x.p || []).includes(p)) && ['p-fakta', 'Faktasjekker'], ['p-nyheter', 'Nyheter'], ['p-reps', `Representanter (${mine.length})`]])}
+  ${toc([['p-saker', 'Saker'], S() && ['p-stem', 'Stemmegivning'], D.lofter?.regjering?.parti === p && ['p-lofter', 'Løfter'], PF()?.partier?.[p] && ['p-penger', 'Penger'], D.lofter?.gjennomslag?.partier?.[p] && ['p-gj', 'Gjennomslag'], (D.faktasjekk?.sjekker || []).some(x => (x.p || []).includes(p)) && ['p-fakta', 'Faktasjekker'], ['p-nyheter', 'Nyheter'], ['p-reps', `Representanter (${mine.length})`]])}
   <h2 id="p-saker">Partiets saker, veid</h2><p class="meta">${esc(P.metode)}</p>
   ${x.saker.map(s => `<div class="sak"><h3>${esc(s.tittel)}</h3><p>${esc(s.standpunkt)}</p><div class="weigh"><div><h4>Tilhengere sier</h4><ul>${s.for.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div><div><h4>Kritikere sier</h4><ul>${s.mot.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div></div><div class="meta" style="margin-top:8px"><a href="${url(s.kilde)}" rel="noopener">Kilde</a></div></div>`).join('')}
   ${partyVotes(p)}
   ${partyPromises(p)}
+  ${partyMoney(p)}
   <h2 id="p-nyheter">Nyheter</h2>${newsList(x.nyheter)}
   ${auto.length ? `<h3>Siste fra nyhetsstrømmen</h3>${newsList(auto)}<p class="meta">Hentet automatisk hver natt. Bare overskrift og lenke vises.</p>` : ''}
   <h2 id="p-reps">Representantene</h2><div class="tw"><table class="list"><thead><tr><th>Representant</th><th class="n">Spørsmål</th><th class="n">Selskaper</th><th class="n">Handler</th></tr></thead><tbody>${[...mine].sort((a, b) => b.q - a.q).map(r => `<tr data-go="rep-${r.h}"><td><div class="who">${avatar(['rep:' + r.id], r.navn, r.parti)}<div><a href="#rep-${r.h}">${esc(r.navn)}</a><div class="meta">${esc(r.fylke)}</div></div></div></td><td class="n">${num(r.q)}</td><td class="n">${r.cos.length}</td><td class="n">${r.trades.length}</td></tr>`).join('')}</tbody></table></div>`;
@@ -565,11 +574,15 @@ function omView() {
     card('Stortingets interesseregister', D.regUrl || 'https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Okonomiske-interesser/', 'Verv, eierandeler, gaver, reiser og aksjehandler. Gjengitt ordrett slik Stortinget publiserer det.', `${nf(D.trades.length)} aksjehandler`, 'Ved hver ny utgave'),
     card('Regjeringens interesseregister', D.pep?.kilder?.regjering, 'Statsrådenes verv og eierandeler, fra regjeringsdelen av registeret.', `${nf(govs.length)} statsråder`, 'Ved hver ny utgave'),
     card('Register for statssekretærer og rådgivere', D.pep?.kilder?.statssek, 'Verv og økonomiske interesser for politisk ansatte i departementene.', `${nf(D.pep?.statssek?.length || 0)} personer`, D.pep?.kilder?.statssekDato ? 'Versjon ' + date(D.pep.kilder.statssekDato) : 'Ved hver ny utgave'),
+    card('Stortingets biografier', 'https://data.stortinget.no/', 'Utdanning, yrke, verv i parti, kommune og organisasjoner, stortingsperioder, komiteer og perioder i regjering. Foreldre og fødested vises ikke.', `${nf(Object.keys(BIO || {}).length || reps.length)} biografier`, 'Hver uke', 'NLOD'),
+    card('Godtgjøring', D.godtgjoring?.url, 'Hva representanter, statsråder og statsministeren får i året, slik Stortinget har vedtatt.', D.godtgjoring ? 'Fra ' + date(D.godtgjoring.fra) : '', 'Hvert år'),
     card('Voteringer', 'https://www.stortinget.no/no/Saker-og-publikasjoner/Vedtak/Voteringer/', 'Hvordan hver representant stemte. «Hvem stemmer med hvem» og oppmøte regnes ut fra dette.', `${nf(S()?.voteringer?.length || 0)} voteringer`, 'Hver tredje time', 'NLOD'),
   ])}
   ${grp('Selskaper og børs', 'Børsmeldinger tolkes automatisk. Tallene kan derfor ha feil, og hver handel lenker til den originale meldingen.', [
     card('Enhetsregisteret', 'https://data.brreg.no/enhetsregisteret/oppslag/enheter', 'Selskapsopplysninger og alle registrerte roller. Søk på selskaper hentes direkte fra Brønnøysund.', `${nf(D.cos.length)} selskaper med politikere`, 'Hver tredje time', 'NLOD'),
     card('Regnskapsregisteret', 'https://data.brreg.no/regnskapsregisteret/regnskap/', 'Driftsinntekter, resultat, egenkapital og eiendeler fra siste innsendte årsregnskap.', `${nf(Object.keys(D.regnskap || {}).length)} regnskap`, 'Hver uke', 'NLOD'),
+    card('Oslo Børs: selskapene', 'https://newsweb.oslobors.no/', 'Hvilke aksjeselskaper som er notert, og selskapets egen beskrivelse fra halvårs- og årsrapportene.', `${nf([...stocks.values()].filter(s => s.notert).length)} selskaper`, 'Hver uke'),
+    card('Wikidata', 'https://www.wikidata.org/', 'Nettsted, stiftelsesår og bransje for børsselskaper.', '', 'Hver uke', 'CC0'),
     card('Oslo Børs: innsidehandel', 'https://newsweb.oslobors.no/', 'Meldepliktige handler fra styremedlemmer, ledere og deres nærstående.', `${nf(D.innside?.length || 0)} handler siste 60 dager`, 'Hver tredje time'),
     card('Oslo Børs: flaggemeldinger', 'https://newsweb.oslobors.no/', 'Når noen eier mer eller mindre enn 5, 10, 15 % osv. av et børsselskap.', `${nf(D.flagging?.length || 0)} meldinger`, 'Hver tredje time'),
   ])}
@@ -581,6 +594,7 @@ function omView() {
   ])}
   ${grp('Partier, løfter og Politikk forklart', 'Dette er skrevet for hånd og gjennomgått på datoene som står under. Hvert standpunkt og hver status har egne kilder.', [
     card('Partiprogrammer 2025–2029', '', 'Hva partiene står for, hvem som støtter og kritiserer dem, og partienes standpunkter i Politikk forklart.', `${nf(D.dummies?.tema?.length || 0)} saker forklart`, D.dummies?.oppdatert ? 'Gjennomgått ' + date(D.dummies.oppdatert) : 'Manuelt'),
+    card('Partifinansiering.no', PF()?.url || 'https://www.partifinansiering.no/', 'Bidrag til partiene fra selskaper, organisasjoner og privatpersoner. Navn på privatpersoner vises ikke, bare summen.', PF() ? `${PF().aar[0]}–${PF().aar[PF().aar.length - 1]}` : '', 'Hver dag'),
     card('Løfter og gjennomslag', '', 'Valgløfter fra 2025 sammenholdt med budsjetter, vedtak, SSB og nyheter.', '', D.lofter?.oppdatert ? 'Gjennomgått ' + date(D.lofter.oppdatert) : 'Manuelt'),
   ])}
   ${grp('Bilder og omtaler', '', [
@@ -901,25 +915,117 @@ function insiderView() {
 
 /* ---------- eiere og innsidere ---------- */
 const kr = n => n >= 1e9 ? nf(Math.round(n / 1e8) / 10) + ' mrd.' : n >= 1e6 ? nf(Math.round(n / 1e5) / 10) + ' mill.' : nf(n);
-function ownersView() {
-  const L = D.innside || [], F = D.flagging || [];
-  const sum = l => l.reduce((a, x) => a + (x.ver || 0), 0);
-  $('ok').innerHTML = `<div><b>${kr(sum(L.filter(x => x.k === 'K')))}</b><span>kjøpt av innsidere, 60 dager</span></div><div><b>${kr(sum(L.filter(x => x.k === 'S')))}</b><span>solgt av innsidere</span></div><div><b>${new Set(L.map(x => x.sel)).size}</b><span>selskaper med innsidehandel</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>`;
-  $('topTrades').tBodies[0].innerHTML = L.filter(x => x.ver && (x.k === 'K' || x.k === 'S')).sort((a, b) => b.ver - a.ver).slice(0, 25).map(x => `<tr><td class="n">${sdate(x.d)}</td><td><div class="who">${avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || '?')}<div>${insiderLink(x.navn)}<div class="meta">${ITYPE[x.k]}${x.rolle ? ' · ' + esc(x.rolle) : ''}</div></div></div></td><td>${stocks.has(slug(x.tick || x.sel)) ? `<a href="#aksje-${slug(x.tick || x.sel)}">${esc(x.sel)}</a>` : esc(x.sel)} <a href="${url(x.u)}" rel="noopener" class="meta">melding</a></td><td class="n">${kr(x.ver)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Ingen data.</td></tr>';
-  const people = new Map();
-  for (const x of L.filter(x => x.navn)) {
-    const p = people.get(x.navn) || { navn: x.navn, roller: new Set(), n: 0, k: 0, s: 0, pol: x.pol };
-    p.roller.add(`${x.rolle || ''} ${x.sel}`.trim()); p.n++; if (x.k === 'K') p.k += x.ver || 0; if (x.k === 'S') p.s += x.ver || 0; people.set(x.navn, p);
-  }
-  $('topPeople').tBodies[0].innerHTML = [...people.values()].sort((a, b) => (b.k + b.s) - (a.k + a.s) || b.n - a.n).slice(0, 30).map(p => `<tr data-go="person-${slug(p.navn)}"><td><div class="who">${avatar(['ins:' + slug(p.navn)], p.navn)}<div><b>${insiderLink(p.navn)}</b>${p.pol ? ' <span class="chip ok">politiker</span>' : ''}</div></div></td><td>${esc([...p.roller].join(' · '))}</td><td class="n">${p.n}</td><td class="n">${p.k ? kr(p.k) : '–'}</td><td class="n hide-s">${p.s ? kr(p.s) : '–'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen data.</td></tr>';
-  const owners = new Map();
-  for (const f of F.filter(f => f.eier)) { const o = owners.get(f.eier) || { eier: f.eier, sel: new Map() }; o.sel.set(f.sel, f); owners.set(f.eier, o); }
-  $('topOwners').tBodies[0].innerHTML = [...owners.values()].sort((a, b) => b.sel.size - a.sel.size).slice(0, 20).map(o => `<tr><td><b>${ownerLink(o.eier)}</b></td><td>${[...o.sel.values()].map(f => `${stocks.has(slug(f.tick || f.sel)) ? `<a href="#aksje-${slug(f.tick || f.sel)}">${esc(f.sel)}</a>` : esc(f.sel)}${f.pst != null ? ` (${String(f.pst).replace('.', ',')} %${f.retning === 'opp' ? ' ▲' : f.retning === 'ned' ? ' ▼' : ''})` : ''}`).join(', ')}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Ingen data.</td></tr>';
-}
 function flaggingView() {
   const r = $('fr').value, q = $('fq').value.trim().toLowerCase();
   const list = (D.flagging || []).filter(f => (!r || f.retning === r) && (!q || (f.sel + ' ' + (f.eier || '') + ' ' + f.tekst).toLowerCase().includes(q)));
   $('flagTable').tBodies[0].innerHTML = list.slice(0, 300).map(f => `<tr><td class="d">${sdate(f.d)}</td><td><b>${stocks.has(slug(f.tick || f.sel)) ? `<a href="#aksje-${slug(f.tick || f.sel)}">${esc(f.sel)}</a>` : esc(f.sel)}</b></td><td>${ownerLink(f.eier)}${f.retning ? `<div class="meta">${f.retning === 'opp' ? '<span class="k">▲ økte</span>' : '<span class="s">▼ reduserte</span>'}</div>` : ''}</td><td class="n">${f.pst != null ? String(f.pst).replace('.', ',') + ' %' : '–'}</td><td class="hide-s">${esc(f.tekst || f.tittel)} <a href="${url(f.u)}" rel="noopener">Les meldingen</a></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Ingen meldinger.</td></tr>';
+}
+
+/* ---------- biografi og godtgjøring (Stortinget) ---------- */
+// Full biografi ligger i en egen fil (bio.json) og lastes først når noen åpner en profil.
+let BIO = null, bioP = null;
+async function loadBio() {
+  if (BIO) return BIO;
+  if (D.bio) return (BIO = D.bio);
+  bioP ||= fetch('bio.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).catch(() => ({}));
+  return (BIO = await bioP);
+}
+const VTYPE = { parti: 'Partiverv', kommune: 'Kommunestyre og kommune', fylke: 'Fylkesting og fylke', offentlig: 'Offentlige verv', organisasjon: 'Organisasjoner', 'organisasjoner': 'Organisasjoner', annet: 'Andre verv' };
+const yrs = (f, t) => f ? ` <span class="meta">(${f}${t === f ? '' : '–' + (t || '')})</span>` : '';
+const CURP = () => { const y = new Date().getFullYear(), s = y - ((y - 2025) % 4 + 4) % 4; return `${s}-${String(s + 4).slice(2)}`; };
+/** Er personen komitéleder nå? (gir 7 % tillegg i godtgjøringen) */
+const komLeder = b => (b?.kom || []).find(k => k[4] === 'KOMI' && /^leder$/i.test(k[1]) && !k[3] && k[5] === CURP());
+function bioHtml(b) {
+  const list = (items, n = 6) => items.length <= n ? `<ul class="blist">${items.join('')}</ul>` : `<ul class="blist">${items.slice(0, n).join('')}</ul><details class="more"><summary>Vis alle ${items.length}</summary><ul class="blist">${items.slice(n).join('')}</ul></details>`;
+  const uy = k => b.uy.filter(x => x[0] === k).sort((a, c) => (c[2] || 0) - (a[2] || 0)).map(x => `<li>${esc(x[1])}${yrs(x[2], x[3])}</li>`);
+  const per = [...b.per].reverse().map(x => `<li>${esc(x[0])} · ${esc(x[3] || 'Representant')}, ${esc(x[2])} <span class="meta">(${esc(x[1])})</span></li>`);
+  const kom = [...b.kom].sort((a, c) => String(c[5]).localeCompare(String(a[5])) || (a[4] === 'KOMI' ? -1 : 1)).map(x => `<li>${esc(x[1] || 'Medlem')}, ${esc(x[0])} <span class="meta">${esc(x[5])}</span></li>`);
+  const groups = {};
+  for (const v of b.verv) (groups[v[0] || 'annet'] ||= []).push(v);
+  const vg = Object.entries(groups).map(([t, l]) => `<div><h3>${esc(VTYPE[t] || t.charAt(0).toUpperCase() + t.slice(1))}</h3>${list(l.sort((a, c) => (c[4] || 0) - (a[4] || 0)).map(v => `<li>${esc([v[3], v[1]].filter(Boolean).join(', '))}${v[2] ? ` <span class="meta">${esc(v[2])}</span>` : ''}${yrs(v[4], v[5])}</li>`), 5)}</div>`).join('');
+  const ans = b.ans?.[0] ? `${b.ans[0]} år${b.ans[1] ? ` og ${b.ans[1]} dager` : ''}` : '';
+  return `<div class="bgrid">
+    ${uy('u').length ? `<div><h3>Utdanning</h3>${list(uy('u'))}</div>` : ''}
+    ${uy('y').length ? `<div><h3>Yrke</h3>${list(uy('y'))}</div>` : ''}
+    ${per.length ? `<div><h3>På Stortinget${ans ? ` <span class="meta">· ${ans} til sammen</span>` : ''}</h3>${list(per, 4)}</div>` : ''}
+    ${b.regj?.length ? `<div><h3>I regjering</h3><ul class="blist">${b.regj.map(r => `<li>${date(r[0])} – ${r[1] ? date(r[1]) : 'nå'}</li>`).join('')}</ul></div>` : ''}
+    ${kom.length ? `<div><h3>Komiteer og delegasjoner</h3>${list(kom, 5)}</div>` : ''}
+    </div>${vg ? `<div class="bgrid">${vg}</div>` : ''}<p class="meta">Fra Stortingets offisielle biografi. Foreldre, fødested og fødselsdato vises ikke.</p>`;
+}
+async function fillBio(id, box) {
+  const want = location.hash; const el = $(box); if (!el) return;
+  el.innerHTML = sec('s-bio', 'Biografi', '<p class="loading">Henter biografien …</p>');
+  const b = (await loadBio())[id];
+  if (location.hash !== want || !$(box)) return;
+  $(box).innerHTML = b ? sec('s-bio', 'Biografi', bioHtml(b)) : '';
+  const om = $('godtg'); if (om && b && komLeder(b) && D.godtgjoring) om.insertAdjacentHTML('beforeend', ` <span class="meta">Pluss ${D.godtgjoring.komiteleder} % som leder av ${esc(komLeder(b)[0])}.</span>`);
+}
+/** Godtgjøring fra Stortinget (fast, vedtatt av Stortinget hvert år). */
+function payHtml(kind) {
+  const G = D.godtgjoring; if (!G) return '';
+  const v = kind === 'pm' ? G.statsminister : kind === 'gov' ? G.statsrad : G.representant;
+  return `<dt>Godtgjøring</dt><dd id="godtg">${nf(v)} kr i året <span class="meta">fra ${date(G.fra, true)} (<a href="${url(G.url)}" rel="noopener">Stortinget</a>).</span></dd>`;
+}
+
+/** Selskapssiden lenker til børssiden når selskapet er notert. */
+const listedLink = (nr, navn) => { const a = Object.values(D.aksjer || {}).find(a => a.nr === nr) || null, st = a ? stocks.get(slug(a.tick || a.navn)) : stockByName(navn); return st?.notert ? `<p class="card">Børsnotert${st.marked ? ' på ' + esc(st.marked) : ''}${st.tick ? ` (<span class="tick">${esc(st.tick)}</span>)` : ''}. <a href="#aksje-${st.k}">Se innsidehandler, store eiere og mer →</a></p>` : ''; };
+/* ---------- penger til partiene (partifinansiering.no) ---------- */
+const PF = () => D.partifin;
+const PFTYPE = 'Bidrag fra privatpersoner vises bare som sum, fordi de viser politisk tilhørighet. Navnene står hos partifinansiering.no.';
+function partyMoney(p) {
+  const F = PF()?.partier?.[p]; if (!F) return '';
+  const yrs = PF().aar, max = Math.max(...yrs.map(y => F.aar[y]?.sum || 0), 1);
+  return `<h2 id="p-penger">Penger til partiet</h2>
+  <div class="tw"><table class="mxs"><thead><tr><th>År</th><th class="n">Bidrag i alt</th><th class="n hide-s">Fra organisasjoner og selskaper</th><th class="n hide-s">Fra privatpersoner</th><th></th></tr></thead><tbody>
+  ${[...yrs].reverse().map(y => { const a = F.aar[y] || { sum: 0, org: 0, priv: 0, privN: 0 }; return `<tr><td>${y}${PF().kilder[y] === 'valgår' ? ' <span class="meta">valgår</span>' : ''}</td><td class="n"><b>${money2(a.sum)}</b></td><td class="n hide-s">${money2(a.org)}</td><td class="n hide-s">${money2(a.priv)} <span class="meta">(${a.privN})</span></td><td class="hide-s" style="width:30%"><div class="dubar"><i style="width:${(100 * a.sum / max).toFixed(0)}%;background:${col(p)}"></i></div></td></tr>`; }).join('')}
+  </tbody></table></div>
+  ${F.topp?.length ? `<h3>Største givere ${yrs[0]}–${yrs[yrs.length - 1]}</h3><ul class="feed cols-2">${F.topp.slice(0, 12).map(g => `<li><div class="grow">${donorLink(g.navn)}</div><b class="n">${money2(g.sum)}</b></li>`).join('')}</ul>` : ''}
+  <p class="meta">Fra <a href="${url(PF().url)}" rel="noopener">partifinansiering.no</a>, alle partiledd. ${PFTYPE}</p>`;
+}
+const donorLink = n => { const c = cos.find(x => coKey(x.navn) === coKey(n)), st = stockByName(n); return c ? `<a href="#org-${c.nr}">${esc(n)}</a>` : st ? `<a href="#aksje-${st.k}">${esc(n)}</a>` : esc(n); };
+/** Bidrag fra et bestemt selskap eller en organisasjon (samme navn). */
+const donationsBy = navn => (PF()?.givere || []).find(g => coKey(g.navn) === coKey(navn));
+const donationHtml = navn => { const g = donationsBy(navn); if (!g) return ''; return sec('s-pf', 'Bidrag til partier', `<p>Har gitt <b>${money2(g.sum)}</b> til politiske partier ${PF().aar[0]}–${PF().aar[PF().aar.length - 1]}.</p><ul class="feed">${Object.entries(g.partier).sort((a, b) => b[1] - a[1]).map(([p, s]) => `<li><div class="grow"><a href="#parti-${p}">${dot(p)}${esc(pname(p))}</a></div><b class="n">${money2(s)}</b></li>`).join('')}</ul><p class="meta">Fra <a href="${url(PF().url)}" rel="noopener">partifinansiering.no</a>. Koblet på navn.</p>`); };
+function moneyView() {
+  const F = PF(); const v = $('v-money');
+  if (!F) { v.innerHTML = '<h1>Penger til partiene</h1><p class="empty">Data mangler.</p>'; return; }
+  const yrs = F.aar, last = yrs[yrs.length - 1], ps = PORDER().filter(p => F.partier[p]);
+  const tot = y => ps.reduce((a, p) => a + (F.partier[p].aar[y]?.sum || 0), 0), max = Math.max(...ps.map(p => F.partier[p].aar[last]?.sum || 0), 1);
+  v.innerHTML = `<h1>Penger til partiene</h1><p class="lede">Partiene må melde fra om bidrag de får fra selskaper, organisasjoner og privatpersoner. Her ser du hvem som gir mest, og til hvem.</p>
+  <div class="kpis"><div><b>${money2(tot(last))}</b><span>til stortingspartiene i ${last}</span></div><div><b>${nf(F.givere.length)}${F.givere.length >= 400 ? '+' : ''}</b><span>organisasjoner og selskaper har gitt</span></div><div><b>${yrs[0]}–${last}</b><span>år med data</span></div></div>
+  <div class="cols2"><section class="block"><div class="bh"><h2>Bidrag per parti, ${last}</h2></div>${ps.sort((a, b) => (F.partier[b].aar[last]?.sum || 0) - (F.partier[a].aar[last]?.sum || 0)).map(p => { const a = F.partier[p].aar[last] || { sum: 0 }; return `<div class="rrow"><a href="#parti-${p}">${dot(p)}${esc(PNICK(p))}</a><div class="dubar"><i style="width:${(100 * a.sum / max).toFixed(0)}%;background:${col(p)}"></i></div><b class="n">${kr(a.sum)}</b></div>`; }).join('')}
+  <p class="meta">${F.kilder[last] === 'valgår' ? 'Valgår: bidrag meldt fortløpende.' : 'Hele året.'} Alle partiledd (sentralt, fylke, kommune og ungdom).</p></section>
+  <section class="block"><div class="bh"><h2>Største givere ${yrs[0]}–${last}</h2></div><ul class="feed">${F.givere.slice(0, 25).map(g => `<li><div class="grow">${donorLink(g.navn)}<div class="meta">${Object.entries(g.partier).sort((a, b) => b[1] - a[1]).map(([p, s]) => `${dot(p)}${esc(short(p))} ${kr(s)}`).join(' · ')}</div></div><b class="n">${kr(g.sum)}</b></li>`).join('')}</ul></section></div>
+  <p class="meta">Kilde: <a href="${url(F.url)}" rel="noopener">partifinansiering.no</a> (Kommunal- og distriktsdepartementet og SSB). ${PFTYPE}</p>`;
+}
+
+/* ---------- børsen: ren oversikt og alle selskaper ---------- */
+const MKT = { 'Oslo Børs': 'Oslo Børs', 'Euronext Expand': 'Expand', 'Euronext Growth': 'Growth' };
+function bourseView() {
+  const L = D.innside || [], F = D.flagging || [];
+  const sum = l => l.reduce((a, x) => a + (x.ver || 0), 0), listed = [...stocks.values()].filter(s => s.notert);
+  $('ok').innerHTML = `<a href="#borsselskaper"><b>${listed.length}</b><span>selskaper på børsen</span></a><a href="#innside"><b>${kr(sum(L.filter(x => x.k === 'K')))}</b><span>kjøpt av innsidere, 60 dager</span></a><a href="#innside"><b>${kr(sum(L.filter(x => x.k === 'S')))}</b><span>solgt av innsidere</span></a><a href="#storeeiere"><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></a>`;
+  const grp = new Map();
+  for (const x of L) if (x.ver && (x.k === 'K' || x.k === 'S')) { const k = `${x.navn || ''}|${x.sel}|${x.k}`, g = grp.get(k) || { ...x, sum: 0, n: 0 }; g.sum += x.ver; g.n++; if (x.d > g.d) g.d = x.d; grp.set(k, g); }
+  const row = x => `<li>${avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || x.sel)}<div class="grow">${x.navn ? insiderLink(x.navn) : '–'}<div class="meta">${stockLink(x.sel)}${x.rolle ? ' · ' + esc(x.rolle) : ''}${x.n > 1 ? ` · ${x.n} handler` : ''}</div></div><b class="n">${kr(x.sum)}</b></li>`;
+  const top = k => [...grp.values()].filter(x => x.k === k).sort((a, b) => b.sum - a.sum).slice(0, 6);
+  const act = [...stocks.values()].filter(s => s.ins.length).sort((a, b) => b.ins.length - a.ins.length).slice(0, 6);
+  const own = new Map(); for (const f of F.filter(f => f.eier)) { const o = own.get(f.eier) || { eier: f.eier, sel: new Set() }; o.sel.add(f.sel); own.set(f.eier, o); }
+  $('bourseDash').innerHTML = `<div class="cols2 even">
+    ${sec('b-kjop', 'Største kjøp', `<ul class="feed">${top('K').map(row).join('')}</ul>`, '<a href="#innside">Alle →</a>')}
+    ${sec('b-salg', 'Største salg', `<ul class="feed">${top('S').map(row).join('')}</ul>`, '<a href="#innside">Alle →</a>')}
+    ${sec('b-akt', 'Mest innsidehandel', `<ul class="feed">${act.map(s => `<li><div class="grow"><a href="#aksje-${s.k}">${esc(s.navn)}</a><div class="meta">${esc([s.tick, MKT[s.marked]].filter(Boolean).join(' · '))}</div></div><b class="n">${s.ins.length} handler</b></li>`).join('')}</ul>`, '<a href="#borsselskaper">Alle selskaper →</a>')}
+    ${sec('b-eiere', 'Mest aktive storeiere', `<ul class="feed">${[...own.values()].sort((a, b) => b.sel.size - a.sel.size).slice(0, 6).map(o => `<li><div class="grow">${ownerLink(o.eier)}<div class="meta">${[...o.sel].slice(0, 3).map(s => esc(s)).join(', ')}${o.sel.size > 3 ? ' …' : ''}</div></div><b class="n">${o.sel.size} selsk.</b></li>`).join('')}</ul>`, '<a href="#storeeiere">Alle →</a>')}
+  </div>`;
+}
+function listedView() {
+  const q = $('lq').value.trim().toLowerCase(), m = $('lm').value, so = $('ls').value;
+  const all = [...stocks.values()].filter(s => s.notert);
+  const fin = s => { const nr = D.aksjer?.[s.tick || s.navn]?.nr; return nr ? RS(nr) : null; };
+  const list = all.filter(s => (!m || s.marked === m) && (!q || (s.navn + ' ' + (s.tick || '') + ' ' + (s.bransje || []).join(' ')).toLowerCase().includes(q)))
+    .sort((a, b) => so === 'inn' ? (fin(b)?.inn || -1) - (fin(a)?.inn || -1) : so === 'ins' ? b.ins.length - a.ins.length : a.navn.localeCompare(b.navn, 'nb'));
+  $('lk').textContent = `${list.length} av ${all.length} selskaper`;
+  $('listTable').tBodies[0].innerHTML = list.map(s => { const f = fin(s); return `<tr data-go="aksje-${s.k}"><td><a href="#aksje-${s.k}"><b>${esc(s.navn)}</b></a><div class="meta">${s.tick ? `<span class="tick">${esc(s.tick)}</span> ` : ''}${esc((s.bransje || []).join(', '))}</div></td><td class="hide-s">${esc(MKT[s.marked] || '–')}</td><td class="n">${f?.inn != null ? money2(f.inn, f.valuta) : '<span class="zero">–</span>'}</td><td class="n hide-s">${s.ins.length || '<span class="zero">0</span>'}</td></tr>`; }).join('') || '<tr><td colspan="4" class="empty">Ingen treff.</td></tr>';
 }
 
 /* ---------- aksjeposter (alle PEP) ---------- */
@@ -979,6 +1085,8 @@ function orgHtml(c, personer, pols) {
   return `<a class="back" href="#selskaper">← Selskaper</a><div class="head"><h1>${esc(c.navn)}</h1>${followBtn('org', c.nr)}</div><div class="meta">Org.nr. ${org(c.nr)} · ${esc(FORM[c.form] || c.formNavn || c.form)}</div>
   <dl class="facts"><dt>Kommune</dt><dd>${esc(c.kommune || '–')}</dd><dt>Bransje</dt><dd>${esc(c.nar || '–')}</dd><dt>Ansatte</dt><dd>${c.ans > 0 ? nf(c.ans) : 'Ikke registrert'}</dd><dt>Registrert</dt><dd>${esc(c.ar || '–')}</dd><dt>Status</dt><dd>${flag(c.flag) || 'Aktiv'}</dd></dl>
   ${finBlock(c.nr)}
+  ${listedLink(c.nr, c.navn)}
+  ${donationHtml(c.navn)}
   <h2>Roller</h2>${roleRows ? `<table><thead><tr><th>Navn</th><th>Rolle</th></tr></thead><tbody>${roleRows}</tbody></table>` : `<p class="empty">${c.nRoller ? `${c.nRoller} roller registrert. Henter navn fra Brønnøysund …` : 'Ingen personroller registrert.'}</p>`}
   ${declOnly.length ? `<h3>Oppgitt i interesseregisteret av</h3><p>${polChips(declOnly.map(p => p.id))}</p>` : ''}
   <div class="links"><a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${org(c.nr).replace(/ /g, '')}">Brønnøysundregistrene</a></div>`;
@@ -1059,7 +1167,8 @@ function goLive() {
   PORDER().filter(p => D.parti[p]).forEach(p => $('hp').add(new Option(pname(p), p)));
   holdingsView(); ['hg', 'hp', 'hq', 'hh'].forEach(id => $(id).addEventListener('input', holdingsView));
   insiderView(); ['it', 'iq', 'ip'].forEach(id => $(id).addEventListener('input', insiderView));
-  ownersView(); flaggingView(); ['fr', 'fq'].forEach(id => $(id).addEventListener('input', flaggingView));
+  bourseView(); listedView(); moneyView(); flaggingView(); ['fr', 'fq'].forEach(id => $(id).addEventListener('input', flaggingView));
+  ['lq', 'lm', 'ls'].forEach(id => $(id).addEventListener('input', listedView));
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
   $('fp').addEventListener('input', factsView); $('ft').addEventListener('input', factsView);
