@@ -493,3 +493,14 @@ dl.facts.slim{margin:6px 0 2px}
 .kpis.small b{font-size:20px}
 @media (max-width:720px){.flow{grid-template-columns:1fr 1fr}.flow li:nth-child(2)::after{content:none}}
 @media (max-width:460px){.flow{grid-template-columns:1fr}.flow li::after{content:none!important}}
+
+/* statiske sider og deling */
+.share{display:inline-block;font-size:13px;margin-top:6px;color:var(--mute)}
+.share::before{content:"↗ ";}
+body.static .bar{justify-content:space-between}
+body.static .sopen{color:#c9d1d9;font-size:14px;text-decoration:none;border:1px solid #2a323c;border-radius:8px;padding:8px 14px}
+body.static main{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
+.crumbs{font-size:13px;color:var(--mute);margin:6px 0 12px}.crumbs a{color:inherit}
+.cta{margin:26px 0 8px}.cta .btn{background:var(--hi);color:#111;padding:0 18px}
+p.cols{line-height:1.9}
+.shead{display:flex;gap:20px;align-items:flex-end;margin-bottom:10px}.shead figure{margin:0;flex:none}.shead img{width:120px;height:150px;object-fit:cover;border-radius:10px;display:block;background:var(--soft)}.shead figcaption{font-size:11px;color:var(--mute);margin-top:4px}.shead h1{margin:4px 0 0}
