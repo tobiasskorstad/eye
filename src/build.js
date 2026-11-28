@@ -7,6 +7,7 @@ import * as st from './stortinget.js';
 import * as reg from './register.js';
 import * as br from './brreg.js';
 import { fetchRegnskap } from './regnskap.js';
+import { fetchStats } from './stats.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
 import { diff, merge } from './changes.js';
@@ -218,12 +219,16 @@ export async function buildData() {
     } catch (e) { warnings.push('Faktasjekker feilet: ' + e.message); }
   }
 
+  // 6b. Tall i debatten (SSB og Norges Bank)
+  const tall = await fetchStats(previous?.tall, warnings);
+  log('tall i debatten', tall.length);
+
   // 7. Lagre: offentlig fil uten fødselsdatoer; intern fil for live-matching
   const internal = { reps: reps.map(r => ({ id: r.id, navn: r.navn, parti: r.parti, etternavn: r.etternavn, fodselsdato: r.fodselsdato })) };
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

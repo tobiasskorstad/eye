@@ -161,13 +161,23 @@
 
   <section id="v-facts" class="view" hidden>
     <h1>Faktasjekk</h1>
-    <p class="lede" id="factsLede"></p>
-    <div class="row"><select id="fp" aria-label="Parti"><option value="">Alle</option></select></div>
-    <ul class="news" id="factList"></ul>
-    <h2>Kritikk av faktasjekkerne</h2>
-    <ul class="news" id="factCrit"></ul>
-    <h2>Sjekk selv</h2>
-    <ul class="news" id="factSelf"></ul>
+    <p class="lede">Sjekk påstander mot offisielle tall, og les faktasjekkene fra Faktisk.no. EYE feller ingen dom selv: vi viser tallene, utviklingen og kilden.</p>
+    <nav class="toc" aria-label="På denne siden"><button type="button" data-jump="f-tall">Tall i debatten</button><button type="button" data-jump="f-sjekk">Faktasjekker</button><button type="button" data-jump="f-selv">Sjekk selv</button></nav>
+    <section class="block" id="f-tall"><div class="bh"><h2>Tall i debatten</h2><span class="meta" id="tallOppd"></span></div>
+      <p class="meta">De mest omstridte tallene i politikken, rett fra SSB og Norges Bank. Oppdateres automatisk. Trykk på et tall for å gå til kilden.</p>
+      <div class="stats" id="tallGrid"></div>
+    </section>
+    <section class="block" id="f-sjekk"><div class="bh"><h2>Faktasjekker fra Faktisk.no</h2></div>
+      <p class="meta" id="factsLede"></p>
+      <div class="row"><select id="fp" aria-label="Parti"><option value="">Alle</option></select><select id="ft" aria-label="Type"><option value="">Alle typer</option><option value="faktasjekk">Faktasjekker</option><option value="artikkel">Artikler</option></select></div>
+      <ul class="news" id="factList"></ul>
+      <h3>Kritikk av faktasjekkerne</h3>
+      <ul class="news" id="factCrit"></ul>
+    </section>
+    <section class="block" id="f-selv"><div class="bh"><h2>Sjekk selv</h2></div>
+      <ol class="howto"><li><b>Finn tallet påstanden bygger på.</b> «Ledigheten» kan bety SSBs arbeidskraftundersøkelse eller NAVs registrerte ledige – de gir ulike tall.</li><li><b>Sjekk perioden.</b> Sammenlignes samme måned eller kvartal? Er tallet sesongjustert?</li><li><b>Sjekk kilden.</b> Gå til tabellen hos SSB eller Norges Bank (lenkene over) – ikke til en skjermdump.</li><li><b>Se etter det som mangler.</b> Et riktig tall kan gi feil inntrykk hvis utgangspunktet er valgt for å passe.</li></ol>
+      <ul class="news" id="factSelf"></ul>
+    </section>
   </section>
 
   <section id="v-owners" class="view" hidden>
