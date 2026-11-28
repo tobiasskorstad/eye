@@ -34,7 +34,10 @@ await fs.writeFile(path.join(out, cssName), css);
 await fs.writeFile(path.join(out, jsName), js);
 await fs.writeFile(path.join(out, 'index.html'), html.replace('href="app.css"', `href="${cssName}"`).replace('src="app.js"', `src="${jsName}"`));
 // Store tilleggsdata lastes bare når de trengs: full biografi (åpnes på profilsider)
-const { bio = {}, dommere = null, ...lean } = data;
+const { bio = {}, dommere = null, oljefondet = null, ...lean } = data;
+// Oljefondet: hele investeringslisten i egen fil; data.json får bare nøkkeltallene
+await fs.writeFile(path.join(out, 'oljefondet.json'), JSON.stringify(oljefondet || {}));
+if (oljefondet) lean.oljefondet = { hentet: oljefondet.hentet, dato: oljefondet.beholdning?.dato, antall: oljefondet.beholdning?.antall, verdi: oljefondet.historikk?.verdi?.slice(-1)[0] || null, budsjett: oljefondet.budsjett };
 await fs.writeFile(path.join(out, 'bio.json'), JSON.stringify(bio));
 await fs.writeFile(path.join(out, 'dommere.json'), JSON.stringify(dommere || { liste: [] }));
 await fs.writeFile(path.join(out, 'data.json'), JSON.stringify(lean));

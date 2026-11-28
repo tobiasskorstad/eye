@@ -155,6 +155,15 @@ export function startMock(port = 0) {
     if (p === '/vessel/api/v1/vessels') return send(200, u.searchParams.get('page') !== '1' ? [] : [
       { name: 'HAVTRÅL', length: 64.2, buildYear: 2019, registrationMark: 'M 0001A', owners: [{ id: '913054210', entityType: 'COMPANY', name: 'SMITE AS' }] },
       { name: 'PRIVAT', length: 30, owners: [{ id: 'x', entityType: 'PERSON', name: 'Ola Fisker' }] }]);
+    if (p === '/nbim/api/investments/v2/init.json') return send(200, { data: { details: [{ date: '2025-12-31T00:00:00+01:00', fileName: '2025-12-31.json' }, { date: '2026-06-30T00:00:00+02:00', fileName: '2026-06-30.json' }] } });
+    if (p === '/nbim/api/investments/v2/2026-06-30.json') return send(200, { data: [
+      { n: 'Apple Inc', cc: 'US', a: { n: 900e9 }, at: 0, o: 1.2, eq: { s: 'Technology' } },
+      { n: 'Nestle SA', cc: 'CH', a: { n: 100e9 }, at: 0, o: 2.4, eq: { s: 'Consumer Staples' } },
+      { n: 'United States of America', cc: 'US', a: { n: 2000e9 }, at: 1, fi: { s: 'Government Related Bonds/Treasuries' } },
+      { n: 'Prologis', cc: 'US', a: { n: 50e9 }, at: 2, re: [{ s: 'Logistics' }, { s: 'Logistics' }] }] });
+    if (p === '/nbim/no/investeringene/fondets-verdi/') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><script>{"nok":{"id":"c1","series":[{"name":"Total markedsverdi","data":[[915062400000,172],[1767139200000,21000]]},{"name":"Aksjer","data":[[915062400000,70],[1767139200000,15000]]}]}}</script></html>'); }
+    if (p === '/nbim/no/investeringene/avkastning/') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><script>{"nok":{"id":"c2","series":[{"name":"Årlig avkastning","data":[[915062400000,9.26],[1767139200000,15.1]]}]}}</script></html>'); }
+    if (p === '/nbim/no/ansvarlig-forvaltning/utelukkelse-av-selskaper/') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<table><tr><th>Selskapsnavn</th><th>Kategori</th><th>Kriterie</th><th>Beslutning</th><th>Publiseringsdato</th></tr><tr><td>AES Corp/The</td><td>Produktbasert</td><td>Produksjon av kull</td><td>Utelukkelse</td><td>14.04.2016</td></tr></table>'); }
     if (p === '/dom/api/dommer/search') return send(200, { dommere: [{ id: 7, domstolId: 1, tittelId: 2, fornavn: 'Kari', etternavn: 'Dommer' }], totalCount: 1 });
     if (p === '/dom/api/domstol') return send(200, [{ id: 1, domstolNavn: 'Oslo tingrett' }]);
     if (p === '/dom/api/tittel') return send(200, [{ id: 2, navn: 'tingrettsdommer' }]);

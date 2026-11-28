@@ -12,6 +12,7 @@ import { fetchListed } from './borsen.js';
 import { fetchFiskeri } from './fiskeri.js';
 import { fetchShort } from './short.js';
 import { fetchJudges } from './dommere.js';
+import { fetchFund } from './oljefondet.js';
 import { fetchStats } from './stats.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
@@ -258,6 +259,12 @@ export async function buildData() {
   try { dommere = await fetchJudges({ warnings }); log('dommere', dommere.liste.length, 'lest', dommere.lest); }
   catch (e) { warnings.push('Dommerregisteret feilet: ' + e.message + (dommere ? ' – viser forrige' : '')); }
 
+  // 6c4. Oljefondet (NBIM) og bruken av fondsmidler (Finansdepartementet, manuelt)
+  let oljefondet = previous?.oljefondet || null;
+  try { oljefondet = (await fetchFund({ warnings })) || oljefondet; if (oljefondet) log('oljefondet', oljefondet.beholdning?.antall, oljefondet.utelukket?.length, 'utelukket'); }
+  catch (e) { warnings.push('Oljefondet feilet: ' + e.message); }
+  if (oljefondet) oljefondet.budsjett = await readJson(path.join(config.contentDir, 'oljefondet.json'));
+
   // 6d. Full biografi for representanter og statsråder (lastes av nettleseren bare når en profil åpnes)
   const govIds = (pep?.regjering || []).map(g => g.id).filter(id => id && !bios[id]);
   const govBios = govIds.length ? await st.fetchBiographies([...Object.keys(bios), ...govIds]).catch(() => ({})) : {};
@@ -270,7 +277,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, partifin, fiskeri, short, dommere, bio, godtgjoring, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, partifin, fiskeri, short, dommere, oljefondet, bio, godtgjoring, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

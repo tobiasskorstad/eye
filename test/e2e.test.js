@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, PARTIFIN_URL: `${base}/pf`, FDIR_AQUA: `${base}/aqua`, FDIR_VESSEL: `${base}/vessel`, SSR_API: `${base}/ssr`, DOMMER_API: `${base}/dom`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, PARTIFIN_URL: `${base}/pf`, FDIR_AQUA: `${base}/aqua`, FDIR_VESSEL: `${base}/vessel`, SSR_API: `${base}/ssr`, DOMMER_API: `${base}/dom`, NBIM_URL: `${base}/nbim`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -99,6 +99,12 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   const dom = pub.dommere.liste[0];
   assert.deepEqual([dom.navn, dom.tittel, dom.domstol, dom.inv[0].nr], ['Kari Dommer', 'tingrettsdommer', 'Oslo tingrett', '923609016']);
   assert.ok(!JSON.stringify(pub.dommere).includes('Per Privatpart'));
+  // oljefondet
+  assert.equal(pub.oljefondet.beholdning.dato, '2026-06-30', 'nyeste rapportering');
+  assert.equal(pub.oljefondet.beholdning.aksjer[0][0], 'Apple Inc');
+  assert.deepEqual(pub.oljefondet.historikk.verdi.slice(-1)[0], [2025, 21000]);
+  assert.equal(pub.oljefondet.utelukket[0].dato, '2016-04-14');
+  assert.equal(pub.oljefondet.budsjett.bruk, 608.4);
   assert.deepEqual(pub.short.liste[0].eiere, [['Test Capital LP', 0.8, '2026-11-20']]);
 });
 
