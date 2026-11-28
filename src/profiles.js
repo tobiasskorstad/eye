@@ -4,7 +4,7 @@
 //   kilden beviselig gjelder riktig person (riktig yrke og, for innsidere, at selskapet er nevnt eller er arbeidsgiver/verv
 //   i Wikidata). Alltid med lenke og lisens.
 // Bildene lastes ned i bygget og publiseres sammen med nettstedet: de besøkende henter ingenting fra tredjeparter.
-// Fødselsdatoer fjernes fra Wikipedia-teksten (samme prinsipp som resten av EYE).
+// Fødselsdatoer fjernes fra Wikipedia-teksten (samme prinsipp som resten av Maktkartet).
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -171,7 +171,7 @@ export async function buildProfiles(people, { max = 600, warnings = [] } = {}) {
   return out;
 }
 
-/** Alle personene EYE viser profiler for. */
+/** Alle personene Maktkartet viser profiler for. */
 export function profilePeople(reps, pep, innside, partier) {
   const pp = { Ap: 'Arbeiderpartiet', A: 'Arbeiderpartiet', H: 'Høyre', FrP: 'Fremskrittspartiet', Frp: 'Fremskrittspartiet', SV: 'Sosialistisk', Sp: 'Senterpartiet', KrF: 'Kristelig', V: 'Venstre', MDG: 'Miljøpartiet', R: 'Rødt' };
   const out = new Map(), add = p => { if (!out.has(p.key)) out.set(p.key, p); };

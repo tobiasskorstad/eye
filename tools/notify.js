@@ -33,9 +33,9 @@ for (const id of ids) {
   const mine = new Set(folger.filter(f => f.bruker === id).map(f => `${f.type}:${f.ref}`));
   const hits = fresh.filter(e => mine.has(`${e.type}:${e.ref}`) || (e.type === 'rep' && mine.has(`parti:${e.parti}`))).slice(0, 30);
   if (!hits.length) continue;
-  const html = `<p>Dette er nytt for det du følger på EYE:</p><ul>${hits.map(e => `<li><a href="${esc(e.lenke?.startsWith('#') ? SITE_URL + e.lenke : e.lenke)}">${esc(e.tekst)}</a></li>`).join('')}</ul><p><a href="${SITE_URL}#konto">Endre varsler eller slett kontoen</a></p>`;
+  const html = `<p>Dette er nytt for det du følger på Maktkartet:</p><ul>${hits.map(e => `<li><a href="${esc(e.lenke?.startsWith('#') ? SITE_URL + e.lenke : e.lenke)}">${esc(e.tekst)}</a></li>`).join('')}</ul><p><a href="${SITE_URL}#konto">Endre varsler eller slett kontoen</a></p>`;
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: 'Bearer ' + RESEND, 'content-type': 'application/json' },
-    body: JSON.stringify({ from: FRA, to: [email[id]], subject: `EYE: ${hits.length} ${hits.length === 1 ? 'nyhet' : 'nyheter'} for det du følger`, html }) });
+    body: JSON.stringify({ from: FRA, to: [email[id]], subject: `Maktkartet: ${hits.length} ${hits.length === 1 ? 'nyhet' : 'nyheter'} for det du følger`, html }) });
   if (r.ok) n++; else console.log('[varsler] e-post feilet', r.status);
   await new Promise(r => setTimeout(r, 600)); // Resend: maks 2 per sekund
 }
