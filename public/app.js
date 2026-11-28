@@ -100,15 +100,15 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['home', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['home', 'questions', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
-  st: [['stortinget', 'Representanter'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
+  st: [['stortinget', 'Representanter'], ['sporsmal', 'Spørsmål'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
   pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['selskaper', 'Selskaper']],
   ei: [['eiere', 'Toppliste'], ['storeeiere', 'Store eiere'], ['innside', 'Alle innsidehandler']],
   fa: [], om: [], du: [], ko: [], ov: [], rg: [],
 };
-const HASHVIEW = { oversikt: ['home', 'ov'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { oversikt: ['home', 'ov'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -409,37 +409,39 @@ const insiderLink = n => n && insiders.has(slug(n)) ? `<a href="#person-${slug(n
 
 /* ---------- oversikt (forsiden) ---------- */
 const cut = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n).replace(/\s\S*$/, '') + ' …' : t; };
+const qUrl = q => `https://www.stortinget.no/no/Saker-og-publikasjoner/Sporsmal/${q.t === 'I' ? 'Interpellasjoner/Interpellasjon/' : 'Skriftlige-sporsmal-og-svar/Skriftlig-sporsmal/'}?qnid=${encodeURIComponent(q.id)}`;
+// Forsiden er bevisst enkel: inngangene til hver del og tre høydepunkter. Detaljene bor på egne sider.
 function homeView() {
-  const L = D.innside || [], fk = D.faktasjekk?.sjekker || [];
-  $('homeLede').textContent = `Maktkartet samler det som står i offentlige registre om Stortinget, regjeringen og de største pengene på Oslo Børs, og lenker alltid til kilden. Oppdatert ${date(D.hentet, true)}.`;
-  $('homeKpis').innerHTML = `<a href="#stortinget"><b>${reps.length}</b><span>stortingsrepresentanter</span></a><a href="#regjeringen"><b>${govs.length}</b><span>statsråder</span></a><a href="#handler"><b>${trades.length}</b><span>aksjehandler fra politikere</span></a><a href="#aksjeposter"><b>${holdings.length}</b><span>aksjeposter hos politisk eksponerte</span></a><a href="#innside"><b>${L.length}</b><span>innsidehandler siste 60 dager</span></a>`;
-  const gl = [...govs].sort((a, b) => govRank(a.tittel) - govRank(b.tittel) || a.tittel.localeCompare(b.tittel, 'nb'));
-  $('homeGov').innerHTML = gl.length ? sec('h-gov', 'Regjeringen', `<div class="strip">${gl.slice(0, 8).map(g => `<a href="#statsrad-${hid(g.id)}" title="${esc(g.navn)}, ${esc(g.tittel)}">${avatar(govKeys(g), g.navn, g.parti, 'm')}<b>${esc(g.navn)}</b><span>${esc(g.tittel)}</span></a>`).join('')}</div>`, `<a href="#regjeringen">Alle ${gl.length} →</a>`) : '';
-  const card = (title, link, body) => `<section class="block"><div class="bh"><h2>${title}</h2>${link}</div>${body}</section>`;
-  const row = (av, main, meta, right = '') => `<li>${av}<div class="grow">${main}<div class="meta">${meta}</div></div>${right ? `<b class="n">${right}</b>` : ''}</li>`;
-  const tr = trades.slice(0, 6);
-  // Største innsidehandler: samme person, selskap og retning slås sammen (f.eks. fem kjøp på rad blir én linje)
-  const grp = new Map();
-  for (const x of L) if (x.ver && (x.k === 'K' || x.k === 'S')) {
-    const k = `${x.navn || ''}|${x.sel}|${x.k}`, g = grp.get(k) || { ...x, sum: 0, n: 0, d: x.d };
-    g.sum += x.ver; g.n++; if (x.d > g.d) g.d = x.d; grp.set(k, g);
-  }
-  const big = [...grp.values()].sort((a, b) => b.sum - a.sum).slice(0, 6);
-  // Siste spørsmål til regjeringen (nyeste per representant)
-  const qs = reps.filter(r => r.siste?.d).sort((a, b) => b.siste.d.localeCompare(a.siste.d)).slice(0, 6);
-  const qUrl = q => `https://www.stortinget.no/no/Saker-og-publikasjoner/Sporsmal/${q.t === 'I' ? 'Interpellasjoner/Interpellasjon/' : 'Skriftlige-sporsmal-og-svar/Skriftlig-sporsmal/'}?qnid=${encodeURIComponent(q.id)}`;
-  const A = P?.naaAuto?.nyheter || [];
-  const order = P ? partyOrder() : [];
-  const fkNew = fk.filter(x => x.d).slice(0, 5), stille = D.faktasjekk?.nyeste && (Date.now() - Date.parse(D.faktasjekk.nyeste)) / 864e5 > 30;
-  $('homeDash').innerHTML = [
-    tr.length && card('Siste aksjehandler fra politikere', '<a href="#handler">Alle →</a>', `<ul class="feed">${tr.map(t => row(avatar(t.r.h ? ['rep:' + t.rep] : ['gov:' + t.pep], t.r.navn, t.r.parti), `${t.r.h ? `<a href="#rep-${t.r.h}">${esc(t.r.navn)}</a>` : t.pep && govById[t.pep] ? `<a href="#statsrad-${hid(t.pep)}">${esc(t.r.navn)}</a>` : esc(t.r.navn)} ${trade(t.k).toLowerCase()} ${esc(t.sel)}`, `${sdate(t.d)} · ${esc(t.r.parti)}`, kr(t.ver))).join('')}</ul>`),
-    big.length && card('Største innsidehandler på børsen', '<a href="#eiere">Toppliste →</a>', `<ul class="feed">${big.map(x => row(avatar(x.navn ? ['ins:' + slug(x.navn)] : [], x.navn || x.sel), `${x.navn ? insiderLink(x.navn) : esc(x.sel)} <span class="meta">${x.n > 1 ? `${x.n} ${x.k === 'K' ? 'kjøp' : 'salg'}` : ITYPE[x.k]}</span>`, `${esc(x.rolle ? x.rolle + ', ' : '')}${stocks.has(slug(x.tick || x.sel)) ? `<a href="#aksje-${slug(x.tick || x.sel)}">${esc(x.sel)}</a>` : esc(x.sel)} · ${x.n > 1 ? 'siste ' : ''}${sdate(x.d)}`, kr(x.sum))).join('')}</ul><p class="meta">Siste 60 dager. Flere handler fra samme person i samme selskap er slått sammen.</p>`),
-    qs.length && card('Siste spørsmål til regjeringen', '<a href="#stortinget">Alle representanter →</a>', `<ul class="feed">${qs.map(r => row(avatar(['rep:' + r.id], r.navn, r.parti), `<a href="${url(qUrl(r.siste))}" rel="noopener">${esc(cut(r.siste.tit, 110))}</a>`, `<a href="#rep-${r.h}">${esc(r.navn)}</a> · ${esc(r.parti)} · ${date(r.siste.d)}`)).join('')}</ul>`),
-    A.length && card('Akkurat nå i nyhetene', '<a href="#nyheter">Alle nyheter →</a>', `<ul class="feed">${A.slice(0, 5).map(n => row('', `<a href="${url(n.url)}" rel="noopener">${esc(n.tittel)}</a>`, `${esc(n.kilde)} · ${n.ps.map(x => dot(x) + esc(short(x))).join(' ')}`)).join('')}</ul>`),
-    order.length && card('Partiene', '<a href="#partier">Mer →</a>', `<ul class="feed">${order.map(p => { const x = P.partier[p], lk = leaderKeys(p), seats = reps.filter(r => r.parti === p).length, poll = P.maling?.snitt[p]; return row(avatar(lk, x.leder, p), `<a href="#parti-${p}">${esc(pname(p))}</a>`, `${esc(x.leder)} · ${seats} mandater`, poll != null ? poll.toFixed(1).replace('.', ',') + ' %' : ''); }).join('')}</ul>${P.maling ? `<p class="meta">Til høyre: snitt på målingene (${esc(P.maling.kilde)}).</p>` : ''}`),
-    (D.tall || []).length && card('Tall i debatten', '<a href="#faktasjekk">Alle tall →</a>', `<ul class="feed">${D.tall.filter(t => ['ledighet', 'prisvekst', 'rente', 'bnp'].includes(t.id)).map(t => row('', `<a href="${url(t.url)}" rel="noopener">${esc(t.tittel)}</a>`, `${esc(t.periode)}${t.før ? ` · ${esc(t.før.periode)}: ${fmtNum(t.før.verdi, t.des)} %` : ''}`, `${fmtNum(t.verdi, t.des)} %`)).join('')}</ul><p class="meta">Fra SSB og Norges Bank.</p>`),
-    fkNew.length && card('Nytt fra Faktisk.no', '<a href="#faktasjekk">Alle →</a>', `<ul class="feed">${fkNew.map(x => row('', `<a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a>`, `${x.type === 'artikkel' ? 'Artikkel' : 'Faktasjekk'} · ${date(x.d)}${(x.p || []).length ? ' · ' + x.p.map(y => dot(y) + esc(short(y))).join(' ') : ''}`)).join('')}</ul>${stille ? `<p class="meta">Faktisk.no har ikke publisert noe nytt siden ${date(D.faktasjekk.nyeste)}.</p>` : ''}`),
+  const L = D.innside || [];
+  $('homeLede').textContent = 'Hva politikerne eier, hvilke aksjer de handler, hvem som eier børsen og hva partiene mener. Rett fra offentlige registre, med lenke til kilden.';
+  const tile = (h, n, t, txt, u) => `<a class="tile" href="#${h}"><span class="tn">${n}<small>${u}</small></span><b>${t}</b><span>${txt}</span><i aria-hidden="true">→</i></a>`;
+  $('homeTiles').innerHTML = [
+    tile('stortinget', nf(reps.length), 'Stortinget', 'Representantene: verv, eierandeler, spørsmål og stemmer.', 'representanter'),
+    tile('regjeringen', nf(govs.length), 'Regjeringen', 'Statsrådene og hva de eier.', 'statsråder'),
+    tile('handler', nf(trades.length), 'Politikernes penger', 'Aksjehandler og aksjeposter fra folkevalgte.', 'aksjehandler'),
+    tile('eiere', nf(L.length), 'Børs og eiere', 'Innsidehandler og store eiere på Oslo Børs.', 'innsidehandler siste 60 dager'),
+    tile('faktasjekk', nf((D.tall || []).length), 'Faktasjekk', 'Sjekk påstander mot SSB og Norges Bank, og les faktasjekker.', 'nøkkeltall'),
+    tile('forklart', nf(D.dummies?.tema?.length || 0), 'Politikk forklart', 'Sakene forklart. Se hvilke partier som er enige med deg.', 'saker'),
+  ].join('');
+  // Tre høydepunkter: siste politikerhandel, største innsidehandel og siste spørsmål
+  const t = trades[0];
+  const big = [...L].filter(x => x.ver && (x.k === 'K' || x.k === 'S')).sort((a, b) => b.ver - a.ver)[0];
+  const q = reps.filter(r => r.siste?.d).sort((a, b) => b.siste.d.localeCompare(a.siste.d))[0];
+  const hl = (lbl, href, body, meta) => `<div class="hl"><span class="lbl">${lbl}</span>${body}<div class="meta">${meta}</div><a class="more" href="${href}">Se alle →</a></div>`;
+  $('homeHl').innerHTML = [
+    t && hl('Siste aksjehandel', '#handler', `<p>${t.r.h ? `<a href="#rep-${t.r.h}">${esc(t.r.navn)}</a>` : esc(t.r.navn)} ${t.k === 'K' ? '<span class="k">kjøpte</span>' : t.k === 'S' ? '<span class="s">solgte</span>' : 'handlet'} ${stockLink(t.sel)}</p>`, `${nf(t.ver)} kr · ${sdate(t.d)} · ${esc(t.r.parti)}`),
+    big && hl('Største innsidehandel', '#eiere', `<p>${big.navn ? insiderLink(big.navn) : esc(big.sel)} ${big.k === 'K' ? '<span class="k">kjøpte</span>' : '<span class="s">solgte</span>'} ${stockLink(big.sel)}</p>`, `${money(big)} · ${sdate(big.d)}`),
+    q && hl('Siste spørsmål til regjeringen', '#sporsmal', `<p><a href="${url(qUrl(q.siste))}" rel="noopener">${esc(cut(q.siste.tit, 110))}</a></p>`, `<a href="#rep-${q.h}">${esc(q.navn)}</a> · ${esc(q.parti)} · ${date(q.siste.d)}`),
   ].filter(Boolean).join('');
+  $('homeMeta').textContent = `Oppdatert ${date(D.hentet, true)}.`;
+}
+// Stortinget › Spørsmål: nyeste spørsmål fra hver representant, og hvem som spør mest.
+function questionsView() {
+  const qs = reps.filter(r => r.siste?.d).sort((a, b) => b.siste.d.localeCompare(a.siste.d));
+  const top = [...reps].filter(r => r.q).sort((a, b) => b.q - a.q).slice(0, 10), max = top[0]?.q || 1;
+  $('v-questions').innerHTML = `<h1>Spørsmål til regjeringen</h1><p class="lede">Representantene kan stille skriftlige spørsmål til statsrådene, som må svare. Her er det nyeste spørsmålet fra hver representant, og hvem som spør mest.</p>
+  <div class="cols2"><section class="block"><div class="bh"><h2>Nyeste spørsmål</h2></div><ul class="feed">${qs.slice(0, 40).map(r => `<li>${avatar(['rep:' + r.id], r.navn, r.parti)}<div class="grow"><a href="${url(qUrl(r.siste))}" rel="noopener">${esc(r.siste.tit)}</a><div class="meta"><a href="#rep-${r.h}">${esc(r.navn)}</a> · ${esc(r.parti)} · ${date(r.siste.d)}</div></div></li>`).join('')}</ul></section>
+  <section class="block"><div class="bh"><h2>Flest spørsmål denne perioden</h2></div><ul class="feed">${top.map(r => `<li>${avatar(['rep:' + r.id], r.navn, r.parti)}<div class="grow"><a href="#rep-${r.h}">${esc(r.navn)}</a><div class="dubar"><i style="width:${(100 * r.q / max).toFixed(0)}%;background:${col(r.parti)}"></i></div></div><b class="n">${nf(r.q)}</b></li>`).join('')}</ul></section></div>`;
 }
 /** Profilnøkler for en partileder: representant, statsråd eller egen partileder-profil. */
 function leaderKeys(p) {
@@ -1031,7 +1033,7 @@ function goLive() {
   Object.entries(D.kom).sort((a, b) => a[1].localeCompare(b[1], 'nb')).forEach(([k, v]) => $('ko').add(new Option(v, k)));
   for (const sel of ['vp', 'np', 'fp']) PORDER().filter(p => D.parti[p]).forEach(p => $(sel).add(new Option(pname(p), p)));
   [...new Set(allNews().map(n => n.kilde))].sort().forEach(s => $('ns').add(new Option(s, s)));
-  homeView(); govView(); chamber(); repList(); tradesView(); cosView(); partiesView(); votesView(); agreeView(); promisesView(); newsView(); factsView(); dummiesView();
+  homeView(); questionsView(); govView(); chamber(); repList(); tradesView(); cosView(); partiesView(); votesView(); agreeView(); promisesView(); newsView(); factsView(); dummiesView();
   $('v-dummies').addEventListener('click', e => {
     const tab = e.target.closest('[data-tab]'), go = e.target.closest('[data-go-q]'), a = e.target.closest('[data-a]');
     const top = () => { const el = $('duTabs'); if (el.getBoundingClientRect().top < 0 || el.getBoundingClientRect().top > innerHeight * .6) el.scrollIntoView({ block: 'start' }); };
