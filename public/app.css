@@ -473,3 +473,5 @@ dl.facts.slim{margin:6px 0 2px}
 #v-owners .kpis>a,#v-owners .kpis>div{color:var(--ink);text-decoration:none}
 @media (max-width:860px){.cols2.even{grid-template-columns:1fr}}
 .bgrid h3 .meta{text-transform:none;letter-spacing:0;font-weight:500}
+.spk{display:flex;flex-direction:column;justify-content:center;color:var(--ink)}.spk .spark{color:var(--hi)}
+.rank{font-weight:800;color:var(--mute);min-width:1.6em;font-variant-numeric:tabular-nums}

@@ -101,7 +101,7 @@ export function parseFlagging(body = '', title = '', issuer = '') {
   const pst = after ? Number(after[1].replace(',', '.')) : pcts.length ? pcts[pcts.length - 1] : null;
   const norm = x => x.toLowerCase().replace(/[^\p{L}\d]/gu, '');
   const FORM = '(?:Corporation|Corp\\.?|AS|ASA|AB|ApS|A\\/S|Ltd\\.?|Limited|LLC|LLP|LP|L\\.P\\.|Inc\\.?|plc|PLC|GmbH|SE|AG|N\\.V\\.|S\\.A\\.|SA|S\\.à r\\.l\\.|Sàrl|KS|Oyj|Holding|Holdings|Fund|Fondet|Folketrygdfondet)';
-  const cands = [...first.matchAll(new RegExp(`((?:[${U}0-9][\\p{L}&.'\\-0-9]*\\s){0,6}${FORM})(?=[\\s,.)"'(]|$)`, 'gu'))].map(m => m[1].trim().replace(/^.*[.:]\s+/, ''))
+  const cands = [...first.matchAll(new RegExp(`((?:[${U}0-9][\\p{L}&.'\\-0-9]*\\s){0,6}${FORM})(?=[\\s,.)"'(]|$)`, 'gu'))].map(m => m[1].trim().replace(/^.*\p{Ll}{2}[.:]\s+/u, '')) // fjerner setningen foran, men ikke forkortelser som «J.P.»
     .filter(c => c.split(/\s+/).length >= 2 && !/^\d/.test(c) && (!issuer || norm(c) !== norm(issuer)) && !/^(The|Notification|Disclosure|Reference|Oslo|Please)\b/.test(c));
   // Personer som flagger: «Kjell Inge Røkke has …» (navn før verb)
   const person = first.match(new RegExp(`(${NAME})(?:,| has| have| through| via| and)`, 'u'))?.[1];
