@@ -148,6 +148,17 @@ export function startMock(port = 0) {
         { messageId: 7007, title: 'Disclosure of large shareholding', issuerName: 'Yara International ASA', issuerSign: 'YAR', markets: ['XOSL'], publishedTime: '2026-03-24T08:00:00Z' }]
       : [] } }); }
     if (p === '/ob/message' && u.searchParams.get('messageId') === '7005') return send(200, { data: { message: { publishedTime: '2026-08-20T06:00:00Z', body: 'Testvekst reports growth.\n\nAbout Testvekst\n\nTestvekst AS develops software for Norwegian schools and municipalities, with offices in Bergen.\n\nContacts\n\nIR' } } });
+    if (p === '/aqua/api/v1/licenses-overview') return send(200, u.searchParams.get('range') !== '0-99' ? [] : [
+      { licenseNr: 'H-1', openLegalEntityNr: '913054210', legalEntityName: 'SMITE AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'NORDLAND' }, version: { status: 'APPROVED' } },
+      { licenseNr: 'H-2', openLegalEntityNr: '913054210', legalEntityName: 'SMITE AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'TROMS' }, version: { status: 'APPROVED' } },
+      { licenseNr: 'H-3', openLegalEntityNr: '999999999', legalEntityName: 'SETTEFISK AS', capacity: { current: 2, unit: 'MILL', type: 'STK' }, type: { tag: 'KOMM-SETT' }, placement: { countyName: 'NORDLAND' }, version: { status: 'APPROVED' } }]);
+    if (p === '/vessel/api/v1/vessels') return send(200, u.searchParams.get('page') !== '1' ? [] : [
+      { name: 'HAVTRÅL', length: 64.2, buildYear: 2019, registrationMark: 'M 0001A', owners: [{ id: '913054210', entityType: 'COMPANY', name: 'SMITE AS' }] },
+      { name: 'PRIVAT', length: 30, owners: [{ id: 'x', entityType: 'PERSON', name: 'Ola Fisker' }] }]);
+    if (p === '/ssr/api/v2/instruments') return send(200, [
+      { isin: 'NO0010096985', issuerName: 'EQUINOR', events: [
+        { date: '2026-11-20T00:00:00', shortPercent: 0.8, activePositions: [{ date: '2026-11-20T00:00:00', shortPercent: 0.8, positionHolder: 'Test Capital LP' }] },
+        { date: '2026-10-01T00:00:00', shortPercent: 0.5, activePositions: [] }] }]);
     if ((m = p.match(/^\/pf\/nb\/(arlige-bidrag|bidrag-i-valgar)\/Json$/))) {
       const y = u.searchParams.get('year'), code = u.searchParams.get('centralPartyListCode');
       if (m[1] !== 'arlige-bidrag' || y !== '2025') return send(200, []);

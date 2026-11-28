@@ -55,3 +55,30 @@ test('biografi: utdanning, verv og regjering, uten foreldre og fødested', () =>
   assert.equal(b.ans[0], 37);
   assert.ok(!JSON.stringify(b).includes('Asbjørn') && !JSON.stringify(b).includes('Bergen"]'.slice(0, 0) + 'foede'));
 });
+
+import { summarizeLicenses, summarizeVessels } from '../src/fiskeri.js';
+import { summarizeShort } from '../src/short.js';
+
+test('havbruk: tillatelser og MTB per selskap, bare godkjente', () => {
+  const l = summarizeLicenses([
+    { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 780, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'VESTLAND' }, version: { status: 'APPROVED' } },
+    { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 945, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, placement: { countyName: 'NORDLAND' }, version: { status: 'APPROVED' } },
+    { openLegalEntityNr: '111111111', legalEntityName: 'MOWI NORWAY AS', capacity: { current: 500, unit: 'TN', type: 'MTK' }, type: { tag: 'KOMM-MATF' }, version: { status: 'CANCELLED' } },
+  ]);
+  assert.deepEqual(l, [{ nr: '111111111', navn: 'Mowi Norway AS', n: 2, matf: 2, mtb: 1725, fylker: ['Vestland', 'Nordland'] }]);
+});
+
+test('fartøy: bare selskaper, ikke privatpersoner', () => {
+  const v = summarizeVessels([{ name: 'LIBAS', length: 94.3, owners: [{ id: '222222222', entityType: 'COMPANY', name: 'LIBAS AS' }] }, { name: 'X', owners: [{ id: '1', entityType: 'PERSON', name: 'Per' }] }]);
+  assert.equal(v.length, 1); assert.equal(v[0].fartoy[0][0], 'Libas');
+});
+
+test('shortsalg: dagens posisjon, aktører og serie med eldste først', () => {
+  const [s] = summarizeShort([{ isin: 'NO1', issuerName: 'NEL', events: [
+    { date: '2026-01-01T00:00:00', shortPercent: 2 },
+    { date: '2026-11-01T00:00:00', shortPercent: 3.5, activePositions: [{ date: '2026-10-01', shortPercent: 1, positionHolder: 'B' }, { date: '2026-11-01', shortPercent: 2.5, positionHolder: 'A' }] },
+  ] }], new Date('2026-11-28'));
+  assert.equal(s.pst, 3.5);
+  assert.deepEqual(s.eiere.map(e => e[0]), ['A', 'B']);
+  assert.deepEqual(s.serie.map(x => x[0]), ['2026-01-01', '2026-11-01']);
+});

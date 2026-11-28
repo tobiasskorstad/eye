@@ -7,7 +7,7 @@ import { getJson, allowHosts } from './http.js';
 
 const API = config.osloBorsApi;
 allowHosts([API]);
-const PARSER_V = 3; // 3: ny tolker (insider-parse.js) med flere navnemønstre, valuta, flaggeeier fra tittel og selskapsbeskrivelse
+const PARSER_V = 4; // 3: ny tolker (insider-parse.js) med flere navnemønstre, valuta, flaggeeier fra tittel og selskapsbeskrivelse
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 export { who, cleanName, parseInsider, parseFlagging, about } from './insider-parse.js';
 import { cleanName, parseInsider, parseFlagging } from './insider-parse.js';

@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, PARTIFIN_URL: `${base}/pf`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, PARTIFIN_URL: `${base}/pf`, FDIR_AQUA: `${base}/aqua`, FDIR_VESSEL: `${base}/vessel`, SSR_API: `${base}/ssr`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -90,6 +90,12 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   // biografi og godtgjøring
   assert.ok(Object.keys(pub.bio).length > 0 && Object.values(pub.bio).every(b => Array.isArray(b.uy) && Array.isArray(b.verv)));
   assert.ok(pub.godtgjoring.representant > 1e6);
+  // havbruk, havfiskeflåten og shortsalg
+  assert.deepEqual(pub.fiskeri.havbruk.eiere[0], { nr: '913054210', navn: 'Smite AS', n: 2, matf: 2, mtb: 1560, fylker: ['Nordland', 'Troms'] });
+  assert.equal(pub.fiskeri.fartoy.eiere.length, 1, 'fartøy eid av privatpersoner tas ikke med');
+  assert.ok(!JSON.stringify(pub.fiskeri).includes('Ola Fisker'));
+  assert.equal(pub.short.liste[0].pst, 0.8);
+  assert.deepEqual(pub.short.liste[0].eiere, [['Test Capital LP', 0.8, '2026-11-20']]);
 });
 
 test('offentlige data: alt fra registrene, men ingen fødselsdatoer', async () => {

@@ -42,3 +42,8 @@ test('selskapsbeskrivelse: bare når meldingen har en', () => {
   assert.equal(about('Ingen beskrivelse her.\n\nContacts\n\nOla'), null);
   assert.match(about('Tekst.\n\nAbout Norconsult\n\nNorconsult is a leading pan-Nordic interdisciplinary consulting firm combining engineering and architecture.\n\nFor further information'), /^Norconsult is a leading/);
 });
+
+test('flagging: forkortelser i eiernavn beholdes (J.P. Morgan)', () => {
+  const body = 'Reference is made to the notification. On 20 November 2026, J.P. Morgan Securities PLC crossed above 5% of the shares in Testselskap ASA and now holds 5.2 per cent.';
+  assert.equal(parseFlagging(body, 'Disclosure of large shareholding', 'Testselskap ASA').eier, 'J.P. Morgan Securities PLC');
+});

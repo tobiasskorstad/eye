@@ -30,6 +30,9 @@ export const config = {
   brregRegnskap: env.BRREG_REGNSKAP || 'https://data.brreg.no/regnskapsregisteret',
   ssbApi: env.SSB_API || 'https://data.ssb.no/api/pxwebapi/v2',
   nbApi: env.NB_API || 'https://data.norges-bank.no/api',
+  fdirAqua: env.FDIR_AQUA || 'https://api.fiskeridir.no/pub-aqua',
+  fdirVessel: env.FDIR_VESSEL || 'https://api.fiskeridir.no/vessel-api',
+  ssrApi: env.SSR_API || 'https://ssr.finanstilsynet.no',
   partifinUrl: env.PARTIFIN_URL || 'https://www.partifinansiering.no',
   brregApi: env.BRREG_API || 'https://data.brreg.no/enhetsregisteret/api',
 
