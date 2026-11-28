@@ -11,6 +11,7 @@ import { fetchPartifin } from './partifin.js';
 import { fetchListed } from './borsen.js';
 import { fetchFiskeri } from './fiskeri.js';
 import { fetchShort } from './short.js';
+import { fetchJudges } from './dommere.js';
 import { fetchStats } from './stats.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
@@ -252,6 +253,11 @@ export async function buildData() {
   const short = (await fetchShort({ warnings })) || previous?.short || null;
   if (short) log('short', short.liste.length, 'aksjer');
 
+  // 6c3. Dommernes sidegjøremål (Domstoladministrasjonen)
+  let dommere = previous?.dommere || null;
+  try { dommere = await fetchJudges({ warnings }); log('dommere', dommere.liste.length, 'lest', dommere.lest); }
+  catch (e) { warnings.push('Dommerregisteret feilet: ' + e.message + (dommere ? ' – viser forrige' : '')); }
+
   // 6d. Full biografi for representanter og statsråder (lastes av nettleseren bare når en profil åpnes)
   const govIds = (pep?.regjering || []).map(g => g.id).filter(id => id && !bios[id]);
   const govBios = govIds.length ? await st.fetchBiographies([...Object.keys(bios), ...govIds]).catch(() => ({})) : {};
@@ -264,7 +270,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, partifin, fiskeri, short, bio, godtgjoring, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, tall, dummies, partifin, fiskeri, short, dommere, bio, godtgjoring, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

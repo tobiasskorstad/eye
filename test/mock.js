@@ -155,6 +155,12 @@ export function startMock(port = 0) {
     if (p === '/vessel/api/v1/vessels') return send(200, u.searchParams.get('page') !== '1' ? [] : [
       { name: 'HAVTRÅL', length: 64.2, buildYear: 2019, registrationMark: 'M 0001A', owners: [{ id: '913054210', entityType: 'COMPANY', name: 'SMITE AS' }] },
       { name: 'PRIVAT', length: 30, owners: [{ id: 'x', entityType: 'PERSON', name: 'Ola Fisker' }] }]);
+    if (p === '/dom/api/dommer/search') return send(200, { dommere: [{ id: 7, domstolId: 1, tittelId: 2, fornavn: 'Kari', etternavn: 'Dommer' }], totalCount: 1 });
+    if (p === '/dom/api/domstol') return send(200, [{ id: 1, domstolNavn: 'Oslo tingrett' }]);
+    if (p === '/dom/api/tittel') return send(200, [{ id: 2, navn: 'tingrettsdommer' }]);
+    if (p === '/dom/api/investering/dommer/7') return send(200, [{ selskapetsNavn: 'Equinor', organisasjonsnummer: '923609016', selskapsTypeNavn: 'ASA', opphorsdato: null }]);
+    if (p === '/dom/api/virksomhet/dommer/7') return send(200, [{ virksomhetTypeNavn: 'Voldgift', oppdragsgiver1: 'Oslo kommune', oppdragsgiver2: 'Per Privatpart', godtgjoring: true }]);
+    if (p.startsWith('/dom/api/')) return send(200, p.includes('stilling') ? { arbeidsgiverNavn: 'Advokatfirma AS', stillingsTittel: 'Partner' } : []);
     if (p === '/ssr/api/v2/instruments') return send(200, [
       { isin: 'NO0010096985', issuerName: 'EQUINOR', events: [
         { date: '2026-11-20T00:00:00', shortPercent: 0.8, activePositions: [{ date: '2026-11-20T00:00:00', shortPercent: 0.8, positionHolder: 'Test Capital LP' }] },
