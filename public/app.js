@@ -1129,7 +1129,7 @@ async function renderJudge(id) {
   ${profileHead({ keys: [], navn: j.navn, kicker: 'Dommer', sub: esc([j.tittel, j.domstol].filter(Boolean).join(', ')) })}
   ${j.lest === false ? '<p class="meta">Sidegjøremålene for denne dommeren er ikke lest inn ennå. Se <a href="https://sidegjoremal.domstol.no/" rel="noopener">registeret</a>.</p>' : ''}
   ${j.stilling ? `<dl class="facts slim"><dt>Før dommer</dt><dd>${esc([j.stilling.tittel, j.stilling.arbeidsgiver].filter(Boolean).join(', '))}</dd></dl>` : ''}
-  ${block('j-inv', 'Aksjer og investeringer', j.inv, x => `${co(x.navn, x.nr)} <span class="meta">${esc(x.type)}</span>${ended(x)}`)}
+  ${block('j-inv', 'Aksjer og investeringer', j.inv, x => `${co(x.navn, x.nr)}${x.type && !new RegExp('\\b' + x.type.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i').test(x.navn) ? ` <span class="meta">${esc(x.type)}</span>` : ''}${ended(x)}`)}
   ${block('j-sel', 'Verv i selskaper', j.selskap, x => `${esc(x.verv)}, ${co(x.navn, x.nr)}${paid(x)}${ended(x)}`)}
   ${block('j-off', 'Offentlige utvalg, råd og nemnder', j.offentlig, x => `${esc(x.verv || 'Medlem')}, ${esc(x.navn)}${x.dep ? ` <span class="meta">${esc(x.dep)}</span>` : ''}${paid(x)}${ended(x)}`)}
   ${block('j-for', 'Foreninger og organisasjoner', j.forening, x => `${esc(x.verv)}, ${esc(x.navn)}${paid(x)}${ended(x)}`)}
