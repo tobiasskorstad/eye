@@ -932,9 +932,9 @@ async function loadBio() {
 }
 const VTYPE = { parti: 'Partiverv', kommune: 'Kommunestyre og kommune', fylke: 'Fylkesting og fylke', offentlig: 'Offentlige verv', organisasjon: 'Organisasjoner', 'organisasjoner': 'Organisasjoner', annet: 'Andre verv' };
 const yrs = (f, t) => f ? ` <span class="meta">(${f}${t === f ? '' : '–' + (t || '')})</span>` : '';
-const CURP = () => { const y = new Date().getFullYear(), s = y - ((y - 2025) % 4 + 4) % 4; return `${s}-${String(s + 4).slice(2)}`; };
+const CURP = () => { const y = new Date().getFullYear(); return String(y - ((y - 2025) % 4 + 4) % 4); }; // startåret for perioden, f.eks. «2025»
 /** Er personen komitéleder nå? (gir 7 % tillegg i godtgjøringen) */
-const komLeder = b => (b?.kom || []).find(k => k[4] === 'KOMI' && /^leder$/i.test(k[1]) && !k[3] && k[5] === CURP());
+const komLeder = b => (b?.kom || []).find(k => k[4] === 'KOMI' && /^leder$/i.test(k[1]) && !k[3] && String(k[5]).startsWith(CURP()));
 function bioHtml(b) {
   const list = (items, n = 6) => items.length <= n ? `<ul class="blist">${items.join('')}</ul>` : `<ul class="blist">${items.slice(0, n).join('')}</ul><details class="more"><summary>Vis alle ${items.length}</summary><ul class="blist">${items.slice(n).join('')}</ul></details>`;
   const uy = k => b.uy.filter(x => x[0] === k).sort((a, c) => (c[2] || 0) - (a[2] || 0)).map(x => `<li>${esc(x[1])}${yrs(x[2], x[3])}</li>`);

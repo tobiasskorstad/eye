@@ -46,17 +46,24 @@ export async function fetchRegnskap(nrs, { warnings = [], delayMs = 150 } = {}) 
   const file = path.join(config.dataDir, 'regnskap-cache.json');
   let cache = {}; try { cache = JSON.parse(await fs.readFile(file, 'utf8')); } catch { }
   const now = Date.now(), out = {};
-  let fails = 0;
+  // Enkelte selskaper gir feil (HTTP 500) hos Regnskapsregisteret. De hoppes over i en uke; vi gir bare opp
+  // hvis mange kall på rad feiler (da er det API-et som er nede).
+  let fails = 0, inRow = 0;
   for (const nr of [...new Set(nrs)].filter(x => /^\d{9}$/.test(x))) {
     if (!cache[nr] || now - cache[nr].t > WEEK) {
       try {
         const d = await getJson(`${API}/regnskap/${nr}`, { accept: 'application/json' });
-        cache[nr] = { t: now, r: pickLatest(d) };
-      } catch (e) { if (++fails === 1) warnings.push(`Regnskapsregisteret svarte ikke: ${e.message}`); if (fails >= 5) break; }
+        cache[nr] = { t: now, r: pickLatest(d) }; inRow = 0;
+      } catch (e) {
+        fails++; inRow++;
+        if (cache[nr]) cache[nr].t = now; else cache[nr] = { t: now, r: null };
+        if (inRow >= 10) { warnings.push(`Regnskapsregisteret svarte ikke (${fails} feil): ${e.message}`); break; }
+      }
       await new Promise(r => setTimeout(r, delayMs));
     }
     if (cache[nr]?.r) out[nr] = cache[nr].r;
   }
+  if (fails && inRow < 10) warnings.push(`Regnskapsregisteret: ${fails} selskaper ga feil og prøves igjen om en uke`);
   await fs.mkdir(config.dataDir, { recursive: true });
   await fs.writeFile(file, JSON.stringify(cache));
   return out;
