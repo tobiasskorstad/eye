@@ -28,7 +28,7 @@ test('statiske sider: profiler, sitemap, ingen private personer', async () => {
   const st = await fs.readFile(path.join(out, 'aksjer/equinor-asa/index.html'), 'utf8');
   assert.ok(st.includes('Folketrygdfondet')); assert.ok(!st.includes('Kari Privat'), 'private eiere vises ikke'); assert.ok(!st.includes('Per Privat Innsider'), 'innsidere vises ikke');
   const sm = await fs.readFile(path.join(out, 'sitemap.xml'), 'utf8');
-  assert.ok(sm.includes('https://eks.no/eye/dommere/kari-dommer-7/'));
+  assert.match(sm, /<loc>https:\/\/eks\.no\/eye\/dommere\/kari-dommer-7\/<\/loc>/);
   assert.ok((await fs.readFile(path.join(out, 'rettelser/index.html'), 'utf8')).includes('Rettet noe'));
   assert.ok(!(await fs.readdir(out)).includes('person'), 'ingen sider for innsidere');
 });
