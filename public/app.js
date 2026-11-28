@@ -101,7 +101,7 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['home', 'questions', 'money', 'listed', 'short', 'sea', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['home', 'questions', 'money', 'listed', 'short', 'sea', 'judges', 'judge', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['sporsmal', 'Spørsmål'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['partipenger', 'Penger til partiene'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
@@ -109,7 +109,7 @@ const SECTIONS = {
   ei: [['eiere', 'Oversikt'], ['borsselskaper', 'Selskaper'], ['innside', 'Innsidehandler'], ['storeeiere', 'Store eiere'], ['short', 'Shortsalg'], ['havbruk', 'Havbruk og fiske']],
   fa: [], om: [], du: [], ko: [], ov: [], rg: [],
 };
-const HASHVIEW = { oversikt: ['home', 'ov'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], short: ['short', 'ei'], havbruk: ['sea', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { oversikt: ['home', 'ov'], dommere: ['judges', 'do'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], short: ['short', 'ei'], havbruk: ['sea', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -131,7 +131,8 @@ function route() {
   else if ((m = h.match(/^person-([a-z0-9-]+)$/)) && insiders.has(m[1])) { renderPerson(insiders.get(m[1])); show('person', 'ei', 'eiere'); }
   else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'borsselskaper'); }
   else if ((m = h.match(/^eier-([a-z0-9-]+)$/)) && owners.has(m[1])) { renderOwner(owners.get(m[1])); show('owner', 'ei', 'storeeiere'); }
-  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
+  else if ((m = h.match(/^dommer-(\d+)$/))) { renderJudge(m[1]); show('judge', 'do', 'dommere'); }
+  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); if (v === 'judges') judgesView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
   scrollTo(0, 0);
 }
 
@@ -386,10 +387,12 @@ function renderStock(st) {
   ${shortBlock(st)}
   ${seaBlock({ nr: D.aksjer?.[st.tick || st.navn]?.nr, navn: st.navn, wide: true })}
   ${donationHtml(st.navn)}
+  <div id="aJud"></div>
   <div id="aBrreg"></div>
   ${sec('a-kilder', 'Kilder', `<div class="links">${[...L, ...F].slice(0, 1).map(x => `<a href="${url(x.u)}" rel="noopener">Siste børsmelding (NewsWeb)</a>`).join('')}</div><p class="meta">Innsidehandler og flaggemeldinger fra Oslo Børs NewsWeb. Navn, beløp og andeler leses automatisk ut av meldingsteksten og kan være feil – sjekk alltid meldingen.</p>`)}`;
   document.title = `${st.navn} – Maktkartet`;
   stockBrreg(st);
+  fillJudgesFor('aJud', D.aksjer?.[st.tick || st.navn]?.nr, st.navn);
 }
 /** Norske selskaper: slå opp i Enhetsregisteret live (bransje, ansatte, kommune, styre og ledelse). */
 async function stockBrreg(st) {
@@ -578,6 +581,7 @@ function omView() {
     card('Register for statssekretærer og rådgivere', D.pep?.kilder?.statssek, 'Verv og økonomiske interesser for politisk ansatte i departementene.', `${nf(D.pep?.statssek?.length || 0)} personer`, D.pep?.kilder?.statssekDato ? 'Versjon ' + date(D.pep.kilder.statssekDato) : 'Ved hver ny utgave'),
     card('Stortingets biografier', 'https://data.stortinget.no/', 'Utdanning, yrke, verv i parti, kommune og organisasjoner, stortingsperioder, komiteer og perioder i regjering. Foreldre og fødested vises ikke.', `${nf(Object.keys(BIO || {}).length || reps.length)} biografier`, 'Hver uke', 'NLOD'),
     card('Godtgjøring', D.godtgjoring?.url, 'Hva representanter, statsråder og statsministeren får i året, slik Stortinget har vedtatt.', D.godtgjoring ? 'Fra ' + date(D.godtgjoring.fra) : '', 'Hvert år'),
+    card('Sidegjøremålsregisteret for dommere', 'https://sidegjoremal.domstol.no/', 'Dommeres verv, investeringer i enkeltselskaper, offentlige utvalg og annet arbeid. Navn på private oppdragsgivere og dommerforsikringer vises ikke.', '', 'Hver dommer hver 14. dag'),
     card('Voteringer', 'https://www.stortinget.no/no/Saker-og-publikasjoner/Vedtak/Voteringer/', 'Hvordan hver representant stemte. «Hvem stemmer med hvem» og oppmøte regnes ut fra dette.', `${nf(S()?.voteringer?.length || 0)} voteringer`, 'Hver tredje time', 'NLOD'),
   ])}
   ${grp('Selskaper og børs', 'Børsmeldinger tolkes automatisk. Tallene kan derfor ha feil, og hver handel lenker til den originale meldingen.', [
@@ -1078,6 +1082,73 @@ function seaView() {
   <p class="meta">MTB (maksimalt tillatt biomasse) er hvor mye fisk et selskap kan ha i sjøen samtidig. Landbaserte anlegg holdes utenfor rangeringen og vises på selskapssidene. Konsernene eier ofte tillatelsene gjennom flere datterselskaper. Fartøy eid av privatpersoner er ikke med. Kilde: Fiskeridirektoratet, oppdatert ${D.fiskeri?.havbruk ? date(D.fiskeri.havbruk.hentet) : '–'}.</p>`;
 }
 
+/* ---------- dommere (sidegjøremålsregisteret) ---------- */
+// Ligger i egen fil (dommere.json) og lastes først når den trengs.
+let JUD = null, judP = null;
+async function loadJudges() {
+  if (JUD) return JUD;
+  if (D.dommere) return (JUD = D.dommere);
+  judP ||= fetch('dommere.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : { liste: [] })).catch(() => ({ liste: [] }));
+  return (JUD = await judP);
+}
+const aktiv = x => !x.slutt;
+const jCount = j => ({ inv: (j.inv || []).filter(aktiv).length, sel: (j.selskap || []).filter(aktiv).length, andre: [j.forening, j.offentlig, j.virksomhet, j.politisk].reduce((a, l) => a + (l || []).filter(aktiv).length, 0) });
+async function judgesView() {
+  const v = $('v-judges');
+  if (!JUD) v.innerHTML = '<h1>Dommerne</h1><p class="loading">Henter registeret …</p>';
+  const J = await loadJudges(); if (location.hash !== '#dommere') return;
+  if (!$('jq')) {
+    const courts = [...new Set(J.liste.map(j => j.domstol).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'nb'));
+    const withInv = J.liste.filter(j => jCount(j).inv).length;
+    v.innerHTML = `<h1>Dommerne</h1><p class="lede">Dommere må registrere verv, investeringer i enkeltselskaper over 200 000 kroner og annet arbeid ved siden av dommerjobben. Det gjør det lettere å se om en dommer kan være inhabil i en sak.</p>
+    <div class="kpis"><div><b>${nf(J.liste.length)}</b><span>dommere i registeret</span></div><div><b>${nf(withInv)}</b><span>har aksjer i enkeltselskaper</span></div><div><b>${nf(J.liste.filter(j => jCount(j).sel).length)}</b><span>har verv i selskaper</span></div></div>
+    <div class="row"><input id="jq" type="search" placeholder="Søk etter dommer, domstol eller selskap" aria-label="Søk i dommere"><select id="jc" aria-label="Domstol"><option value="">Alle domstoler</option>${courts.map(c => `<option>${esc(c)}</option>`).join('')}</select><select id="jf" aria-label="Vis"><option value="">Alle dommere</option><option value="inv">Med aksjer</option><option value="sel">Med verv i selskaper</option></select></div>
+    <p class="meta" id="jk"></p>
+    <div class="tw"><table class="list" id="jTable"><thead><tr><th>Dommer</th><th class="n">Aksjer</th><th class="n hide-s">Selskapsverv</th><th class="n hide-s">Andre verv og oppdrag</th></tr></thead><tbody></tbody></table></div>
+    <p class="meta">Kilde: <a href="${url(J.url || 'https://sidegjoremal.domstol.no/')}" rel="noopener">Sidegjøremålsregisteret</a> (Domstoladministrasjonen). ${J.lest < J.liste.length ? `${nf(J.lest)} av ${nf(J.liste.length)} dommere er lest inn så langt; resten kommer i løpet av døgnet. ` : ''}Størrelsen på investeringene registreres ikke. Navn på private oppdragsgivere vises ikke.</p>`;
+    ['jq', 'jc', 'jf'].forEach(id => $(id).addEventListener('input', judgesList));
+  }
+  judgesList();
+}
+function judgesList() {
+  const q = $('jq').value.trim().toLowerCase(), c = $('jc').value, f = $('jf').value;
+  const L = JUD.liste.filter(j => (!c || j.domstol === c) && (!f || jCount(j)[f]) && (!q || [j.navn, j.domstol, j.tittel, ...(j.inv || []).map(x => x.navn), ...(j.selskap || []).map(x => x.navn)].join(' ').toLowerCase().includes(q)));
+  $('jk').textContent = `${L.length} dommere`;
+  $('jTable').tBodies[0].innerHTML = L.slice(0, 400).map(j => { const n = jCount(j); return `<tr data-go="dommer-${j.id}"><td><a href="#dommer-${j.id}"><b>${esc(j.navn)}</b></a><div class="meta">${esc([j.tittel, j.domstol].filter(Boolean).join(', '))}</div></td><td class="n">${n.inv || '<span class="zero">–</span>'}</td><td class="n hide-s">${n.sel || '<span class="zero">–</span>'}</td><td class="n hide-s">${n.andre || '<span class="zero">–</span>'}</td></tr>`; }).join('') + (L.length > 400 ? `<tr><td colspan="4" class="meta">Viser 400 av ${L.length}. Søk for å finne flere.</td></tr>` : '');
+}
+async function renderJudge(id) {
+  const v = $('v-judge'); v.innerHTML = '<p class="loading">Henter …</p>';
+  const J = await loadJudges(), j = J.liste.find(x => String(x.id) === String(id));
+  if (location.hash !== '#dommer-' + id) return;
+  if (!j) { v.innerHTML = '<a class="back" href="#dommere">← Alle dommere</a><p class="empty">Fant ikke dommeren.</p>'; return; }
+  const ended = x => x.slutt ? ` <span class="meta">(avsluttet ${date(x.slutt)})</span>` : '';
+  const paid = x => x.betalt ? ' <span class="chip">betalt</span>' : '';
+  const co = (navn, nr) => { const st = stockByName(navn); return nr ? `<a href="#org-${nr}">${esc(navn)}</a>${st ? ` · <a href="#aksje-${st.k}">børs</a>` : ''}` : st ? `<a href="#aksje-${st.k}">${esc(navn)}</a>` : esc(navn); };
+  const block = (idk, t, l, f) => l?.length ? sec(idk, t, `<ul class="feed">${l.map(x => `<li><div class="grow">${f(x)}</div></li>`).join('')}</ul>`) : '';
+  v.innerHTML = `<a class="back" href="#dommere">← Alle dommere</a>
+  ${profileHead({ keys: [], navn: j.navn, kicker: 'Dommer', sub: esc([j.tittel, j.domstol].filter(Boolean).join(', ')) })}
+  ${j.lest === false ? '<p class="meta">Sidegjøremålene for denne dommeren er ikke lest inn ennå. Se <a href="https://sidegjoremal.domstol.no/" rel="noopener">registeret</a>.</p>' : ''}
+  ${j.stilling ? `<dl class="facts slim"><dt>Før dommer</dt><dd>${esc([j.stilling.tittel, j.stilling.arbeidsgiver].filter(Boolean).join(', '))}</dd></dl>` : ''}
+  ${block('j-inv', 'Aksjer og investeringer', j.inv, x => `${co(x.navn, x.nr)} <span class="meta">${esc(x.type)}</span>${ended(x)}`)}
+  ${block('j-sel', 'Verv i selskaper', j.selskap, x => `${esc(x.verv)}, ${co(x.navn, x.nr)}${paid(x)}${ended(x)}`)}
+  ${block('j-off', 'Offentlige utvalg, råd og nemnder', j.offentlig, x => `${esc(x.verv || 'Medlem')}, ${esc(x.navn)}${x.dep ? ` <span class="meta">${esc(x.dep)}</span>` : ''}${paid(x)}${ended(x)}`)}
+  ${block('j-for', 'Foreninger og organisasjoner', j.forening, x => `${esc(x.verv)}, ${esc(x.navn)}${paid(x)}${ended(x)}`)}
+  ${block('j-virk', 'Annet arbeid og oppdrag', j.virksomhet, x => `${esc(x.type)}${x.for ? ': ' + esc(x.for) : ''}${paid(x)}${ended(x)}`)}
+  ${block('j-pol', 'Politiske verv', j.politisk, x => `${esc(x.tekst)}${ended(x)}`)}
+  ${j.lest !== false && ![j.inv, j.selskap, j.offentlig, j.forening, j.virksomhet, j.politisk].some(l => l?.length) ? '<p>Ingen registrerte sidegjøremål.</p>' : ''}
+  <p class="meta">Fra <a href="${url(J.url)}" rel="noopener">Sidegjøremålsregisteret</a>. Sidegjøremål slettes tre år etter at de er avsluttet. Størrelsen på investeringene registreres ikke.</p>`;
+  document.title = `${j.navn} – Maktkartet`;
+}
+/** Dommere som eier aksjer i eller har verv i et selskap (fylles inn etter at registeret er lastet). */
+async function fillJudgesFor(box, nr, navn) {
+  const want = location.hash, J = await loadJudges(), k = coKey(navn);
+  if (location.hash !== want || !$(box)) return;
+  const hit = x => aktiv(x) && ((nr && x.nr === nr) || (k && coKey(x.navn) === k));
+  const L = J.liste.map(j => ({ j, inv: (j.inv || []).some(hit), sel: (j.selskap || []).filter(hit) })).filter(x => x.inv || x.sel.length);
+  if (!L.length) return;
+  $(box).innerHTML = sec('s-dom', 'Dommere med eierskap eller verv', `<ul class="feed">${L.map(x => `<li><div class="grow"><a href="#dommer-${x.j.id}">${esc(x.j.navn)}</a><div class="meta">${esc([x.j.tittel, x.j.domstol].filter(Boolean).join(', '))}</div></div><span class="meta">${[x.inv && 'eier aksjer', ...x.sel.map(s => s.verv.toLowerCase())].filter(Boolean).join(', ')}</span></li>`).join('')}</ul><p class="meta">Fra Sidegjøremålsregisteret. Dommere må vurdere habilitet i saker der selskapet er part.</p>`);
+}
+
 /* ---------- aksjeposter (alle PEP) ---------- */
 function holdingsView() {
   const g = $('hg').value, p = $('hp').value, q = $('hq').value.trim().toLowerCase(), only = $('hh').checked;
@@ -1138,6 +1209,7 @@ function orgHtml(c, personer, pols) {
   ${listedLink(c.nr, c.navn)}
   ${seaBlock({ nr: c.nr, navn: c.navn })}
   ${donationHtml(c.navn)}
+  <div id="oJud"></div>
   <h2>Roller</h2>${roleRows ? `<table><thead><tr><th>Navn</th><th>Rolle</th></tr></thead><tbody>${roleRows}</tbody></table>` : `<p class="empty">${c.nRoller ? `${c.nRoller} roller registrert. Henter navn fra Brønnøysund …` : 'Ingen personroller registrert.'}</p>`}
   ${declOnly.length ? `<h3>Oppgitt i interesseregisteret av</h3><p>${polChips(declOnly.map(p => p.id))}</p>` : ''}
   <div class="links"><a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${org(c.nr).replace(/ /g, '')}">Brønnøysundregistrene</a></div>`;
@@ -1147,12 +1219,13 @@ async function renderOrg(nr) {
   const v = $('v-org'), local = byNr[nr];
   const localPols = local ? local.ids.map(id => ({ id })) : [];
   v.innerHTML = local ? orgHtml(local, local.personer, localPols) : '<p class="loading">Henter fra Brønnøysund …</p>';
+  if (local) fillJudgesFor('oJud', nr, local.navn);
   document.title = (local ? local.navn : 'Selskap') + ' – Maktkartet';
   try {
     let e;
     if (SERVER) { const r = await fetch('/api/enhet/' + nr); e = await r.json(); if (!r.ok) throw new Error(e.feil); }
     else { e = await brEnhet(nr); if (!e) throw new Error('Fant ikke enheten i Brønnøysund'); }
-    if (location.hash.slice(1) === 'org-' + nr) { v.innerHTML = orgHtml(e, e.personer, e.politikere || []); document.title = e.navn + ' – Maktkartet'; }
+    if (location.hash.slice(1) === 'org-' + nr) { v.innerHTML = orgHtml(e, e.personer, e.politikere || []); document.title = e.navn + ' – Maktkartet'; fillJudgesFor('oJud', nr, e.navn); }
   } catch (err) { if (!local) v.innerHTML = `<a class="back" href="#selskaper">← Selskaper</a><p class="empty">${esc(err.message || 'Fant ikke selskapet')}</p>`; }
 }
 

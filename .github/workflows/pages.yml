@@ -39,6 +39,7 @@ jobs:
             data/borsen-cache.json
             data/fiskeri-cache.json
             data/short-cache.json
+            data/dommere-cache.json
             data/aksje-orgnr.json
             data/img
           key: eye-data-${{ github.run_id }}
@@ -70,6 +71,7 @@ jobs:
             data/borsen-cache.json
             data/fiskeri-cache.json
             data/short-cache.json
+            data/dommere-cache.json
             data/aksje-orgnr.json
             data/img
           key: eye-data-${{ github.run_id }}

@@ -32,6 +32,7 @@ export const config = {
   nbApi: env.NB_API || 'https://data.norges-bank.no/api',
   fdirAqua: env.FDIR_AQUA || 'https://api.fiskeridir.no/pub-aqua',
   fdirVessel: env.FDIR_VESSEL || 'https://api.fiskeridir.no/vessel-api',
+  dommerApi: env.DOMMER_API || 'https://sidegjoremal.domstol.no',
   ssrApi: env.SSR_API || 'https://ssr.finanstilsynet.no',
   partifinUrl: env.PARTIFIN_URL || 'https://www.partifinansiering.no',
   brregApi: env.BRREG_API || 'https://data.brreg.no/enhetsregisteret/api',
