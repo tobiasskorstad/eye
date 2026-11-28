@@ -13,7 +13,7 @@ allowHosts([NB]);
 const DAY = 864e5;
 const ASSET = { 0: 'aksjer', 1: 'obligasjoner', 2: 'eiendom', 3: 'infrastruktur' };
 const yr = ms => new Date(ms).getUTCFullYear();
-const dec = s => String(s || '').replace(/&amp;/g, '&').replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const dec = s => String(s || '').replace(/<[^>]*>/g, ' ').replace(/[<>]/g, '').replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 
 /** Diagramdata som ligger som JSON i <script>-blokker på nbim.no. Returnerer { serienavn: [[år, verdi], …] }. */
 export function chartSeries(html) {
