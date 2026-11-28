@@ -101,15 +101,16 @@ function prepare(d) {
 }
 
 /* ---------- visninger og faner ---------- */
-const VIEWS = ['home', 'questions', 'money', 'listed', 'short', 'sea', 'judges', 'judge', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om'];
+const VIEWS = ['home', 'questions', 'money', 'listed', 'short', 'sea', 'judges', 'judge', 'gov', 'minister', 'person', 'stock', 'owner', 'owners', 'flagging', 'insider', 'holdings', 'konto', 'personvern', 'reps', 'rep', 'votes', 'agree', 'parties', 'party', 'promises', 'news', 'dummies', 'trades', 'cos', 'org', 'facts', 'om', 'fund', 'fundinv', 'fundex'];
 const SECTIONS = {
   st: [['stortinget', 'Representanter'], ['sporsmal', 'Spørsmål'], ['voteringer', 'Voteringer'], ['enighet', 'Hvem stemmer med hvem']],
   pa: [['partier', 'Oversikt'], ['partipenger', 'Penger til partiene'], ['lofter', 'Løfter og resultater'], ['nyheter', 'Nyheter']],
   pe: [['handler', 'Aksjehandler'], ['aksjeposter', 'Aksjeposter'], ['selskaper', 'Selskaper']],
   ei: [['eiere', 'Oversikt'], ['borsselskaper', 'Selskaper'], ['innside', 'Innsidehandler'], ['storeeiere', 'Store eiere'], ['short', 'Shortsalg'], ['havbruk', 'Havbruk og fiske']],
+  of: [['oljefondet', 'Slik virker fondet'], ['fondinvesteringer', 'Investeringene'], ['fondutelukket', 'Utelukkede selskaper']],
   fa: [], om: [], du: [], ko: [], ov: [], rg: [],
 };
-const HASHVIEW = { oversikt: ['home', 'ov'], dommere: ['judges', 'do'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], short: ['short', 'ei'], havbruk: ['sea', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
+const HASHVIEW = { oversikt: ['home', 'ov'], dommere: ['judges', 'do'], regjeringen: ['gov', 'rg'], stortinget: ['reps', 'st'], sporsmal: ['questions', 'st'], voteringer: ['votes', 'st'], enighet: ['agree', 'st'], partier: ['parties', 'pa'], partipenger: ['money', 'pa'], borsselskaper: ['listed', 'ei'], short: ['short', 'ei'], havbruk: ['sea', 'ei'], lofter: ['promises', 'pa'], nyheter: ['news', 'pa'], handler: ['trades', 'pe'], aksjeposter: ['holdings', 'pe'], innside: ['insider', 'ei'], eiere: ['owners', 'ei'], storeeiere: ['flagging', 'ei'], selskaper: ['cos', 'pe'], faktasjekk: ['facts', 'fa'], forklart: ['dummies', 'du'], om: ['om', 'om'], oljefondet: ['fund', 'of'], fondinvesteringer: ['fundinv', 'of'], fondutelukket: ['fundex', 'of'], konto: ['konto', 'ko'], personvern: ['personvern', 'ko'] };
 function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
@@ -132,7 +133,7 @@ function route() {
   else if ((m = h.match(/^aksje-([a-z0-9-]+)$/)) && stocks.has(m[1])) { renderStock(stocks.get(m[1])); show('stock', 'ei', 'borsselskaper'); }
   else if ((m = h.match(/^eier-([a-z0-9-]+)$/)) && owners.has(m[1])) { renderOwner(owners.get(m[1])); show('owner', 'ei', 'storeeiere'); }
   else if ((m = h.match(/^dommer-(\d+)$/))) { renderJudge(m[1]); show('judge', 'do', 'dommere'); }
-  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); if (v === 'judges') judgesView(); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
+  else { const [v, s] = HASHVIEW[h] || HASHVIEW.oversikt; if (v === 'konto') kontoView(); if (v === 'judges') judgesView(); if (v.startsWith('fund')) fundView(v); show(v, s, HASHVIEW[h] ? h : 'oversikt'); document.title = 'Maktkartet – makt og penger i Norge'; }
   scrollTo(0, 0);
 }
 
@@ -597,6 +598,8 @@ function omView() {
   ${grp('Tall og fakta', '', [
     card('SSB – Statistikkbanken', 'https://www.ssb.no/statbank', 'Ledighet, prisvekst, BNP, boligpriser, befolkning, innvandring og lovbrudd i «Tall i debatten».', `${nf((D.tall || []).filter(t => !/Norges Bank/.test(t.kilde || '')).length)} nøkkeltall`, 'Hver tredje time', 'CC BY 4.0'),
     card('Norges Bank', 'https://www.norges-bank.no/tema/pengepolitikk/styringsrenten/', 'Styringsrenten.', '1 nøkkeltall', 'Hver tredje time'),
+    card('Norges Bank Investment Management', 'https://www.nbim.no/no/', 'Oljefondets investeringer i hvert selskap, markedsverdi, avkastning siden 1998 og listen over utelukkede selskaper.', D.oljefondet?.antall ? `${nf(D.oljefondet.antall.aksjer)} selskaper` : '', 'Hver dag'),
+    card('Finansdepartementet: statsbudsjettet', D.oljefondet?.budsjett?.url || 'https://www.regjeringen.no/', 'Hvor mye av oljefondet regjeringen foreslår å bruke, og handlingsregelen.', '', 'Hvert budsjett'),
     card('Faktisk.no', 'https://www.faktisk.no/', 'Faktasjekker fra den uavhengige redaksjonen Faktisk.no.', `${nf(D.faktasjekk?.sjekker?.length || 0)} saker`, 'Hver tredje time'),
     card('Poll of polls', 'https://www.pollofpolls.no/', 'Gjennomsnitt av meningsmålingene for stortingsvalg.', '', 'Hver tredje time'),
   ])}
@@ -1080,6 +1083,131 @@ function seaView() {
   <section class="block"><div class="bh"><h2>Største oppdrettere i sjø</h2></div><ul class="feed">${H.filter(x => x.mtb).slice(0, 25).map((x, i) => `<li><span class="rank">${i + 1}</span><div class="grow">${coLinkNr(x.nr, x.navn)}<div class="meta">${x.matf} tillatelser · ${esc(x.fylker.slice(0, 3).join(', '))}${x.fylker.length > 3 ? ' …' : ''}</div><div class="dubar"><i style="width:${(100 * x.mtb / (H[0]?.mtb || 1)).toFixed(0)}%;background:var(--hi)"></i></div></div><b class="n">${nf(x.mtb)} t</b></li>`).join('')}</ul></section>
   <section class="block"><div class="bh"><h2>Flest havfiskefartøy</h2></div><ul class="feed">${F.slice(0, 25).map((x, i) => `<li><span class="rank">${i + 1}</span><div class="grow">${coLinkNr(x.nr, x.navn)}<div class="meta">${esc(x.fartoy.map(v => v[0]).join(', '))}</div></div><b class="n">${x.fartoy.length}</b></li>`).join('')}</ul></section></div>
   <p class="meta">MTB (maksimalt tillatt biomasse) er hvor mye fisk et selskap kan ha i sjøen samtidig. Landbaserte anlegg holdes utenfor rangeringen og vises på selskapssidene. Konsernene eier ofte tillatelsene gjennom flere datterselskaper. Fartøy eid av privatpersoner er ikke med. Kilde: Fiskeridirektoratet, oppdatert ${D.fiskeri?.havbruk ? date(D.fiskeri.havbruk.hentet) : '–'}.</p>`;
+}
+
+/* ---------- oljefondet (NBIM og Finansdepartementet) ---------- */
+// Hele investeringslisten ligger i oljefondet.json og lastes først når fanen åpnes.
+let FUND = null, fundP = null;
+async function loadFund() {
+  if (FUND) return FUND;
+  if (D.oljefondet?.beholdning || D.oljefondet?.historikk) return (FUND = D.oljefondet);
+  fundP ||= fetch('oljefondet.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).catch(() => ({}));
+  return (FUND = await fundP);
+}
+const mrd = x => x == null ? '–' : `${nf(Math.round(x))} mrd.`;
+const mrdKr = x => mrd(x / 1e9);
+const LAND = (() => { try { return new Intl.DisplayNames(['nb'], { type: 'region' }); } catch { return null; } })();
+const land = cc => { if (/^IX/.test(cc)) return 'Internasjonalt'; try { return LAND?.of(cc) || cc; } catch { return cc; } };
+const SEKTOR = { Technology: 'Teknologi', Financials: 'Finans', Industrials: 'Industri', 'Consumer Discretionary': 'Forbruksvarer', 'Health Care': 'Helse', 'Consumer Staples': 'Dagligvarer', 'Basic Materials': 'Råvarer', Energy: 'Energi', Telecommunications: 'Telekom', Utilities: 'Kraft og vann', 'Real Estate': 'Eiendom', 'Government Related': 'Stat og statsrelatert', Treasuries: 'Statsobligasjoner', Corporate: 'Selskapsobligasjoner', Securitized: 'Pantesikrede obligasjoner' };
+const BOND = { 'Government Related Bonds': 'Statsrelaterte', Treasuries: 'Statsobligasjoner', 'Index Linked Bonds': 'Inflasjonssikrede', 'Corporate Bonds': 'Selskapsobligasjoner', 'Securitized Bonds': 'Pantesikrede', 'Convertible Bonds': 'Konvertible' };
+const sektor = s => SEKTOR[s] || (s && s.split('/').every(x => BOND[x]) ? s.split('/').map(x => BOND[x]).join(', ') : s) || '–';
+const last = a => (a || []).slice(-1)[0];
+const RE = { Office: 'kontor', Retail: 'handel', Industrial: 'logistikk', Residential: 'bolig' };
+const SEKTOR_RE = s => s.split(', ').map(x => RE[x] || x).join(', ');
+/** Søylediagram for avkastning per år, med negative år under streken. */
+function yearBars(rows, unit = ' %') {
+  if (!rows?.length) return '';
+  const max = Math.max(...rows.map(r => r[1]), 1), H = 180;
+  const sc = (H - 20) / (max + Math.max(0, -Math.min(...rows.map(r => r[1]))));
+  const zero = 10 + max * sc;
+  return `<svg class="ybars" viewBox="0 0 600 ${H}" preserveAspectRatio="none" role="img" aria-label="${unit === ' %' ? 'Avkastning per år' : 'Verdi per år'}">${rows.map(([y, v], i) => { const h = Math.abs(v) * sc, x = i * 600 / rows.length; return `<rect x="${(x + 1).toFixed(1)}" y="${(v >= 0 ? zero - h : zero).toFixed(1)}" width="${(600 / rows.length - 2).toFixed(1)}" height="${Math.max(h, 1).toFixed(1)}" class="${v >= 0 ? 'pos' : 'neg'}"><title>${y}: ${fmtNum(v, 1)}${unit}</title></rect>`; }).join('')}<line x1="0" x2="600" y1="${zero.toFixed(1)}" y2="${zero.toFixed(1)}" class="zl"/></svg>
+  <div class="yax"><span>${rows[0][0]}</span><span>${rows[Math.floor(rows.length / 2)][0]}</span><span>${rows[rows.length - 1][0]}</span></div>`;
+}
+/** Én liggende stolpe delt i deler. */
+const split = parts => { const t = parts.reduce((a, p) => a + Math.max(0, p[1]), 0) || 1; return `<div class="split">${parts.map(([l, v, c]) => `<i style="width:${(100 * Math.max(0, v) / t).toFixed(2)}%;background:${c}" title="${esc(l)}"></i>`).join('')}</div><ul class="slegend">${parts.map(([l, v, c, x]) => `<li><span class="sw" style="background:${c}"></span><span class="grow">${esc(l)}</span><b>${x ?? mrd(v)}</b><span class="meta">${fmtNum(100 * v / t, 1)} %</span></li>`).join('')}</ul>`; };
+async function fundView(v) {
+  const el = $('v-' + v);
+  if (!FUND) el.innerHTML = '<h1>Oljefondet</h1><p class="loading">Henter tallene fra Norges Bank …</p>';
+  const F = await loadFund(); if ((HASHVIEW[location.hash.slice(1)] || [])[0] !== v) return;
+  if (!F.beholdning && !F.historikk) { el.innerHTML = '<h1>Oljefondet</h1><p class="empty">Tallene kunne ikke hentes fra nbim.no denne gangen.</p>'; return; }
+  if (v === 'fund') fundMain(F); else if (v === 'fundinv') fundInv(F); else fundEx(F);
+}
+const nbimSrc = F => `<p class="meta">Kilde: <a href="https://www.nbim.no/no/" rel="noopener">Norges Bank Investment Management</a> (nbim.no). Investeringene er per ${F.beholdning ? date(F.beholdning.dato) : '–'}; verdi og avkastning fra siste kvartalsrapport. Hentet ${date(F.hentet, true)}.</p>`;
+function fundMain(F) {
+  const H = F.historikk || {}, B = F.beholdning, Bu = F.budsjett || D.oljefondet?.budsjett;
+  const verdi = last(H.verdi), snitt = last(H.snitt), rel = last(H.relSnitt), yrNow = new Date().getFullYear();
+  const aarlig = (H.aarlig || []).map(([y, x]) => [y, x]);
+  const partial = verdi && verdi[0] >= yrNow;
+  const best = [...aarlig].sort((a, b) => b[1] - a[1])[0], worst = [...aarlig].sort((a, b) => a[1] - b[1])[0];
+  const til = last(H.tilforsel), avk = last(H.avkastning), kr = last(H.krone);
+  const C = ['var(--hi)', '#1f2a37', '#8a96a3', '#c9d1d9'];
+  const top = (B?.aksjer || []).slice(0, 10);
+  $('v-fund').innerHTML = `<h1>Oljefondet</h1><p class="lede">Statens pensjonsfond utland er Norges sparekonto for inntektene fra olje og gass. Pengene er investert i utlandet, og politikerne skal over tid bare bruke avkastningen.</p>
+  <div class="kpis"><div><b>${verdi ? nf(verdi[1]) + ' mrd. kr' : '–'}</b><span>markedsverdi${partial ? ' ved siste kvartal' : ''}</span></div><div><b>${snitt ? fmtNum(snitt[1], 2) + ' %' : '–'}</b><span>årlig avkastning i snitt siden 1998</span></div><div><b>${B ? nf(B.antall.aksjer) : '–'}</b><span>selskaper fondet eier aksjer i</span></div><div><b>${B ? nf(B.land.length) : '–'}</b><span>land</span></div></div>
+
+  <section class="block"><div class="bh"><h2>Slik forvaltes pengene</h2></div>
+  <ol class="flow">
+    <li><b>Staten tjener på olje og gass</b><span>Skatt fra oljeselskapene, statens egne felt (SDØE) og utbytte fra Equinor.</span></li>
+    <li><b>Alt går inn i fondet</b><span>Inntektene settes i fondet i stedet for å brukes direkte. Slik skjermes økonomien fra svingninger i oljeprisen.</span></li>
+    <li><b>Norges Bank investerer i utlandet</b><span>Finansdepartementet gir mandatet, og Norges Bank Investment Management kjøper aksjer, obligasjoner, eiendom og fornybar energi i land utenfor Norge.</span></li>
+    <li><b>Handlingsregelen styrer bruken</b><span>Over tid skal bruken av fondsmidler følge den forventede realavkastningen, anslått til ${Bu?.forventetRealavkastning ?? 3} % i året. Penger kan bare flyttes til statsbudsjettet etter vedtak i Stortinget.</span></li>
+  </ol>
+  ${Bu ? `<div class="callout"><b>${fmtNum(Bu.bruk, 1)} mrd. kroner</b> foreslår regjeringen å bruke fra fondet i ${Bu.budsjettaar}${Bu.ukraina ? `, medregnet ${Bu.ukraina} mrd. i støtte til Ukraina` : ''}. Det tilsvarer ${fmtNum(Bu.andelFond, 1)} % av fondets verdi og ${fmtNum(Bu.andelBnp, 1)} % av trend-BNP for Fastlands-Norge. <a href="${url(Bu.url)}" rel="noopener">${esc(Bu.kilde)}</a></div>` : ''}
+  <div class="cols2 even"><div><h3>Hvem bestemmer</h3><ul class="blist">
+    <li><b>Stortinget</b> vedtar loven om fondet og hvor mye som tas ut hvert år.</li>
+    <li><b>Finansdepartementet</b> eier fondet på vegne av staten og bestemmer rammene: hvor mye som skal være i aksjer, hvilke land og hvor mye risiko.</li>
+    <li><b>Norges Bank</b> forvalter fondet gjennom Norges Bank Investment Management (NBIM) og velger de enkelte investeringene.</li>
+    <li><b>Etikkrådet</b> vurderer om selskaper bryter de etiske retningslinjene. Norges Bank bestemmer om de skal utelukkes.</li></ul></div>
+  <div><h3>Hvor pengene kommer fra</h3>${til && avk ? split([['Tilført fra staten', til[1], C[1]], ['Avkastning på investeringene', avk[1], 'var(--hi)'], ['Svakere krone', kr?.[1] || 0, C[2]]]) : '<p class="empty">–</p>'}
+  <p class="meta">Avkastningen har gitt mer enn det staten har satt inn. Når kronen svekker seg, blir fondet verdt flere kroner uten at det er verdt mer i utlandet.</p></div></div></section>
+
+  <section class="block"><div class="bh"><h2>Avkastning hvert år</h2></div>
+  ${yearBars(aarlig)}
+  <p>${best ? `Beste år var <b>${best[0]}</b> med ${fmtNum(best[1], 1)} %, svakeste var <b>${worst[0]}</b> med ${fmtNum(worst[1], 1)} %.` : ''}${rel ? ` Siden 1998 har fondet gjort det ${rel[1] >= 0 ? 'bedre' : 'svakere'} enn referanseindeksen fra Finansdepartementet med ${fmtNum(Math.abs(rel[1]), 2)} prosentpoeng i året.` : ''}${partial ? ` Tallet for ${yrNow} gjelder hittil i år.` : ''}</p>
+  ${H.kAksjer?.length ? `<div class="kpis small">${[['Aksjer', H.kAksjer], ['Obligasjoner', H.kRenter], ['Unotert eiendom', H.kEiendom], ['Fornybar infrastruktur', H.kInfra]].filter(x => x[1]?.length).map(([l, s]) => `<div><b>${fmtNum(last(s)[1], 1)} %</b><span>${l}, ${last(s)[0]}${partial ? ' hittil' : ''}</span></div>`).join('')}</div>` : ''}</section>
+
+  <div class="cols2 even">
+  <section class="block"><div class="bh"><h2>Hva pengene er investert i</h2></div>
+  ${H.aksjer?.length ? split([['Aksjer', last(H.aksjer)[1], 'var(--hi)'], ['Obligasjoner (rentepapirer)', last(H.renter)?.[1] || 0, C[1]], ['Eiendom', last(H.eiendom)?.[1] || 0, C[2]], ['Fornybar infrastruktur', last(H.infra)?.[1] || 0, C[3]]]) : ''}
+  ${H.verdi?.length > 2 ? `<h3>Markedsverdi, milliarder kroner</h3>${yearBars(H.verdi, ' mrd. kr')}` : ''}</section>
+  <section class="block"><div class="bh"><h2>Største aksjeposter</h2><a href="#fondinvesteringer">Alle investeringene →</a></div>
+  <ul class="feed">${top.map((x, i) => `<li><span class="rank">${i + 1}</span><div class="grow"><b>${esc(x[0])}</b><div class="meta">${esc(land(x[1]))} · ${esc(sektor(x[4]))}${x[3] != null ? ` · eier ${fmtNum(x[3], 2)} %` : ''}</div></div><b class="n">${mrdKr(x[2])}</b></li>`).join('')}</ul></section></div>
+
+  ${B ? `<div class="cols2 even"><section class="block"><div class="bh"><h2>Land</h2></div><ul class="feed">${B.land.slice(0, 10).map(([cc, v]) => `<li><div class="grow"><b>${esc(land(cc))}</b><div class="dubar"><i style="width:${(100 * v / B.land[0][1]).toFixed(0)}%;background:var(--hi)"></i></div></div><b class="n">${mrdKr(v)}</b></li>`).join('')}</ul></section>
+  <section class="block"><div class="bh"><h2>Bransjer (aksjer)</h2></div><ul class="feed">${B.sektor.slice(0, 10).map(([s, v]) => `<li><div class="grow"><b>${esc(sektor(s))}</b><div class="dubar"><i style="width:${(100 * v / B.sektor[0][1]).toFixed(0)}%;background:var(--hi)"></i></div></div><b class="n">${mrdKr(v)}</b></li>`).join('')}</ul></section></div>` : ''}
+  ${F.utelukket?.length ? `<section class="block"><div class="bh"><h2>Etikk</h2><a href="#fondutelukket">Se listen →</a></div><p><b>${F.utelukket.filter(x => /utelukk/i.test(x.beslutning)).length}</b> selskaper er utelukket fra fondet, og <b>${F.utelukket.filter(x => /observ/i.test(x.beslutning)).length}</b> er satt til observasjon, for eksempel for kullproduksjon, våpen, menneskerettighetsbrudd eller alvorlig miljøskade.</p></section>` : ''}
+  ${nbimSrc(F)}${Bu ? `<p class="meta">Bruken av fondsmidler: <a href="${url(Bu.url)}" rel="noopener">${esc(Bu.kilde)}</a>${Bu.url2 ? ` og <a href="${url(Bu.url2)}" rel="noopener">Nasjonalbudsjettet ${Bu.budsjettaar}, kap. 3</a>` : ''}.</p>` : ''}`;
+}
+function fundInv(F) {
+  const B = F.beholdning; if (!B) { $('v-fundinv').innerHTML = '<h1>Investeringene</h1><p class="empty">Ikke hentet.</p>'; return; }
+  if ($('oq')) return fundInvList();
+  const sek = [...new Set(B.aksjer.map(x => x[4]).filter(Boolean))].sort((a, b) => sektor(a).localeCompare(sektor(b), 'nb'));
+  const lands = B.land.map(x => x[0]).sort((a, b) => land(a).localeCompare(land(b), 'nb'));
+  $('v-fundinv').innerHTML = `<h1>Investeringene</h1><p class="lede">Alle selskapene oljefondet eide aksjer i ved siste rapportering (${date(B.dato)}), med verdien av posten og hvor stor del av selskapet fondet eier.</p>
+  <div class="kpis"><div><b>${nf(B.antall.aksjer)}</b><span>selskaper</span></div><div><b>${nf(B.antall.obligasjoner)}</b><span>utstedere av obligasjoner</span></div><div><b>${nf(B.antall.eiendom)}</b><span>eiendomsinvesteringer</span></div><div><b>${nf(B.antall.infrastruktur)}</b><span>fornybarprosjekter</span></div></div>
+  <div class="row"><input id="oq" type="search" placeholder="Søk etter selskap" aria-label="Søk i investeringene"><select id="ol" aria-label="Land"><option value="">Alle land</option>${lands.map(c => `<option value="${esc(c)}">${esc(land(c))}</option>`).join('')}</select><select id="osek" aria-label="Bransje"><option value="">Alle bransjer</option>${sek.map(s => `<option value="${esc(s)}">${esc(sektor(s))}</option>`).join('')}</select></div>
+  <p class="meta" id="ok2"></p>
+  <div class="tw"><table class="list" id="oTable"><thead><tr><th>Selskap</th><th class="hide-s">Land</th><th class="n">Verdi</th><th class="n">Eierandel</th></tr></thead><tbody></tbody></table></div>
+  <div class="cols2 even"><section class="block"><div class="bh"><h2>Største obligasjonsutstedere</h2></div><ul class="feed">${B.obligasjoner.slice(0, 15).map(x => `<li><div class="grow"><b>${esc(x[0])}</b><div class="meta">${esc(land(x[1]))} · ${esc(sektor(x[3]))}</div></div><b class="n">${mrdKr(x[2])}</b></li>`).join('')}</ul></section>
+  <section class="block"><div class="bh"><h2>Eiendom og fornybar energi</h2></div><p class="meta">Fondet eier eiendom og vind- og solkraftverk sammen med partnere. Verdien oppgis bare samlet per land.</p><ul class="feed">${B.infrastruktur.map(x => `<li><div class="grow"><b>${esc(x[2] || x[0])}</b><div class="meta">${esc(land(x[1]))} · sammen med ${esc(x[0])}</div></div></li>`).join('')}${B.eiendom.slice(0, 12).map(x => `<li><div class="grow"><b>${esc(x[0])}</b><div class="meta">${esc(land(x[1]))}${x[3] ? ' · ' + esc(SEKTOR_RE(x[3])) : ''}</div></div><b class="n">${x[2]} ${x[2] === 1 ? 'eiendom' : 'eiendommer'}</b></li>`).join('')}</ul></section></div>
+  ${nbimSrc(F)}`;
+  ['oq', 'ol', 'osek'].forEach(id => $(id).addEventListener('input', fundInvList));
+  fundInvList();
+}
+function fundInvList() {
+  const q = $('oq').value.trim().toLowerCase(), l = $('ol').value, s = $('osek').value;
+  const L = FUND.beholdning.aksjer.filter(x => (!l || x[1] === l) && (!s || x[4] === s) && (!q || x[0].toLowerCase().includes(q)));
+  $('ok2').textContent = `${nf(L.length)} selskaper · ${mrdKr(L.reduce((a, x) => a + x[2], 0))} kroner`;
+  $('oTable').tBodies[0].innerHTML = L.slice(0, 300).map(x => `<tr><td><b>${esc(x[0])}</b><div class="meta">${esc(sektor(x[4]))}<span class="show-s"> · ${esc(land(x[1]))}</span></div></td><td class="hide-s">${esc(land(x[1]))}</td><td class="n">${x[2] >= 1e9 ? mrdKr(x[2]) : fmtNum(x[2] / 1e6, 0) + ' mill.'}</td><td class="n">${x[3] != null ? fmtNum(x[3], 2) + ' %' : '–'}</td></tr>`).join('') + (L.length > 300 ? `<tr><td colspan="4" class="meta">Viser 300 av ${nf(L.length)}. Søk eller filtrer for å finne flere.</td></tr>` : '');
+}
+function fundEx(F) {
+  const U = F.utelukket || [];
+  if ($('xq')) return fundExList();
+  const kat = [...new Set(U.map(x => x.kriterium).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'nb'));
+  $('v-fundex').innerHTML = `<h1>Utelukkede selskaper</h1><p class="lede">Oljefondet skal ikke eie selskaper som lager visse våpen eller tobakk, som baserer seg på kull, eller som medvirker til alvorlige brudd på menneskerettigheter, korrupsjon eller alvorlig miljøskade. Etikkrådet gir råd, og Norges Bank bestemmer.</p>
+  <div class="kpis"><div><b>${U.filter(x => /utelukk/i.test(x.beslutning)).length}</b><span>utelukket</span></div><div><b>${U.filter(x => /observ/i.test(x.beslutning)).length}</b><span>til observasjon</span></div></div>
+  <div class="row"><input id="xq" type="search" placeholder="Søk etter selskap" aria-label="Søk i utelukkede selskaper"><select id="xk" aria-label="Grunn"><option value="">Alle grunner</option>${kat.map(k => `<option>${esc(k)}</option>`).join('')}</select></div>
+  <p class="meta" id="xn"></p>
+  <div class="tw"><table class="list" id="xTable"><thead><tr><th>Selskap</th><th>Grunn</th><th class="hide-s">Beslutning</th><th class="d">Dato</th></tr></thead><tbody></tbody></table></div>
+  <p class="meta">Kilde: <a href="https://www.nbim.no/no/ansvarlig-forvaltning/utelukkelse-av-selskaper/" rel="noopener">Norges Bank, utelukkelse av selskaper</a>. Hentet ${date(F.hentet, true)}.</p>`;
+  ['xq', 'xk'].forEach(id => $(id).addEventListener('input', fundExList));
+  fundExList();
+}
+function fundExList() {
+  const q = $('xq').value.trim().toLowerCase(), k = $('xk').value;
+  const L = FUND.utelukket.filter(x => (!k || x.kriterium === k) && (!q || x.navn.toLowerCase().includes(q))).sort((a, b) => String(b.dato).localeCompare(String(a.dato)));
+  $('xn').textContent = `${L.length} selskaper`;
+  $('xTable').tBodies[0].innerHTML = L.map(x => `<tr><td><b>${esc(x.navn)}</b><div class="meta">${esc(x.kategori)}</div></td><td>${esc(x.kriterium)}</td><td class="hide-s">${esc(x.beslutning)}</td><td class="d">${x.dato ? sdate(x.dato) : '–'}</td></tr>`).join('');
 }
 
 /* ---------- dommere (sidegjøremålsregisteret) ---------- */

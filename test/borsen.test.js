@@ -82,3 +82,13 @@ test('shortsalg: dagens posisjon, aktører og serie med eldste først', () => {
   assert.deepEqual(s.eiere.map(e => e[0]), ['A', 'B']);
   assert.deepEqual(s.serie.map(x => x[0]), ['2026-01-01', '2026-11-01']);
 });
+
+import { chartSeries, pick, parseExclusions, summarizeHoldings } from '../src/oljefondet.js';
+test('oljefondet: diagramdata, utelukkelser og beholdning', () => {
+  const html = '<script type="application/json" data-highchart="">{"type":"column","nok":{"id":"chart1-1","series":[{"name":"Aksjer","data":[[1767139200000,15875]]}]}}</script><script>var x=1</script>';
+  assert.deepEqual(pick(chartSeries(html), 'Aksjer'), [[2025, 15875]]);
+  const ex = parseExclusions('<table><tr><th>Selskapsnavn</th><th></th><th>Kategori</th><th>Kriterie</th><th>Beslutning</th><th>Publiseringsdato</th></tr><tr><td><span>A &amp; B</span></td><td>&nbsp;</td><td>Atferd</td><td>Korrupsjon</td><td>Observasjon</td><td>01.02.2020</td></tr></table>');
+  assert.deepEqual(ex, [{ navn: 'A & B', kategori: 'Atferd', kriterium: 'Korrupsjon', beslutning: 'Observasjon', dato: '2020-02-01' }]);
+  const s = summarizeHoldings([{ n: 'X', cc: 'US', a: { n: 10 }, at: 0, o: 1, eq: { s: 'Tech' } }, { n: 'Y', cc: 'DE', a: { n: 30 }, at: 0, o: 2, eq: { s: 'Tech' } }, { n: 'B', cc: 'US', a: { n: 50 }, at: 1, fi: { s: 'Gov' } }]);
+  assert.equal(s.aksjer[0][0], 'Y'); assert.deepEqual(s.land[0], ['US', 60]); assert.deepEqual(s.sektor, [['Tech', 40]]); assert.equal(s.verdi.obligasjoner, 50);
+});
