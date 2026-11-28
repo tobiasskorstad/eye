@@ -6,6 +6,7 @@ import { mapLimit } from './http.js';
 import * as st from './stortinget.js';
 import * as reg from './register.js';
 import * as br from './brreg.js';
+import { fetchRegnskap } from './regnskap.js';
 import { fetchNews, fetchFactchecks, tagParties } from './news.js';
 import { fetchVotes } from './votes.js';
 import { diff, merge } from './changes.js';
@@ -160,6 +161,22 @@ export async function buildData() {
   }
   for (const x of [...innside, ...flagging]) delete x.om;
 
+  // 4a2. Organisasjonsnummer for norske børsselskaper (slås opp én gang i måneden) og årsregnskap
+  let regnskap = previous?.regnskap || {};
+  try {
+    const nrFile = path.join(config.dataDir, 'aksje-orgnr.json');
+    let nrCache = {}; try { nrCache = JSON.parse(await fs.readFile(nrFile, 'utf8')); } catch { }
+    const norske = Object.values(aksjer).filter(a => /\b(ASA|AS)$/i.test(a.navn.trim()));
+    for (const a of norske) {
+      const c = nrCache[a.navn];
+      if (!c || Date.now() - c.t > 30 * 864e5) nrCache[a.navn] = { t: Date.now(), nr: (await br.resolveCandidate(a.navn).catch(() => null))?.organisasjonsnummer || null };
+      if (nrCache[a.navn].nr) a.nr = nrCache[a.navn].nr;
+    }
+    await fs.writeFile(nrFile, JSON.stringify(nrCache));
+    regnskap = await fetchRegnskap([...cos.map(c => c.nr), ...norske.map(a => a.nr).filter(Boolean)], { warnings });
+    log('regnskap', Object.keys(regnskap).length, 'selskaper');
+  } catch (e) { warnings.push('Regnskap feilet: ' + e.message + ' – viser forrige'); }
+
   // 4b. Bilder og kort omtale av politikere, statsråder, partiledere og innsidere
   let profiler = previous?.profiler || {};
   try {
@@ -206,7 +223,7 @@ export async function buildData() {
   const pub = {
     hentet: new Date().toISOString(), regDato, regUrl, sessions, parti, kom,
     reps: reps.map(({ fodselsdato, fornavn, etternavn, ...r }) => r),
-    trades, cos, pep, innside, flagging, aksjer, profiler, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
+    trades, cos, pep, innside, flagging, aksjer, regnskap, profiler, partier, stemmer, lofter, faktasjekk, dummies, warnings, byggetid: Math.round((Date.now() - t0) / 1000),
   };
   pub.endringer = merge(previous?.endringer, diff(previous, pub));
   await writeJsonAtomic(files.internal(), internal);

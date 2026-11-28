@@ -34,6 +34,8 @@ jobs:
             data/insider-cache.json
             data/flagging-cache.json
             data/profiles-cache.json
+            data/regnskap-cache.json
+            data/aksje-orgnr.json
             data/img
           key: eye-data-${{ github.run_id }}
           restore-keys: eye-data-
@@ -59,6 +61,8 @@ jobs:
             data/insider-cache.json
             data/flagging-cache.json
             data/profiles-cache.json
+            data/regnskap-cache.json
+            data/aksje-orgnr.json
             data/img
           key: eye-data-${{ github.run_id }}
       - run: node tools/pages.js data/eye.json site

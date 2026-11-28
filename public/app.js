@@ -231,7 +231,7 @@ function renderRep(r) {
   const coRows = [...r.cos].sort((a, b) => (b.roles?.[r.id] ? 1 : 0) - (a.roles?.[r.id] ? 1 : 0) || b.ans - a.ans).map(c => {
     const ro = c.roles?.[r.id], nr = org(c.nr).replace(/ /g, '');
     const sh = holdingFor(rg['9'], c.navn);
-    return `<tr data-go="org-${nr}"><td><a href="#org-${nr}">${esc(c.navn)}</a><div class="meta">${esc(c.kommune || '–')}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}</div></td><td>${ro ? ro.map(x => `<span class="chip ok">${esc(x)}</span>`).join('') : '<span class="meta">Ingen rolle registrert</span>'}</td><td class="n">${sh ? esc(sh) : '–'}</td><td class="n hide-s">${c.ans > 0 ? nf(c.ans) : '–'}</td></tr>`;
+    return `<tr data-go="org-${nr}"><td><a href="#org-${nr}">${esc(c.navn)}</a><div class="meta">${esc(c.kommune || '–')}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}${RS(c.nr)?.inn != null ? ` · omsetning ${money2(RS(c.nr).inn, RS(c.nr).valuta)} (${RS(c.nr).aar})` : ''}</div></td><td>${ro ? ro.map(x => `<span class="chip ok">${esc(x)}</span>`).join('') : '<span class="meta">Ingen rolle registrert</span>'}</td><td class="n">${sh ? esc(sh) : '–'}</td><td class="n hide-s">${c.ans > 0 ? nf(c.ans) : '–'}</td></tr>`;
   }).join('');
   const sum = r.trades.reduce((a, t) => a + t.ver, 0), om = S()?.oppmote[r.id];
   const partyLink = P?.partier[r.parti] ? `<a href="#parti-${r.parti}">${esc(D.parti[r.parti] || r.parti)}</a>` : esc(D.parti[r.parti] || r.parti);
@@ -357,7 +357,7 @@ function renderStock(st) {
   <div class="hrow"><div><div class="kicker">Børsnotert${st.tick ? ` · <span class="tick">${esc(st.tick)}</span>` : ''}</div><h1>${esc(st.navn)}</h1></div></div>
   ${st.om ? `<div class="wiki"><p>${esc(st.om)}</p><div class="meta">Selskapets egen beskrivelse, fra <a href="${url(st.omU)}" rel="noopener">børsmelding ${date(st.omDato)}</a></div></div>` : '<p class="meta">Selskapet har ikke tatt med en beskrivelse av seg selv i børsmeldingene vi har lest.</p>'}
   <div class="kpis"><div><b>${L.length}</b><span>innsidehandler, 60 dager</span></div><div><b>${buy ? kr(buy) : '–'}</b><span>kjøpt av innsidere, kr</span></div><div><b>${sell ? kr(sell) : '–'}</b><span>solgt av innsidere, kr</span></div><div><b>${F.length}</b><span>flaggemeldinger, 90 dager</span></div>${PT.length ? `<div><b>${new Set(PT.map(t => t.r.navn)).size}</b><span>politikere har handlet aksjen</span></div>` : ''}${lastPrice ? `<div><b>${lastPrice.kurs.toLocaleString('nb-NO')} kr</b><span>kurs i siste innsidehandel (${sdate(lastPrice.d)})</span></div>` : ''}</div>
-  ${toc([L.length && ['a-ins', `Innsidere (${per.size})`], latest.length && ['a-eiere', `Store eiere (${latest.length})`], PT.length && ['a-pol', `Politikere (${PT.length})`], ['a-br', 'Brønnøysund'], ['a-kilder', 'Kilder']])}
+  ${toc([L.length && ['a-ins', `Innsidere (${per.size})`], latest.length && ['a-eiere', `Store eiere (${latest.length})`], PT.length && ['a-pol', `Politikere (${PT.length})`], D.aksjer?.[st.tick || st.navn]?.nr && ['a-fin', 'Økonomi'], ['a-br', 'Brønnøysund'], ['a-kilder', 'Kilder']])}
   ${L.length ? sec('a-ins', 'Innsidere som har handlet', `<div class="tw"><table><thead><tr><th>Person</th><th class="n">Handler</th><th class="n">Netto aksjer</th><th class="n hide-s">Kjøpt, kr</th><th class="n hide-s">Solgt, kr</th></tr></thead><tbody>${[...per.values()].sort((a, b) => (b.k + b.s) - (a.k + a.s)).map(p => `<tr${p.navn && insiders.has(slug(p.navn)) ? ` data-go="person-${slug(p.navn)}"` : ''}><td><div class="who">${avatar(p.navn ? ['ins:' + slug(p.navn)] : [], p.navn || '?')}<div>${p.navn ? insiderLink(p.navn) : '<span class="meta">Navn ikke lest ut</span>'}<div class="meta">${esc(p.rolle || '')}</div></div></div></td><td class="n">${p.n}</td><td class="n">${p.ant ? `<b class="${p.ant > 0 ? 'pos' : 'neg'}">${p.ant > 0 ? '+' : ''}${nf(p.ant)}</b>` : '–'}</td><td class="n hide-s">${p.k ? kr(p.k) : '–'}</td><td class="n hide-s">${p.s ? kr(p.s) : '–'}</td></tr>`).join('')}</tbody></table></div>
   <details class="more"><summary>Vis alle ${L.length} meldinger</summary><div class="tw"><table><thead><tr><th>Dato</th><th>Melding</th><th class="n">Verdi</th></tr></thead><tbody>${L.map(x => `<tr><td class="d">${sdate(x.d)}</td><td><b>${ITYPE[x.k] || '–'}</b>${x.navn ? ' · ' + insiderLink(x.navn) : ''}<div class="meta">${esc(x.tekst || x.tittel)} <a href="${url(x.u)}" rel="noopener">Les meldingen</a></div></td><td class="n">${money(x)}</td></tr>`).join('')}</tbody></table></div></details>`) : ''}
   ${latest.length ? sec('a-eiere', 'Store eiere som har flagget', `<div class="tw"><table><thead><tr><th>Eier</th><th class="n">Andel</th><th>Endring</th><th class="n hide-s">Dato</th></tr></thead><tbody>${latest.map(f => `<tr><td>${ownerLink(f.eier)}</td><td class="n"><b>${pct(f.pst)}</b></td><td>${arrow(f.retning) || '–'} <a href="${url(f.u)}" rel="noopener" class="meta">melding</a></td><td class="n hide-s">${sdate(f.d)}</td></tr>`).join('')}</tbody></table></div>
@@ -369,6 +369,7 @@ function renderStock(st) {
     return `<ul class="feed">${[...pp.values()].sort((a, b) => b.d.localeCompare(a.d)).map(g => `<li>${avatar(g.t.r.h ? ['rep:' + g.t.rep] : ['gov:' + g.t.pep], g.t.r.navn, g.t.r.parti)}<div class="grow">${who(g.t)} <span class="meta">${g.n} ${g.n === 1 ? 'handel' : 'handler'}</span><div class="meta">${esc(g.t.r.parti)} · siste ${sdate(g.d)}</div></div><b class="n ${g.net > 0 ? 'pos' : g.net < 0 ? 'neg' : ''}">${g.net > 0 ? '+' : ''}${nf(g.net)} aksjer</b></li>`).join('')}</ul>
     ${PT.length > 3 ? `<details class="more"><summary>Vis alle ${PT.length} handler</summary><ul class="feed">${PT.map(t => `<li><div class="grow">${who(t)} ${trade(t.k).toLowerCase()} ${nf(t.ant)} aksjer<div class="meta">${sdate(t.d)}</div></div><b class="n">${kr(t.ver)}</b></li>`).join('')}</ul></details>` : ''}
     <p class="meta">Fra Stortingets og regjeringens register over aksjehandler. Netto = kjøpt minus solgt.</p>`; })()) : ''}
+  ${D.aksjer?.[st.tick || st.navn]?.nr ? finBlock(D.aksjer[st.tick || st.navn].nr, 'a-fin') : ''}
   <div id="aBrreg"></div>
   ${sec('a-kilder', 'Kilder', `<div class="links">${[...L, ...F].slice(0, 1).map(x => `<a href="${url(x.u)}" rel="noopener">Siste børsmelding (NewsWeb)</a>`).join('')}</div><p class="meta">Innsidehandler og flaggemeldinger fra Oslo Børs NewsWeb. Navn, beløp og andeler leses automatisk ut av meldingsteksten og kan være feil – sjekk alltid meldingen.</p>`)}`;
   document.title = `${st.navn} – EYE`;
@@ -823,8 +824,8 @@ function cosView() {
   $('ck').innerHTML = `<div><b>${cos.length}</b><span>selskaper og organisasjoner</span></div><div><b>${new Set(cos.flatMap(c => c.ids)).size}</b><span>representanter</span></div><div><b>${withRole}</b><span>med rolle bekreftet</span></div>`;
   const f = $('cf').value, s = $('cs').value;
   const list = cos.filter(c => (f !== 'rolle' || Object.keys(c.roles || {}).length) && (f !== 'flagg' || c.flag))
-    .sort((a, b) => s === 'ans' ? b.ans - a.ans : s === 'rep' ? b.ids.length - a.ids.length || a.navn.localeCompare(b.navn, 'nb') : a.navn.localeCompare(b.navn, 'nb'));
-  $('coTable').tBodies[0].innerHTML = list.map(c => `<tr data-go="org-${org(c.nr).replace(/ /g, '')}"><td><a href="#org-${org(c.nr).replace(/ /g, '')}">${esc(c.navn)}</a><div class="meta">${org(c.nr)} · ${esc(FORM[c.form] || c.form)}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}</div></td><td>${esc(c.kommune || '–')}</td><td class="n">${c.ans > 0 ? nf(c.ans) : '–'}</td><td>${polChips(c.ids)}</td></tr>`).join('');
+    .sort((a, b) => s === 'inn' ? (RS(b.nr)?.inn || -1) - (RS(a.nr)?.inn || -1) : s === 'ans' ? b.ans - a.ans : s === 'rep' ? b.ids.length - a.ids.length || a.navn.localeCompare(b.navn, 'nb') : a.navn.localeCompare(b.navn, 'nb'));
+  $('coTable').tBodies[0].innerHTML = list.map(c => `<tr data-go="org-${org(c.nr).replace(/ /g, '')}"><td><a href="#org-${org(c.nr).replace(/ /g, '')}">${esc(c.navn)}</a><div class="meta">${org(c.nr)} · ${esc(FORM[c.form] || c.form)}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}</div></td><td class="hide-s">${esc(c.kommune || '–')}</td><td class="n">${RS(c.nr)?.inn != null ? `${money2(RS(c.nr).inn, RS(c.nr).valuta)}<div class="meta">${RS(c.nr).aar}</div>` : '–'}</td><td class="n hide-s">${c.ans > 0 ? nf(c.ans) : '–'}</td><td>${polChips(c.ids)}</td></tr>`).join('');
 }
 async function liveSearch(q) {
   const box = $('live');
@@ -837,11 +838,32 @@ async function liveSearch(q) {
     box.innerHTML = d.treff.length ? `<div class="res">${d.treff.map(c => `<a href="#org-${org(c.nr).replace(/ /g, '')}"><span><b>${esc(c.navn)}</b><br><span class="meta">${org(c.nr)} · ${esc(c.kommune || '–')} · ${esc(c.nar || c.formNavn || '')}${flag(c.flag) ? ' · ' + flag(c.flag) : ''}</span></span><span>${(c.politikere || []).map(p => `<span class="chip ok">${dot(p.parti)}${esc(p.navn)}</span>`).join('')}</span></a>`).join('')}</div>` : '<p class="empty">Ingen treff.</p>';
   } catch (e) { box.innerHTML = `<p class="empty">${esc(e.message || 'Søket feilet')}</p>`; }
 }
+/* ---------- årsregnskap (Regnskapsregisteret, hentet i bygget) ---------- */
+const RS = nr => D.regnskap?.[String(nr || '').replace(/\D/g, '')] || null;
+const money2 = (v, cur = 'NOK') => v == null ? '–' : `${v < 0 ? '−' : ''}${kr(Math.abs(v))} ${cur === 'NOK' ? 'kr' : esc(cur)}`;
+const chg = (a, b) => a != null && b ? `<span class="${a >= b ? 'pos' : 'neg'}">${a >= b ? '▲' : '▼'} ${Math.abs(Math.round(100 * (a - b) / Math.abs(b)))} %</span>` : '';
+/** Nøkkeltall fra siste årsregnskap, med endring fra året før. */
+function finBlock(nr, id = 'fin') {
+  const r = RS(nr), n9 = String(nr || '').replace(/\D/g, '');
+  if (!r) return sec(id, 'Økonomi', `<p class="meta">Har ikke levert årsregnskap til Regnskapsregisteret, eller EYE har ikke hentet det. <a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${n9}" rel="noopener">Se hos Brønnøysundregistrene</a></p>`);
+  const f = r.forrige || {}, margin = r.inn ? Math.round(100 * r.drift / r.inn) : null, ekAndel = r.eiend ? Math.round(100 * r.ek / r.eiend) : null;
+  return sec(id, `Økonomi ${r.aar}`, `<div class="kpis fin">
+    <div><b>${money2(r.inn, r.valuta)}</b><span>driftsinntekter ${chg(r.inn, f.inn)}</span></div>
+    <div><b class="${r.drift < 0 ? 'neg' : ''}">${money2(r.drift, r.valuta)}</b><span>driftsresultat${margin != null && r.inn > 0 ? ` (margin ${margin} %)` : ''}</span></div>
+    <div><b class="${r.res < 0 ? 'neg' : ''}">${money2(r.res, r.valuta)}</b><span>årsresultat ${chg(r.res, f.res)}</span></div>
+    <div><b>${money2(r.ek, r.valuta)}</b><span>egenkapital${ekAndel != null ? ` (${ekAndel} % av eiendelene)` : ''}</span></div>
+    <div><b>${money2(r.gjeld, r.valuta)}</b><span>gjeld</span></div>
+  </div>
+  ${f.aar ? `<p class="meta">Året før (${f.aar}): driftsinntekter ${money2(f.inn, r.valuta)}, årsresultat ${money2(f.res, r.valuta)}.</p>` : ''}
+  <p class="meta">Årsregnskap for ${r.aar}${r.type === 'konsern' ? ' (konsern)' : ''} fra Regnskapsregisteret${r.revidert === false ? ', ikke revidert' : ''}. <a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${n9}" rel="noopener">Hele regnskapet hos Brønnøysundregistrene</a></p>`);
+}
+
 function orgHtml(c, personer, pols) {
   const roleRows = (personer || []).map(p => { const r = p.rep && byId[p.rep]; return `<tr><td>${r ? `<a class="rep" href="#rep-${r.h}">${esc(p.navn)}</a> ${dot(r.parti)}<span class="meta">${esc(r.parti)}</span>` : esc(p.navn)}</td><td>${esc(p.rolle)}</td></tr>`; }).join('');
   const declOnly = pols.filter(p => !(personer || []).some(x => x.rep === p.id));
   return `<a class="back" href="#selskaper">← Selskaper</a><div class="head"><h1>${esc(c.navn)}</h1>${followBtn('org', c.nr)}</div><div class="meta">Org.nr. ${org(c.nr)} · ${esc(FORM[c.form] || c.formNavn || c.form)}</div>
   <dl class="facts"><dt>Kommune</dt><dd>${esc(c.kommune || '–')}</dd><dt>Bransje</dt><dd>${esc(c.nar || '–')}</dd><dt>Ansatte</dt><dd>${c.ans > 0 ? nf(c.ans) : 'Ikke registrert'}</dd><dt>Registrert</dt><dd>${esc(c.ar || '–')}</dd><dt>Status</dt><dd>${flag(c.flag) || 'Aktiv'}</dd></dl>
+  ${finBlock(c.nr)}
   <h2>Roller</h2>${roleRows ? `<table><thead><tr><th>Navn</th><th>Rolle</th></tr></thead><tbody>${roleRows}</tbody></table>` : `<p class="empty">${c.nRoller ? `${c.nRoller} roller registrert. Henter navn fra Brønnøysund …` : 'Ingen personroller registrert.'}</p>`}
   ${declOnly.length ? `<h3>Oppgitt i interesseregisteret av</h3><p>${polChips(declOnly.map(p => p.id))}</p>` : ''}
   <div class="links"><a href="https://virksomhet.brreg.no/nb/oppslag/enheter/${org(c.nr).replace(/ /g, '')}">Brønnøysundregistrene</a></div>`;

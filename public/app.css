@@ -253,3 +253,5 @@ details.more{margin-top:8px}details.more>summary{cursor:pointer;font-weight:600;
 .block h3{font-size:15px;margin:12px 0 4px}
 
 #v-party h2[id]{scroll-margin-top:130px}
+.kpis.fin span .pos,.kpis.fin span .neg{font-weight:700;white-space:nowrap}
+span.pos{color:#167a3e}span.neg,b.neg{color:#b42318}
