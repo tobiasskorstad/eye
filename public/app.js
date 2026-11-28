@@ -113,7 +113,13 @@ function show(v, sec, sub) {
   for (const x of VIEWS) $('v-' + x).hidden = x !== v;
   for (const a of document.querySelectorAll('#mainnav a')) a.dataset.s === sec ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   $('subnav').innerHTML = (SECTIONS[sec] || []).map(([h, l]) => `<a href="#${h}"${h === sub ? ' aria-current="page"' : ''}>${l}</a>`).join('');
+  // Aktiv fane skal alltid synes i menyen, også på smale skjermer der menyen kan rulles sidelengs.
+  const cur = document.querySelector('#mainnav [aria-current]'), nav = $('mainnav');
+  if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
+  document.querySelector('.top')?.classList.remove('hide');
 }
+// Mobil: toppen glir bort når du blar ned og kommer tilbake når du blar opp, så innholdet får plass.
+{ let last = 0; addEventListener('scroll', () => { const y = scrollY, top = document.querySelector('.top'); if (!top || !matchMedia('(max-width:720px)').matches) return; if (y > last + 6 && y > 140 && !top.contains(document.activeElement)) top.classList.add('hide'); else if (y < last - 6 || y < 140) top.classList.remove('hide'); last = y; }, { passive: true }); }
 function route() {
   const h = decodeURIComponent(location.hash.slice(1)) || 'oversikt'; let m;
   closeSearch();
@@ -540,6 +546,55 @@ function promisesView() {
   $('gjGrid').innerHTML = PORDER().filter(p => L.gjennomslag.partier[p]).map(p => `<div class="pcard" style="--pc:${col(p)}"><b><a href="#parti-${p}">${esc(pname(p))}</a></b><div class="meta">${esc(P?.partier[p]?.rolle || '')}</div><ul>${L.gjennomslag.partier[p].map(g => `<li>${g.tap ? '✗ ' : '✓ '}<a href="${url(g.u)}" rel="noopener">${esc(g.sak)}</a></li>`).join('')}</ul></div>`).join('');
 }
 
+/* ---------- kilder og metode ---------- */
+// Hver kilde vises med hva den gir, hvor mye vi har fra den nå, hvor ofte den hentes og lenke. Tallene regnes ut fra dataene.
+function omView() {
+  const tid = d => d ? new Date(d).toLocaleString('nb-NO', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '–';
+  const host = u => { try { return new URL(u).host.replace(/^www\./, ''); } catch { return u; } };
+  const warn = w => esc(w.replace(/\(?(HTTP \d+ )?https?:\/\/\S+\)?/g, (m, h) => `(${h ? h.trim() + ', ' : ''}${host(m.replace(/^\(?(HTTP \d+ )?|\)$/g, ''))})`));
+  const spm = reps.reduce((a, r) => a + num(r.q), 0), outlets = [...new Set(allNews().map(n => n.kilde))].sort((a, b) => a.localeCompare(b, 'nb'));
+  const card = (navn, u, hva, mengde, ofte, lisens = '') => `<div class="src"><div class="src-h"><b>${esc(navn)}</b>${u ? `<a href="${url(u)}" rel="noopener">${esc(host(u))} ↗</a>` : ''}</div><p>${hva}</p><div class="src-m">${mengde ? `<span class="chip">${mengde}</span>` : ''}<span class="chip">${esc(ofte)}</span>${lisens ? `<span class="chip">${esc(lisens)}</span>` : ''}</div></div>`;
+  const grp = (t, intro, cards) => `<section class="srcg"><h2>${t}</h2>${intro ? `<p class="meta">${intro}</p>` : ''}<div class="srcs">${cards.join('')}</div></section>`;
+  $('v-om').innerHTML = `<div class="hero"><h1>Kilder og metode</h1><p class="lede">Alt på EYE kommer fra offentlige kilder, og vi lenker alltid til originalen. Her ser du hvor hver opplysning kommer fra, hvor mye vi har hentet, og hvor ofte den oppdateres.</p></div>
+  <div class="status"><span class="pulse" aria-hidden="true"></span><div><b>Sist oppdatert ${tid(D.hentet)}</b><div class="meta">Nettstedet bygges på nytt automatisk hver tredje time. Interesseregisteret er fra ${date(D.regDato, true)}.</div></div></div>
+  ${D.warnings?.length ? `<details class="card warnbox"><summary><b>${D.warnings.length} ${D.warnings.length === 1 ? 'merknad' : 'merknader'} fra siste oppdatering</b> <span class="meta">– det som ikke kunne hentes, vises fra forrige versjon</span></summary><ul>${D.warnings.map(w => `<li>${warn(w)}</li>`).join('')}</ul></details>` : ''}
+  ${grp('Politikerne', '', [
+    card('Stortingets åpne data', 'https://data.stortinget.no/', 'Representanter, partier, komiteer og alle spørsmål de stiller regjeringen.', `${nf(reps.length)} representanter · ${nf(spm)} spørsmål`, 'Hver tredje time', 'NLOD'),
+    card('Stortingets interesseregister', D.regUrl || 'https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Okonomiske-interesser/', 'Verv, eierandeler, gaver, reiser og aksjehandler. Gjengitt ordrett slik Stortinget publiserer det.', `${nf(D.trades.length)} aksjehandler`, 'Ved hver ny utgave'),
+    card('Regjeringens interesseregister', D.pep?.kilder?.regjering, 'Statsrådenes verv og eierandeler, fra regjeringsdelen av registeret.', `${nf(govs.length)} statsråder`, 'Ved hver ny utgave'),
+    card('Register for statssekretærer og rådgivere', D.pep?.kilder?.statssek, 'Verv og økonomiske interesser for politisk ansatte i departementene.', `${nf(D.pep?.statssek?.length || 0)} personer`, D.pep?.kilder?.statssekDato ? 'Versjon ' + date(D.pep.kilder.statssekDato) : 'Ved hver ny utgave'),
+    card('Voteringer', 'https://www.stortinget.no/no/Saker-og-publikasjoner/Vedtak/Voteringer/', 'Hvordan hver representant stemte. «Hvem stemmer med hvem» og oppmøte regnes ut fra dette.', `${nf(S()?.voteringer?.length || 0)} voteringer`, 'Hver tredje time', 'NLOD'),
+  ])}
+  ${grp('Selskaper og børs', 'Børsmeldinger tolkes automatisk. Tallene kan derfor ha feil, og hver handel lenker til den originale meldingen.', [
+    card('Enhetsregisteret', 'https://data.brreg.no/enhetsregisteret/oppslag/enheter', 'Selskapsopplysninger og alle registrerte roller. Søk på selskaper hentes direkte fra Brønnøysund.', `${nf(D.cos.length)} selskaper med politikere`, 'Hver tredje time', 'NLOD'),
+    card('Regnskapsregisteret', 'https://data.brreg.no/regnskapsregisteret/regnskap/', 'Driftsinntekter, resultat, egenkapital og eiendeler fra siste innsendte årsregnskap.', `${nf(Object.keys(D.regnskap || {}).length)} regnskap`, 'Hver uke', 'NLOD'),
+    card('Oslo Børs: innsidehandel', 'https://newsweb.oslobors.no/', 'Meldepliktige handler fra styremedlemmer, ledere og deres nærstående.', `${nf(D.innside?.length || 0)} handler siste 60 dager`, 'Hver tredje time'),
+    card('Oslo Børs: flaggemeldinger', 'https://newsweb.oslobors.no/', 'Når noen eier mer eller mindre enn 5, 10, 15 % osv. av et børsselskap.', `${nf(D.flagging?.length || 0)} meldinger`, 'Hver tredje time'),
+  ])}
+  ${grp('Tall og fakta', '', [
+    card('SSB – Statistikkbanken', 'https://www.ssb.no/statbank', 'Ledighet, prisvekst, BNP, boligpriser, befolkning, innvandring og lovbrudd i «Tall i debatten».', `${nf((D.tall || []).filter(t => !/Norges Bank/.test(t.kilde || '')).length)} nøkkeltall`, 'Hver tredje time', 'CC BY 4.0'),
+    card('Norges Bank', 'https://www.norges-bank.no/tema/pengepolitikk/styringsrenten/', 'Styringsrenten.', '1 nøkkeltall', 'Hver tredje time'),
+    card('Faktisk.no', 'https://www.faktisk.no/', 'Faktasjekker fra den uavhengige redaksjonen Faktisk.no.', `${nf(D.faktasjekk?.sjekker?.length || 0)} saker`, 'Hver tredje time'),
+    card('Poll of polls', 'https://www.pollofpolls.no/', 'Gjennomsnitt av meningsmålingene for stortingsvalg.', '', 'Hver tredje time'),
+  ])}
+  ${grp('Partier, løfter og Politikk for dummies', 'Dette er skrevet for hånd og gjennomgått på datoene som står under. Hvert standpunkt og hver status har egne kilder.', [
+    card('Partiprogrammer 2025–2029', '', 'Hva partiene står for, hvem som støtter og kritiserer dem, og partienes standpunkter i Politikk for dummies.', `${nf(D.dummies?.tema?.length || 0)} saker forklart`, D.dummies?.oppdatert ? 'Gjennomgått ' + date(D.dummies.oppdatert) : 'Manuelt'),
+    card('Løfter og gjennomslag', '', 'Valgløfter fra 2025 sammenholdt med budsjetter, vedtak, SSB og nyheter.', '', D.lofter?.oppdatert ? 'Gjennomgått ' + date(D.lofter.oppdatert) : 'Manuelt'),
+  ])}
+  ${grp('Bilder og omtaler', '', [
+    card('Stortingets portretter', 'https://www.stortinget.no/', 'Offisielle portretter av representanter og statsråder.', '', 'Ved endring', 'Foto: Stortinget'),
+    card('Wikipedia, Wikidata og Wikimedia Commons', 'https://www.wikidata.org/', 'Kort omtale og bilde av ledere og eiere. Brukes bare når artikkelen beviselig gjelder riktig person, med riktig yrke og selskap.', `${nf(Object.keys(D.profiler || {}).length)} profiler`, 'Hver tredje time', 'CC BY-SA 4.0'),
+  ])}
+  ${outlets.length ? `<section class="srcg"><h2>Nyhetskilder</h2><p class="meta">Overskrifter hentes fra et bredt spekter, fra venstre til høyre, og knyttes til partiene de nevner. Bare tittel og lenke vises.</p><div class="chips">${outlets.map(o => `<span class="chip">${esc(o)}</span>`).join('')}</div></section>` : ''}
+  <section class="srcg"><h2>Slik jobber vi</h2><div class="principles">
+    <div><b>Ordrett fra kilden</b><p>Registertekster vises slik de står. Vi tar ikke bort noe og legger ikke til noe.</p></div>
+    <div><b>Alltid lenke</b><p>Alle tall, handler og standpunkter har lenke, så du kan sjekke selv.</p></div>
+    <div><b>Sikker kobling</b><p>En politiker regnes som bekreftet i et selskap bare når både navn og fødselsdato stemmer i Brønnøysund. Ellers merkes det «Oppgitt».</p></div>
+    <div><b>Ingen privatpersoner</b><p>Vi viser ikke fødselsdatoer, adresser eller telefonnummer, og du kan ikke søke etter privatpersoner. Det er ikke informasjon om makt.</p></div>
+  </div></section>
+  <section class="card fix"><h2>Fant du en feil?</h2><p>Automatisk tolkning av registre og børsmeldinger kan bli feil. Si fra, så retter vi det.</p><a class="btn" href="https://github.com/tobiasskorstad/eye/issues/new" rel="noopener">Meld en feil</a> <a href="#personvern">Les om personvern</a></section>`;
+}
+
 /* ---------- nyheter ---------- */
 function allNews() {
   if (!P) return [];
@@ -959,7 +1014,7 @@ function goLive() {
   try { prepare(await load()); } catch (e) { $('repsLede').textContent = 'Kunne ikke laste data. Prøv igjen om litt.'; return; }
   $('repsLede').textContent = `${reps.length} representanter. Klikk et sete eller en rad for å se verv, selskaper, aksjehandler og spørsmål. Oppdatert ${date(D.hentet, true)}.`;
   $('foot').textContent = `Data fra Stortinget, Stortingets interesseregister (${date(D.regDato, true)}) og Brønnøysundregistrene. Oppdatert ${date(D.hentet, true)}.`;
-  $('omMeta').textContent = `Sist oppdatert ${date(D.hentet, true)}.${D.warnings?.length ? ' Merknader fra siste oppdatering: ' + D.warnings.join('; ') + '.' : ''}`;
+  omView();
   [...new Set(reps.map(r => r.fylke))].sort((a, b) => a.localeCompare(b, 'nb')).forEach(f => $('fy').add(new Option(f, f)));
   Object.entries(D.kom).sort((a, b) => a[1].localeCompare(b[1], 'nb')).forEach(([k, v]) => $('ko').add(new Option(v, k)));
   for (const sel of ['vp', 'np', 'fp']) PORDER().filter(p => D.parti[p]).forEach(p => $(sel).add(new Option(pname(p), p)));
