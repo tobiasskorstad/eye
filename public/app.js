@@ -431,6 +431,7 @@ function homeView() {
     qs.length && card('Siste spørsmål til regjeringen', '<a href="#stortinget">Alle representanter →</a>', `<ul class="feed">${qs.map(r => row(avatar(['rep:' + r.id], r.navn, r.parti), `<a href="${url(qUrl(r.siste))}" rel="noopener">${esc(cut(r.siste.tit, 110))}</a>`, `<a href="#rep-${r.h}">${esc(r.navn)}</a> · ${esc(r.parti)} · ${date(r.siste.d)}`)).join('')}</ul>`),
     A.length && card('Akkurat nå i nyhetene', '<a href="#nyheter">Alle nyheter →</a>', `<ul class="feed">${A.slice(0, 5).map(n => row('', `<a href="${url(n.url)}" rel="noopener">${esc(n.tittel)}</a>`, `${esc(n.kilde)} · ${n.ps.map(x => dot(x) + esc(short(x))).join(' ')}`)).join('')}</ul>`),
     order.length && card('Partiene', '<a href="#partier">Mer →</a>', `<ul class="feed">${order.map(p => { const x = P.partier[p], lk = leaderKeys(p), seats = reps.filter(r => r.parti === p).length, poll = P.maling?.snitt[p]; return row(avatar(lk, x.leder, p), `<a href="#parti-${p}">${esc(pname(p))}</a>`, `${esc(x.leder)} · ${seats} mandater`, poll != null ? poll.toFixed(1).replace('.', ',') + ' %' : ''); }).join('')}</ul>${P.maling ? `<p class="meta">Til høyre: snitt på målingene (${esc(P.maling.kilde)}).</p>` : ''}`),
+    (D.tall || []).length && card('Tall i debatten', '<a href="#faktasjekk">Alle tall →</a>', `<ul class="feed">${D.tall.filter(t => ['ledighet', 'prisvekst', 'rente', 'bnp'].includes(t.id)).map(t => row('', `<a href="${url(t.url)}" rel="noopener">${esc(t.tittel)}</a>`, `${esc(t.periode)}${t.før ? ` · ${esc(t.før.periode)}: ${fmtNum(t.før.verdi, t.des)} %` : ''}`, `${fmtNum(t.verdi, t.des)} %`)).join('')}</ul><p class="meta">Fra SSB og Norges Bank.</p>`),
     fkNew.length && card('Nytt fra Faktisk.no', '<a href="#faktasjekk">Alle →</a>', `<ul class="feed">${fkNew.map(x => row('', `<a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a>`, `${x.type === 'artikkel' ? 'Artikkel' : 'Faktasjekk'} · ${date(x.d)}${(x.p || []).length ? ' · ' + x.p.map(y => dot(y) + esc(short(y))).join(' ') : ''}`)).join('')}</ul>${stille ? `<p class="meta">Faktisk.no har ikke publisert noe nytt siden ${date(D.faktasjekk.nyeste)}.</p>` : ''}`),
   ].filter(Boolean).join('');
 }
@@ -560,11 +561,29 @@ function newsView() {
 }
 
 /* ---------- faktasjekk ---------- */
+/** Liten kurve (SVG) av en tallserie. */
+function spark(vals) {
+  const v = (vals || []).filter(x => x != null); if (v.length < 2) return '';
+  const lo = Math.min(...v), hi = Math.max(...v), w = 120, h = 32, sx = w / (v.length - 1), sy = hi === lo ? 0 : (h - 4) / (hi - lo);
+  const pts = v.map((y, i) => `${(i * sx).toFixed(1)},${(h - 2 - (y - lo) * sy).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+const fmtNum = (x, d) => x == null ? '–' : Number(x).toLocaleString('nb-NO', { minimumFractionDigits: d, maximumFractionDigits: d });
 function factsView() {
-  const F = D.faktasjekk; if (!F) { $('v-facts').innerHTML = '<h1>Faktasjekk</h1><p class="empty">Mangler innhold.</p>'; return; }
-  $('factsLede').textContent = F.om;
-  const p = $('fp').value;
-  $('factList').innerHTML = F.sjekker.filter(x => !p || (x.p || []).includes(p)).map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a><div class="meta">Faktisk.no · ${date(x.d)}${(x.p || []).length ? ' · ' + x.p.map(y => `${dot(y)}${esc(short(y))}`).join(' ') : ''}</div></li>`).join('') || '<li class="empty">Ingen faktasjekker for valget.</li>';
+  const T = D.tall || [];
+  $('tallGrid').innerHTML = T.map(t => {
+    const unit = t.enhet === '%' ? ' %' : t.enhet === 'indeks' ? '' : '';
+    const diff = t.før ? (t.enhet === '%' ? `${t.verdi >= t.før.verdi ? '+' : '−'}${fmtNum(Math.abs(t.verdi - t.før.verdi), t.des)} prosentpoeng` : t.endringPst != null ? `${t.endringPst >= 0 ? '+' : '−'}${fmtNum(Math.abs(t.endringPst), 1)} %` : '') : '';
+    return `<a class="stat" href="${url(t.url)}" rel="noopener"><span class="st-t">${esc(t.tittel)}</span><b>${fmtNum(t.verdi, t.des)}${unit}</b><span class="st-u">${t.enhet !== '%' && t.enhet !== 'indeks' ? esc(t.enhet) + ' · ' : ''}${esc(t.periode)}</span>${spark(t.serie)}
+      ${t.før ? `<span class="st-c">${diff ? `<b class="${/^\+/.test(diff) ? 'up' : 'down'}">${diff}</b> ` : ''}siden ${esc(t.før.periode)}${t.enhet === '%' ? ` (${fmtNum(t.før.verdi, t.des)} %)` : ''}</span>` : ''}
+      <span class="st-f">${esc(t.forklaring)}</span><span class="st-k">Kilde: ${esc(t.kilde)}</span></a>`;
+  }).join('') || '<p class="empty">Tallene kunne ikke hentes.</p>';
+  $('tallOppd').textContent = T.length ? `Hentet ${date(D.hentet, true)}` : '';
+  const F = D.faktasjekk; if (!F) return;
+  const stille = F.nyeste && (Date.now() - Date.parse(F.nyeste)) / 864e5 > 30;
+  $('factsLede').textContent = `${F.om}${stille ? ` Faktisk.no publiserer sjelden nå – siste sak er fra ${date(F.nyeste)}. Derfor viser vi også offisielle tall over.` : ''}`;
+  const p = $('fp').value, ty = $('ft').value;
+  $('factList').innerHTML = F.sjekker.filter(x => (!p || (x.p || []).includes(p)) && (!ty || (x.type || 'faktasjekk') === ty)).slice(0, 60).map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a><div class="meta">Faktisk.no · ${x.type === 'artikkel' ? 'artikkel' : 'faktasjekk'} · ${x.d ? date(x.d) : 'uten dato'}${(x.p || []).length ? ' · ' + x.p.map(y => `${dot(y)}${esc(short(y))}`).join(' ') : ''}</div></li>`).join('') || '<li class="empty">Ingen treff.</li>';
   $('factCrit').innerHTML = F.kritikk.map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a><div class="meta">${date(x.d)}</div></li>`).join('');
   $('factSelf').innerHTML = F.selv.map(x => `<li><a href="${url(x.u)}" rel="noopener">${esc(x.t)}</a></li>`).join('');
 }
@@ -941,7 +960,7 @@ function goLive() {
   ownersView(); flaggingView(); ['fr', 'fq'].forEach(id => $(id).addEventListener('input', flaggingView));
   ['vp', 'vf'].forEach(id => $(id).addEventListener('input', votesView));
   ['np', 'ns'].forEach(id => $(id).addEventListener('input', newsView));
-  $('fp').addEventListener('input', factsView);
+  $('fp').addEventListener('input', factsView); $('ft').addEventListener('input', factsView);
   $('promFilter').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { promStatus = b.dataset.st; promisesView(); } });
 
   $('leg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; off.has(b.dataset.p) ? off.delete(b.dataset.p) : off.add(b.dataset.p); legend(); repList(); });

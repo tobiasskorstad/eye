@@ -177,6 +177,12 @@ export function startMock(port = 0) {
     if ((m = p.match(/^\/br\/enheter\/(\d{9})\/roller$/))) { const c = F.COS.find(x => x[0] === m[1]); return c ? send(200, roller(c)) : send(404, {}); }
     if ((m = p.match(/^\/br\/enheter\/(\d{9})$/))) { const c = F.COS.find(x => x[0] === m[1]); return c ? send(200, enhet(c)) : send(404, {}); }
     if (p.startsWith('/br/underenheter/')) return send(404, {});
+    if ((m = p.match(/^\/ssb\/tables\/(\d+)\/data$/))) {
+      const n = Number((u.searchParams.get('valueCodes[Tid]') || 'top(5)').match(/\d+/)[0]);
+      const tid = Array.from({ length: n }, (_, i) => { const d = new Date(Date.UTC(2026, 11 - (n - 1 - i), 1)); return `${d.getUTCFullYear()}M${String(d.getUTCMonth() + 1).padStart(2, '0')}`; });
+      return send(200, { updated: '2026-11-25T07:00:00Z', dimension: { Tid: { category: { index: Object.fromEntries(tid.map((t, i) => [t, i])) } } }, value: tid.map((_, i) => 4 + i / 10) });
+    }
+    if (p.startsWith('/nb/data/')) return send(200, { data: { dataSets: [{ series: { '0:0:0:0': { observations: { 0: ['4.25'], 1: ['4.5'] } } } }], structure: { dimensions: { observation: [{ values: [{ id: '2025-11-26' }, { id: '2026-11-26' }] }] } } } });
     if ((m = p.match(/^\/rr\/regnskap\/(\d{9})$/))) {
       if (m[1] !== '913054210') return send(404, {});
       const year = (aar, inn, res) => ({ regnskapstype: 'SELSKAP', regnskapsperiode: { fraDato: `${aar}-01-01`, tilDato: `${aar}-12-31` }, valuta: 'NOK', avviklingsregnskap: false,

@@ -11,7 +11,7 @@ const base = `http://127.0.0.1:${mock.address().port}`;
 const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'eye-'));
 Object.assign(process.env, {
   STORTINGET_API: `${base}/st`, REGISTER_PAGE: `${base}/web/register/`, BRREG_API: `${base}/br`,
-  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
+  DATA_DIR: dataDir + '/', NEWS_FEEDS: `${base}/rss`, FAKTISK_URL: `${base}/faktisk`, FAKTISK_FRONT: `${base}/faktisk-forside`, WIKI_NO: `${base}/wiki/no`, WIKI_EN: `${base}/wiki/en`, WIKI_SV: `${base}/wiki/sv`, WIKI_DA: `${base}/wiki/da`, WIKIDATA_API: `${base}/wd`, COMMONS_FILE: `${base}/commons/`, WIKI_UPLOAD: `${base}/wiki/upload/`, OSLOBORS_API: `${base}/ob`, BRREG_REGNSKAP: `${base}/rr`, SSB_API: `${base}/ssb`, NB_API: `${base}/nb`, POLL_URL: `${base}/poll`, WIKIDATA_URL: `${base}/wikidata`, STORTINGET_DELAY_MS: '0', WIKIDATA_DELAY_MS: '0', DELAY_MS: '0', CONCURRENCY: '8', REFRESH_HOUR: '-1',
 });
 const { buildData } = await import('../src/build.js');
 
@@ -67,6 +67,12 @@ test('profiler: offisielle bilder, kontrollert Wikipedia-omtale uten fødselsdat
   assert.equal(P['ins:anders-opedal'].fotoKilde, 'Wikimedia Commons');
   assert.match(P['ins:anders-opedal'].wiki.tekst, /næringslivsleder/, 'godtatt fordi hele artikkelen nevner selskapet');
   assert.equal(pub.flagging.length, 1);
+  // tall i debatten: alle indikatorene, med kilde og sammenligning
+  assert.equal(pub.tall.length, 8);
+  const led = pub.tall.find(t => t.id === 'ledighet'), rente = pub.tall.find(t => t.id === 'rente');
+  assert.deepEqual([led.verdi, led.periode, led.før.verdi], [5.2, 'desember 2026', 4]);
+  assert.match(led.url, /ssb\.no\/statbank\/table\/13760/);
+  assert.deepEqual([rente.verdi, rente.periode], [4.5, '26. november 2026']);
   // årsregnskap fra Regnskapsregisteret: siste år + året før
   assert.deepEqual([pub.regnskap['913054210'].aar, pub.regnskap['913054210'].inn, pub.regnskap['913054210'].forrige.inn], [2024, 4800000, 4100000]);
   assert.match(pub.aksjer.EQNR.om, /^Equinor is an international energy company/, 'selskapets egen beskrivelse samles per aksje');
